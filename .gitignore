@@ -177,3 +177,6 @@ buildNumber.properties
 logs/
 cmake-build-debug/
 *.exe
+
+*
+!*.vhd
