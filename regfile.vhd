@@ -41,14 +41,14 @@ entity regfile is
            raddr1 : in  STD_LOGIC_VECTOR (2 downto 0);
            re1 : in  STD_LOGIC;
            rdata1 : out  STD_LOGIC_VECTOR (15 downto 0);
-           raddr2 : in  STD_LOGIC;
+           raddr2 : in  STD_LOGIC_VECTOR (2 downto 0);
            re2 : in  STD_LOGIC;
            rdata2 : out  STD_LOGIC_VECTOR (15 downto 0));
 end regfile;
 
 architecture Behavioral of regfile is
 type RegArray is array (7 downto 0) of STD_LOGIC_VECTOR(15 downto 0);
-signal regs: RegArray := (ZeroWord);
+signal regs: RegArray := (others => ZeroWord);
 begin
 
 	WriteOperator : process(clk)
@@ -56,13 +56,13 @@ begin
 		if(clk'event and clk = Enable) then
 			if(rst = Disable) then
 				if(we = Enable) then
-					regs(warrd) <= wdata;
+					regs(conv_integer(waddr)) <= wdata;
 				end if;
 			end if;
 		end if;
 	end process;
 
-	READ1 : process(rst,re1,raddr1,waddr,we)
+	READ1 : process(rst,re1,raddr1,waddr,we,wdata,regs)
 	begin
 		if(rst = Enable) then
 			rdata1 <= ZeroWord;
@@ -71,11 +71,11 @@ begin
 		elsif((raddr1 = waddr) and (we = Enable)) then
 			rdata1 <= wdata;
 		else
-			rdata1 <= regs(raddr1);
+			rdata1 <= regs(conv_integer(raddr1));
 		end if;
 	end process;
 
-	READ2 : process(rst,re2,raddr2,waddr,we)
+	READ2 : process(rst,re2,raddr2,waddr,we,wdata,regs)
 	begin
 		if(rst = Enable) then
 			rdata2 <= ZeroWord;
@@ -84,7 +84,7 @@ begin
 		elsif((raddr2 = waddr) and (we = Enable)) then
 			rdata2 <= wdata;
 		else
-			rdata2 <= regs(raddr2);
+			rdata2 <= regs(conv_integer(raddr2));
 		end if;
 	end process;
 end Behavioral;

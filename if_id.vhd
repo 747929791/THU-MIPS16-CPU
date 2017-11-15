@@ -48,9 +48,9 @@ begin
 		if(clk'event and clk = Enable) then
 			if(rst = Enable) then
 				id_pc <= ZeroWord;
-				id_inst <= ZeeroWord;
+				id_inst <= ZeroWord;
 			else
-				id_pc <= if_pd;
+				id_pc <= if_pc;
 				id_inst <= if_inst;
 			end if;
 		end if;

@@ -19,6 +19,8 @@
 ----------------------------------------------------------------------------------
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
+use IEEE.STD_LOGIC_ARITH.ALL;
 use WORK.DEFINES.ALL;
 
 -- Uncomment the following library declaration if using
@@ -32,8 +34,8 @@ use WORK.DEFINES.ALL;
 
 entity ex is
     Port ( rst : in  STD_LOGIC;
-           alusel_i : in  STD_LOGIC;
-           aluop_i : in  STD_LOGIC;
+           alusel_i : in  STD_LOGIC_VECTOR(2 downto 0);
+           aluop_i : in  STD_LOGIC_VECTOR(7 downto 0);
            reg1_i : in  STD_LOGIC_VECTOR(15 downto 0);
            reg2_i : in  STD_LOGIC_VECTOR(15 downto 0);
            wd_i : in  STD_LOGIC_VECTOR (2 downto 0);
@@ -61,7 +63,7 @@ begin
 		end if;
 	end process;
 	
-	sel: process(aluop_i,alusel_i,logicout)
+	sel: process(aluop_i,alusel_i,logicout,wd_i,wreg_i)
 	begin
 		wd_o <= wd_i;
 		wreg_o <= wreg_i;
