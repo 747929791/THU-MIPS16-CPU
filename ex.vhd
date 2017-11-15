@@ -2,9 +2,9 @@
 -- Company: 
 -- Engineer: 
 -- 
--- Create Date:    19:18:39 11/15/2017 
+-- Create Date:    21:44:23 11/15/2017 
 -- Design Name: 
--- Module Name:    if_id - Behavioral 
+-- Module Name:    ex - Behavioral 
 -- Project Name: 
 -- Target Devices: 
 -- Tool versions: 
@@ -19,7 +19,6 @@
 ----------------------------------------------------------------------------------
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
-use WORK.DEFINES.ALL;
 
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
@@ -30,30 +29,23 @@ use WORK.DEFINES.ALL;
 --library UNISIM;
 --use UNISIM.VComponents.all;
 
-entity if_id is
+entity ex is
     Port ( rst : in  STD_LOGIC;
-           clk : in  STD_LOGIC;
-           if_pc : in  STD_LOGIC_VECTOR (15 downto 0);
-           if_inst : in  STD_LOGIC_VECTOR (15 downto 0);
-           id_pc : out  STD_LOGIC_VECTOR (15 downto 0);
-           id_inst : out  STD_LOGIC_VECTOR (15 downto 0));
-end if_id;
+           alusel_i : in  STD_LOGIC;
+           aluop_i : in  STD_LOGIC;
+           reg1_i : in  STD_LOGIC;
+           reg2_i : in  STD_LOGIC;
+           wd_i : in  STD_LOGIC_VECTOR (2 downto 0);
+           wreg_i : in  STD_LOGIC;
+           wd_o : out  STD_LOGIC_VECTOR (2 downto 0);
+           wreg_o : out  STD_LOGIC;
+           wdata_o : out  STD_LOGIC_VECTOR (15 downto 0));
+end ex;
 
-architecture Behavioral of if_id is
+architecture Behavioral of ex is
 
 begin
 
-	process(clk)
-	begin
-		if(clk'event and clk = Enable) then
-			if(rst = Enable) then
-				id_pc <= ZeroWord;
-				id_inst <= ZeeroWord;
-			else
-				id_pc <= if_pd;
-				id_inst <= if_inst;
-			end if;
-		end if;
-	end process;
+
 end Behavioral;
 

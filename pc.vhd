@@ -48,10 +48,12 @@ begin
 	
 	CE_PROCESS : process(clk)
 	begin
-		if(rst = Enable) then
-			ce <= Enable;
-		else
-			ce <= Disable;
+		if(clk'event and clk = Enable) then
+			if(rst = Enable) then
+				ce <= Enable;
+			else
+				ce <= Disable;
+			end if;
 		end if;
 	end process;
 	

@@ -53,9 +53,11 @@ begin
 
 	WriteOperator : process(clk)
 	begin
-		if(rst = Disable) then
-			if(we = Enable) then
-				regs(warrd) <= wdata;
+		if(clk'event and clk = Enable) then
+			if(rst = Disable) then
+				if(we = Enable) then
+					regs(warrd) <= wdata;
+				end if;
 			end if;
 		end if;
 	end process;
