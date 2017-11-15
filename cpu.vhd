@@ -194,7 +194,6 @@ component mem_wb
 end component;
 
 begin
-
 	rom_addr_o <= pc_pc;
 	pc_component : pc port map(rst=>rst,clk=>clk,pc_o=>pc_pc,ce_o=>rom_ce_o);
 	if_id_component : if_id port map(rst=>rst,clk=>clk,if_pc=>pc_pc,if_inst=>rom_data_i,id_pc=>id_pc_i,id_inst=>id_inst_i);
