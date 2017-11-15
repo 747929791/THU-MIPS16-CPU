@@ -41,9 +41,14 @@ end inst_rom;
 architecture Behavioral of inst_rom is
 	constant InstNum : integer := 100;
 	type InstArray is array (InstNum downto 0) of STD_LOGIC_VECTOR(15 downto 0);
-	signal insts: InstArray := (others => ZeroWord);
+	signal insts: InstArray := (
+	  --01000xxxyyy0iiii
+		"0100000000100101",
+		"0100000001001111",
+		"0100000001100001",
+		"0100000010001101",
+		others => ZeroWord);
 begin
-
 	process(ce,addr)
 		variable id : integer;
 	begin
