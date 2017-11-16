@@ -37,7 +37,9 @@ entity pc is
            clk : in  STD_LOGIC; --时钟信号
            pc_o : out  STD_LOGIC_VECTOR (15 downto 0); --要读取的指令地址
            ce_o : out  STD_LOGIC; --指令存储器使能
-			  stall : in STD_LOGIC_VECTOR(5 downto 0) --暂停信号
+			  stall : in STD_LOGIC_VECTOR(5 downto 0); --暂停信号
+			  branch_flag_i : in STD_LOGIC; --是否跳转信号
+			  branch_target_address_i : in STD_LOGIC_VECTOR(15 downto 0)
 			  );
 end pc;
 
@@ -65,7 +67,11 @@ begin
 			if(ce = Disable) then
 				pc <= ZeroWord;
 			elsif(stall(0) = NoStop) then
-				pc <= pc + 2;
+				if(branch_flag_i = Enable) then
+					pc <= branch_target_address_i;
+				else
+					pc <= pc + 1;
+				end if;
 			end if;
 		end if;
 	end process;

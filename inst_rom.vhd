@@ -42,30 +42,20 @@ architecture Behavioral of inst_rom is
 	constant InstNum : integer := 100;
 	type InstArray is array (0 to InstNum) of STD_LOGIC_VECTOR(15 downto 0);
 	signal insts: InstArray := (
-	  --01000xxxyyy0iiii 旁路技术测试
-		"0100000000000001",
-		"0100000000000001",
-		"0100000000000001",
-		"0100000000000001",
-		"0100000000000001", --现在0寄存器是5
-		"0100000000100001",
-		"0100000100000001",
-		"0100000000100001",
-		"0100000100000001",
-		"0100000000100001",
-		"0100000100000001", --现在0寄存器是11
-		"0100000000100001", --现在1寄存器是12
-		"0100000101000001",
-		"0100000101100001",
-		"0100000110000001",
-		"0100000110100001", --现在2345寄存器都是13
+	  --01000xxxyyy0iiii 转移BEQZ测试
+		"0100000101000000", --R[2]=R[1]
+		"0100000000100000", --R[1]=R[0]
+		"0100000000000001", --R[0]++
+		"0010001011111100", --BEQZ(R[2])  PC<-PC-4
+		"0100000000000001", --R[0]++
+		"0100000010000001", --R[4]++ 现在R[0]=6,R[1]=4,R[2]=2,R[4]=7
 		others => ZeroWord);
 begin
 	process(ce,addr)
 		variable id : integer;
 	begin
 		if(ce = Enable) then
-			id:=conv_integer(addr)/2;
+			id:=conv_integer(addr);
 			if(id>InstNum) then
 				inst <= ZeroWord;
 			else

@@ -86,13 +86,19 @@ signal reg2_addr : STD_LOGIC_VECTOR(2 downto 0);
 signal stallreq_id : STD_LOGIC;
 signal stallreq_ex : STD_LOGIC;
 signal stall : STD_LOGIC_VECTOR(5 downto 0);
+--ID/PC转移信号
+signal branch_flag : STD_LOGIC;
+signal branch_target_address : STD_LOGIC_VECTOR(15 downto 0);
 
 component pc
     Port ( rst : in  STD_LOGIC; --复位信号
            clk : in  STD_LOGIC; --时钟信号
            pc_o : out  STD_LOGIC_VECTOR (15 downto 0); --要读取的指令地址
            ce_o : out  STD_LOGIC; --指令存储器使能
-			  stall : in STD_LOGIC_VECTOR(5 downto 0)); --暂停信号
+			  stall : in STD_LOGIC_VECTOR(5 downto 0); --暂停信号
+			  branch_flag_i : in STD_LOGIC; --是否跳转信号
+			  branch_target_address_i : in STD_LOGIC_VECTOR(15 downto 0)
+			  );
 end component;
 
 component if_id
@@ -129,7 +135,10 @@ component id
 			  mem_wd_i : in STD_LOGIC_VECTOR(2 downto 0);
 			  mem_wdata_i : in STD_LOGIC_VECTOR(15 downto 0);
 			  --暂停请求信号
-			  stallreq : out STD_LOGIC
+			  stallreq : out STD_LOGIC;
+			  --PC跳转信号
+			  branch_flag_o : out STD_LOGIC;
+			  branch_target_address_o : out STD_LOGIC_VECTOR(15 downto 0)
 			  );
 end component;
 
@@ -223,12 +232,13 @@ end component;
 
 begin
 	rom_addr_o <= pc_pc;
-	pc_component : pc port map(rst=>rst,clk=>clk,pc_o=>pc_pc,ce_o=>rom_ce_o, stall=>stall);
+	pc_component : pc port map(rst=>rst,clk=>clk,pc_o=>pc_pc,ce_o=>rom_ce_o, stall=>stall, branch_flag_i=>branch_flag, branch_target_address_i=>branch_target_address);
 	if_id_component : if_id port map(rst=>rst,clk=>clk,if_pc=>pc_pc,if_inst=>rom_data_i,id_pc=>id_pc_i,id_inst=>id_inst_i, stall=>stall);
 	id_component : id port map(rst=>rst, pc_i=>id_pc_i, inst_i=>id_inst_i, reg1_data_i=>reg1_data, reg2_data_i=>reg2_data, 
 										reg1_read_o=>reg1_read, reg2_read_o=>reg2_read, reg1_addr_o=>reg1_addr, reg2_addr_o=>reg2_addr, 
 										aluop_o=>id_aluop_o, alusel_o=>id_alusel_o, reg1_o=>id_reg1_o, reg2_o=>id_reg2_o, wd_o=>id_wd_o, wreg_o=>id_wreg_o,
-										ex_wreg_i=>ex_wreg_o, ex_wd_i=>ex_wd_o, ex_wdata_i=>ex_wdata_o, mem_wreg_i=>mem_wreg_o, mem_wd_i=>mem_wd_o, mem_wdata_i=>mem_wdata_o, stallreq=>stallreq_id);
+										ex_wreg_i=>ex_wreg_o, ex_wd_i=>ex_wd_o, ex_wdata_i=>ex_wdata_o, mem_wreg_i=>mem_wreg_o, mem_wd_i=>mem_wd_o, mem_wdata_i=>mem_wdata_o,
+										stallreq=>stallreq_id, branch_flag_o=>branch_flag, branch_target_address_o=>branch_target_address);
 	regfile_component : regfile port map(rst=>rst, clk=>clk, waddr=>wb_wd_i, wdata=>wb_wdata_i, we=>wb_wreg_i, raddr1=>reg1_addr, re1=>reg1_read, 
 													 rdata1=>reg1_data, raddr2=>reg2_addr, re2=>reg2_read, rdata2=>reg2_data);
 	id_ex_component : id_ex port map(rst=>rst, clk=>clk, id_alusel=>id_alusel_o, id_aluop=>id_aluop_o, id_reg1=>id_reg1_o, id_reg2=>id_reg2_o, id_wd=>id_wd_o, id_wreg=>id_wreg_o,
