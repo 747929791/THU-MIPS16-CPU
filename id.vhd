@@ -66,6 +66,7 @@ signal instvalid:STD_LOGIC; --指令是否有效
 signal reg1_read_e,reg2_read_e:STD_LOGIC;
 signal reg1_addr,reg2_addr:STD_LOGIC_VECTOR(2 downto 0);
 begin
+	stallreq <= NoStop; --暂时不暂停
 	reg1_read_o <= reg1_read_e;
 	reg2_read_o <= reg2_read_e;
 	reg1_addr_o <= reg1_addr;

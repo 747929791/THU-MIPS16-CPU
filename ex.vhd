@@ -50,7 +50,7 @@ end ex;
 architecture Behavioral of ex is
 	signal logicout : std_logic_vector(15 downto 0);
 begin
-
+	stallreq <= NoStop; --ÔÝÊ±²»ÔÝÍ£
 	calc: process(rst,aluop_i,reg1_i,reg2_i)
 	begin
 		if(rst = Enable) then
