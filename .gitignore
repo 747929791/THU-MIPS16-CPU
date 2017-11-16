@@ -71,3 +71,4 @@ isim/
 *.*
 !*.vhd
 !CPU.xise
+!*.wcfg
