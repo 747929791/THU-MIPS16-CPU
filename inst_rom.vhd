@@ -40,7 +40,7 @@ entity inst_rom is
 end inst_rom;
 architecture Behavioral of inst_rom is
 	constant InstNum : integer := 100;
-	type InstArray is array (InstNum downto 0) of STD_LOGIC_VECTOR(15 downto 0);
+	type InstArray is array (0 to InstNum) of STD_LOGIC_VECTOR(15 downto 0);
 	signal insts: InstArray := (
 	  --01000xxxyyy0iiii
 		"0100000000100101",

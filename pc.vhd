@@ -50,9 +50,9 @@ begin
 	begin
 		if(clk'event and clk = Enable) then
 			if(rst = Enable) then
-				ce <= Enable;
-			else
 				ce <= Disable;
+			else
+				ce <= Enable;
 			end if;
 		end if;
 	end process;
