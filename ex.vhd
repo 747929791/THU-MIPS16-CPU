@@ -42,7 +42,9 @@ entity ex is
            wreg_i : in  STD_LOGIC;
            wd_o : out  STD_LOGIC_VECTOR (2 downto 0);
            wreg_o : out  STD_LOGIC;
-           wdata_o : out  STD_LOGIC_VECTOR (15 downto 0));
+           wdata_o : out  STD_LOGIC_VECTOR (15 downto 0);
+			  --‘›Õ£«Î«Û–≈∫≈
+			  stallreq : out STD_LOGIC);
 end ex;
 
 architecture Behavioral of ex is

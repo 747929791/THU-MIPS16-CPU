@@ -53,7 +53,9 @@ entity id is
 			  ex_wdata_i : in STD_LOGIC_VECTOR(15 downto 0);
 			  mem_wreg_i : in STD_LOGIC;
 			  mem_wd_i : in STD_LOGIC_VECTOR(2 downto 0);
-			  mem_wdata_i : in STD_LOGIC_VECTOR(15 downto 0)
+			  mem_wdata_i : in STD_LOGIC_VECTOR(15 downto 0);
+			  --‘›Õ£«Î«Û–≈∫≈
+			  stallreq : out STD_LOGIC
 			  );
 end id;
 

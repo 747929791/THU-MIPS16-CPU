@@ -36,7 +36,9 @@ entity pc is
     Port ( rst : in  STD_LOGIC; --复位信号
            clk : in  STD_LOGIC; --时钟信号
            pc_o : out  STD_LOGIC_VECTOR (15 downto 0); --要读取的指令地址
-           ce_o : out  STD_LOGIC); --指令存储器使能
+           ce_o : out  STD_LOGIC; --指令存储器使能
+			  stall : in STD_LOGIC_VECTOR(5 downto 0) --暂停信号
+			  );
 end pc;
 
 architecture Behavioral of pc is
@@ -62,7 +64,7 @@ begin
 		if(clk'event and clk = Enable) then
 			if(ce = Disable) then
 				pc <= ZeroWord;
-			else
+			elsif(stall(0) = NoStop) then
 				pc <= pc + 2;
 			end if;
 		end if;

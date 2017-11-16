@@ -38,7 +38,8 @@ entity mem_wb is
            mem_wdata : in  STD_LOGIC_VECTOR (15 downto 0);
            wb_wd : out  STD_LOGIC_VECTOR (2 downto 0);
            wb_wreg : out  STD_LOGIC;
-           wb_wdata : out  STD_LOGIC_VECTOR (15 downto 0));
+           wb_wdata : out  STD_LOGIC_VECTOR (15 downto 0);
+			  stall : in STD_LOGIC_VECTOR(5 downto 0)); --ÔÝÍ£ÐÅºÅ
 end mem_wb;
 
 architecture Behavioral of mem_wb is
@@ -52,7 +53,11 @@ begin
 				wb_wd <= "000";
 				wb_wreg <= Disable;
 				wb_wdata <= ZeroWord;
-			else
+			elsif(stall(4)=Stop and stall(5)=NoStop) then
+				wb_wd <= "000";
+				wb_wreg <= Disable;
+				wb_wdata <= ZeroWord;
+			elsif(stall(4)=NoStop) then
 				wb_wd <= mem_wd;
 				wb_wreg <= mem_wreg;
 				wb_wdata <= mem_wdata;

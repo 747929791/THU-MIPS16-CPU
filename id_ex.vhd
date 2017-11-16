@@ -44,7 +44,8 @@ entity id_ex is
            ex_reg1 : out  STD_LOGIC_VECTOR (15 downto 0);
            ex_reg2 : out  STD_LOGIC_VECTOR (15 downto 0);
            ex_wd : out  STD_LOGIC_VECTOR (2 downto 0);
-           ex_wreg : out  STD_LOGIC);
+           ex_wreg : out  STD_LOGIC;
+			  stall : in STD_LOGIC_VECTOR(5 downto 0)); --ÔÝÍ£ÐÅºÅ
 end id_ex;
 
 architecture Behavioral of id_ex is
@@ -61,7 +62,14 @@ begin
 				ex_reg2 <= ZeroWord;
 				ex_wd <= "000";
 				ex_wreg <= Disable;
-			else
+			elsif(stall(2)=Stop and stall(3)=NoStop) then
+				ex_aluop <= EXE_NOP_OP;
+				ex_alusel <= EXE_RES_NOP;
+				ex_reg1 <= ZeroWord;
+				ex_reg2 <= ZeroWord;
+				ex_wd <= "000";
+				ex_wreg <= Disable;
+			elsif(stall(2)=NoStop) then
 				ex_alusel <= id_alusel;
 				ex_aluop <= id_aluop;
 				ex_reg1 <= id_reg1;

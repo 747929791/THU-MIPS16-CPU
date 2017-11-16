@@ -38,7 +38,8 @@ entity ex_mem is
            ex_wdata : in  STD_LOGIC_VECTOR (15 downto 0);
            mem_wd : out  STD_LOGIC_VECTOR (2 downto 0);
            mem_wreg : out  STD_LOGIC;
-           mem_wdata : out  STD_LOGIC_VECTOR (15 downto 0));
+           mem_wdata : out  STD_LOGIC_VECTOR (15 downto 0);
+			  stall : in STD_LOGIC_VECTOR(5 downto 0)); --ÔÝÍ£ÐÅºÅ
 end ex_mem;
 
 architecture Behavioral of ex_mem is
@@ -52,7 +53,11 @@ begin
 				mem_wd <= "000";
 				mem_wreg <= Disable;
 				mem_wdata <= ZeroWord;
-			else
+			elsif(stall(3)=Stop and stall(4)=NoStop) then
+				mem_wd <= "000";
+				mem_wreg <= Disable;
+				mem_wdata <= ZeroWord;
+			elsif(stall(3)=NoStop) then
 				mem_wd <= ex_wd;
 				mem_wreg <= ex_wreg;
 				mem_wdata <= ex_wdata;
