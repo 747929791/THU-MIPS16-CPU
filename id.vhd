@@ -40,20 +40,20 @@ entity id is
            reg2_data_i : in  STD_LOGIC_VECTOR (15 downto 0);
            reg1_read_o : out  STD_LOGIC;
            reg2_read_o : out  STD_LOGIC;
-           reg1_addr_o : out  STD_LOGIC_VECTOR (2 downto 0);
-           reg2_addr_o : out  STD_LOGIC_VECTOR (2 downto 0);
+           reg1_addr_o : out  STD_LOGIC_VECTOR (3 downto 0);
+           reg2_addr_o : out  STD_LOGIC_VECTOR (3 downto 0);
            aluop_o : out  STD_LOGIC_VECTOR (7 downto 0);
            alusel_o : out  STD_LOGIC_VECTOR (2 downto 0);
            reg1_o : out  STD_LOGIC_VECTOR (15 downto 0);
            reg2_o : out  STD_LOGIC_VECTOR (15 downto 0);
-           wd_o : out  STD_LOGIC_VECTOR (2 downto 0);
+           wd_o : out  STD_LOGIC_VECTOR (3 downto 0);
            wreg_o : out  STD_LOGIC;
 			  --数据旁路技术需要的ex与mem阶段的信号
 			  ex_wreg_i : in STD_LOGIC;
-			  ex_wd_i : in STD_LOGIC_VECTOR(2 downto 0);
+			  ex_wd_i : in STD_LOGIC_VECTOR(3 downto 0);
 			  ex_wdata_i : in STD_LOGIC_VECTOR(15 downto 0);
 			  mem_wreg_i : in STD_LOGIC;
-			  mem_wd_i : in STD_LOGIC_VECTOR(2 downto 0);
+			  mem_wd_i : in STD_LOGIC_VECTOR(3 downto 0);
 			  mem_wdata_i : in STD_LOGIC_VECTOR(15 downto 0);
 			  --暂停请求信号
 			  stallreq : out STD_LOGIC;
@@ -72,7 +72,7 @@ signal imm:STD_LOGIC_VECTOR(15 downto 0);
 signal instvalid:STD_LOGIC; --指令是否有效
 --内部信号
 signal reg1_read_e,reg2_read_e:STD_LOGIC;
-signal reg1_addr,reg2_addr:STD_LOGIC_VECTOR(2 downto 0);
+signal reg1_addr,reg2_addr:STD_LOGIC_VECTOR(3 downto 0);
 begin
 	inst_o <= inst_i;
 	reg1_read_o <= reg1_read_e;
@@ -84,7 +84,7 @@ begin
 		variable op : STD_LOGIC_VECTOR(4 downto 0);
 		variable sub_op : STD_LOGIC_VECTOR(4 downto 0);
 		variable sub_op2 : STD_LOGIC_VECTOR(1 downto 0);
-		variable rx, ry, rz : STD_LOGIC_VECTOR(2 downto 0);
+		variable rx, ry, rz : STD_LOGIC_VECTOR(3 downto 0);
 		variable imm3 : STD_LOGIC_VECTOR(2 downto 0);
 		variable imm4 : STD_LOGIC_VECTOR(3 downto 0);
 		variable imm5 : STD_LOGIC_VECTOR(4 downto 0);
@@ -94,20 +94,20 @@ begin
 		if(rst = Enable) then
 			reg1_read_e <= Disable;
 			reg2_read_e <= Disable;
-			reg1_addr <= "000";
-			reg2_addr <= "000";
+			reg1_addr <= RegAddrZero;
+			reg2_addr <= RegAddrZero;
 			aluop_o <= EXE_NOP_OP;
 			alusel_o <= EXE_RES_NOP;
-			wd_o <= "000";
+			wd_o <= RegAddrZero;
 			wreg_o <= Disable;
 			instvalid <= Disable;
 		else
 			op := inst_i(15 downto 11);
 			sub_op := inst_i(4 downto 0);
 			sub_op2 := inst_i(1 downto 0);
-			rx := inst_i(10 downto 8);
-			ry := inst_i(7 downto 5);
-			rz := inst_i(4 downto 2);
+			rx := "0"&inst_i(10 downto 8);
+			ry := "0"&inst_i(7 downto 5);
+			rz := "0"&inst_i(4 downto 2);
 			imm3 := inst_i(4 downto 2);
 			imm4 := inst_i(3 downto 0);
 			imm5 := inst_i(4 downto 0);
@@ -119,7 +119,7 @@ begin
 			--reg2_addr_o <= "000";
 			aluop_o <= EXE_NOP_OP;
 			alusel_o <= EXE_RES_NOP;
-			wd_o <= "000";
+			wd_o <= RegAddrZero;
 			wreg_o <= Disable;
 			branch_flag_o <= Disable;
 			branch_target_address_o <= ZeroWord;
@@ -143,6 +143,16 @@ begin
 					reg1_read_e <= Enable;
 					reg2_read_e <= Disable;
 					reg1_addr <= rx;
+					wd_o <=rx;
+					instvalid <= Enable;
+					imm <= SXT(imm8,16);
+				when "00000" => --ADDSP3
+					wreg_o <= Enable;
+					aluop_o <= EXE_ADDSP3_OP;
+					alusel_o <= EXE_RES_LOGIC;
+					reg1_read_e <= Enable;
+					reg1_addr <= SP_REGISTER;
+					reg2_read_e <= Disable;
 					wd_o <=rx;
 					instvalid <= Enable;
 					imm <= SXT(imm8,16);
@@ -274,11 +284,11 @@ begin
 						when others =>
 							reg1_read_e <= Disable;
 							reg2_read_e <= Disable;
-							reg1_addr <= "000";
-							reg2_addr <= "000";
+							reg1_addr <= RegAddrZero;
+							reg2_addr <= RegAddrZero;
 							aluop_o <= EXE_NOP_OP;
 							alusel_o <= EXE_RES_NOP;
-							wd_o <= "000";
+							wd_o <= RegAddrZero;
 							wreg_o <= Disable;
 							instvalid <= Disable;
 					end case;

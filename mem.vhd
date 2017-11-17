@@ -32,10 +32,10 @@ use WORK.DEFINES.ALL;
 
 entity mem is
     Port ( rst : in  STD_LOGIC;
-           wd_i : in  STD_LOGIC_VECTOR (2 downto 0);
+           wd_i : in  STD_LOGIC_VECTOR (3 downto 0);
            wreg_i : in  STD_LOGIC;
            wdata_i : in  STD_LOGIC_VECTOR (15 downto 0);
-           wd_o : out  STD_LOGIC_VECTOR (2 downto 0);
+           wd_o : out  STD_LOGIC_VECTOR (3 downto 0);
            wreg_o : out  STD_LOGIC;
            wdata_o : out  STD_LOGIC_VECTOR (15 downto 0);
 			  --访存信号
@@ -63,7 +63,7 @@ begin
 		mem_addr_o <= mem_addr_i;
 		mem_wdata_o <= mem_wdata_i;
 		if(rst = Enable) then
-			wd_o <= "000";
+			wd_o <= RegAddrZero;
 			wreg_o <= Disable;
 			wdata_o <= ZeroWord;
 			mem_read_o <= Disable;
@@ -73,7 +73,7 @@ begin
 			ce<=Disable;
 		else
 			--默认值
-			wd_o <= "000";
+			wd_o <= RegAddrZero;
 			wreg_o <= Disable;
 			wdata_o <= ZeroWord;
 			if(mem_read_i = Enable) then --Load指令

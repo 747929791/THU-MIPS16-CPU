@@ -38,9 +38,9 @@ entity ex is
            aluop_i : in  STD_LOGIC_VECTOR(7 downto 0);
            reg1_i : in  STD_LOGIC_VECTOR(15 downto 0);
            reg2_i : in  STD_LOGIC_VECTOR(15 downto 0);
-           wd_i : in  STD_LOGIC_VECTOR (2 downto 0);
+           wd_i : in  STD_LOGIC_VECTOR (3 downto 0);
            wreg_i : in  STD_LOGIC;
-           wd_o : out  STD_LOGIC_VECTOR (2 downto 0);
+           wd_o : out  STD_LOGIC_VECTOR (3 downto 0);
            wreg_o : out  STD_LOGIC;
            wdata_o : out  STD_LOGIC_VECTOR (15 downto 0);
 			  --‘›Õ£«Î«Û–≈∫≈

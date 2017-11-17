@@ -37,14 +37,14 @@ entity id_ex is
            id_aluop : in  STD_LOGIC_VECTOR (7 downto 0);
            id_reg1 : in  STD_LOGIC_VECTOR (15 downto 0);
            id_reg2 : in  STD_LOGIC_VECTOR (15 downto 0);
-           id_wd : in  STD_LOGIC_VECTOR (2 downto 0);
+           id_wd : in  STD_LOGIC_VECTOR (3 downto 0);
            id_wreg : in  STD_LOGIC;
 			  id_inst :  in STD_LOGIC_VECTOR (15 downto 0);
            ex_alusel : out  STD_LOGIC_VECTOR (2 downto 0);
            ex_aluop : out  STD_LOGIC_VECTOR (7 downto 0);
            ex_reg1 : out  STD_LOGIC_VECTOR (15 downto 0);
            ex_reg2 : out  STD_LOGIC_VECTOR (15 downto 0);
-           ex_wd : out  STD_LOGIC_VECTOR (2 downto 0);
+           ex_wd : out  STD_LOGIC_VECTOR (3 downto 0);
            ex_wreg : out  STD_LOGIC;
 			  ex_inst :  out STD_LOGIC_VECTOR (15 downto 0);
 			  stall : in STD_LOGIC_VECTOR(5 downto 0)); --ÔÝÍ£ÐÅºÅ
@@ -62,7 +62,7 @@ begin
 				ex_aluop <= EXE_NOP_OP;
 				ex_reg1 <= ZeroWord;
 				ex_reg2 <= ZeroWord;
-				ex_wd <= "000";
+				ex_wd <= RegAddrZero;
 				ex_wreg <= Disable;
 				ex_inst <= ZeroWord;
 			elsif(stall(2)=Stop and stall(3)=NoStop) then
@@ -70,7 +70,7 @@ begin
 				ex_alusel <= EXE_RES_NOP;
 				ex_reg1 <= ZeroWord;
 				ex_reg2 <= ZeroWord;
-				ex_wd <= "000";
+				ex_wd <= RegAddrZero;
 				ex_wreg <= Disable;
 				ex_inst <= ZeroWord;
 			elsif(stall(2)=NoStop) then

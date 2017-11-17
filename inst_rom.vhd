@@ -52,7 +52,7 @@ architecture Behavioral of inst_rom is
 		"0100010010000001", --R[4]++ 现在R[0]=1,R[1]=1,R[4]=1,RAM[3]=1
 		"0100000000000001", --R[0]++
 		"1101100100000011", --SW(R[0])->RAM[R(1)+3] 现在R[0]=2,R[1]=2,R[4]=1,RAM[3]=1,RAM[4]=2
-		others => ZeroWord);
+		others => NopInst);
 begin
 	process(ce,addr)
 		variable id : integer;

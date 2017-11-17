@@ -57,7 +57,7 @@ signal id_alusel_o : STD_LOGIC_VECTOR(2 downto 0);
 signal id_reg1_o : STD_LOGIC_VECTOR(15 downto 0);
 signal id_reg2_o : STD_LOGIC_VECTOR(15 downto 0);
 signal id_wreg_o : STD_LOGIC;
-signal id_wd_o : STD_LOGIC_VECTOR(2 downto 0);
+signal id_wd_o : STD_LOGIC_VECTOR(3 downto 0);
 signal id_inst_o : STD_LOGIC_VECTOR(15 downto 0);
 --ID/EX到EX的输入变量
 signal ex_aluop_i : STD_LOGIC_VECTOR(7 downto 0);
@@ -65,11 +65,11 @@ signal ex_alusel_i : STD_LOGIC_VECTOR(2 downto 0);
 signal ex_reg1_i : STD_LOGIC_VECTOR(15 downto 0);
 signal ex_reg2_i : STD_LOGIC_VECTOR(15 downto 0);
 signal ex_wreg_i : STD_LOGIC;
-signal ex_wd_i : STD_LOGIC_VECTOR(2 downto 0);
+signal ex_wd_i : STD_LOGIC_VECTOR(3 downto 0);
 signal ex_inst_i : STD_LOGIC_VECTOR(15 downto 0);
 --EX到EX/MEM的变量
 signal ex_wreg_o :STD_LOGIC;
-signal ex_wd_o : STD_LOGIC_VECTOR(2 downto 0);
+signal ex_wd_o : STD_LOGIC_VECTOR(3 downto 0);
 signal ex_wdata_o : STD_LOGIC_VECTOR(15 downto 0);
 signal ex_mem_read_o : STD_LOGIC;
 signal ex_mem_write_o : STD_LOGIC;
@@ -79,7 +79,7 @@ signal ex_mem_wdata_o : STD_LOGIC_VECTOR(15 downto 0);
 signal ex_aluop_o : STD_LOGIC_VECTOR(7 downto 0);
 --EX/MEM到MEM的接口
 signal mem_wreg_i :STD_LOGIC;
-signal mem_wd_i : STD_LOGIC_VECTOR(2 downto 0);
+signal mem_wd_i : STD_LOGIC_VECTOR(3 downto 0);
 signal mem_wdata_i : STD_LOGIC_VECTOR(15 downto 0);
 signal mem_mem_read_i : STD_LOGIC;
 signal mem_mem_write_i : STD_LOGIC;
@@ -87,19 +87,19 @@ signal mem_mem_addr_i : STD_LOGIC_VECTOR(15 downto 0);
 signal mem_mem_wdata_i : STD_LOGIC_VECTOR(15 downto 0);
 --MEM到MEM/WB的变量
 signal mem_wreg_o :STD_LOGIC;
-signal mem_wd_o : STD_LOGIC_VECTOR(2 downto 0);
+signal mem_wd_o : STD_LOGIC_VECTOR(3 downto 0);
 signal mem_wdata_o : STD_LOGIC_VECTOR(15 downto 0);
 --MEM/WB到WB的变量
 signal wb_wreg_i :STD_LOGIC;
-signal wb_wd_i : STD_LOGIC_VECTOR(2 downto 0);
+signal wb_wd_i : STD_LOGIC_VECTOR(3 downto 0);
 signal wb_wdata_i : STD_LOGIC_VECTOR(15 downto 0);
 --ID与RegFile的变量
 signal reg1_read : STD_LOGIC;
 signal reg2_read : STD_LOGIC;
 signal reg1_data : STD_LOGIC_VECTOR(15 downto 0);
 signal reg2_data : STD_LOGIC_VECTOR(15 downto 0);
-signal reg1_addr : STD_LOGIC_VECTOR(2 downto 0);
-signal reg2_addr : STD_LOGIC_VECTOR(2 downto 0);
+signal reg1_addr : STD_LOGIC_VECTOR(3 downto 0);
+signal reg2_addr : STD_LOGIC_VECTOR(3 downto 0);
 --CTRL暂停信号
 signal stallreq_id : STD_LOGIC;
 signal stallreq_ex : STD_LOGIC;
@@ -137,20 +137,20 @@ component id
            reg2_data_i : in  STD_LOGIC_VECTOR (15 downto 0);
            reg1_read_o : out  STD_LOGIC;
            reg2_read_o : out  STD_LOGIC;
-           reg1_addr_o : out  STD_LOGIC_VECTOR (2 downto 0);
-           reg2_addr_o : out  STD_LOGIC_VECTOR (2 downto 0);
+           reg1_addr_o : out  STD_LOGIC_VECTOR (3 downto 0);
+           reg2_addr_o : out  STD_LOGIC_VECTOR (3 downto 0);
            aluop_o : out  STD_LOGIC_VECTOR (7 downto 0);
            alusel_o : out  STD_LOGIC_VECTOR (2 downto 0);
            reg1_o : out  STD_LOGIC_VECTOR (15 downto 0);
            reg2_o : out  STD_LOGIC_VECTOR (15 downto 0);
-           wd_o : out  STD_LOGIC_VECTOR (2 downto 0);
+           wd_o : out  STD_LOGIC_VECTOR (3 downto 0);
            wreg_o : out  STD_LOGIC;
 			  --数据旁路技术需要的ex与mem阶段的信号
 			  ex_wreg_i : in STD_LOGIC;
-			  ex_wd_i : in STD_LOGIC_VECTOR(2 downto 0);
+			  ex_wd_i : in STD_LOGIC_VECTOR(3 downto 0);
 			  ex_wdata_i : in STD_LOGIC_VECTOR(15 downto 0);
 			  mem_wreg_i : in STD_LOGIC;
-			  mem_wd_i : in STD_LOGIC_VECTOR(2 downto 0);
+			  mem_wd_i : in STD_LOGIC_VECTOR(3 downto 0);
 			  mem_wdata_i : in STD_LOGIC_VECTOR(15 downto 0);
 			  --暂停请求信号
 			  stallreq : out STD_LOGIC;
@@ -168,13 +168,13 @@ end component;
 component regfile
     Port ( rst : in  STD_LOGIC;
            clk : in  STD_LOGIC;
-           waddr : in  STD_LOGIC_VECTOR (2 downto 0);
+           waddr : in  STD_LOGIC_VECTOR (3 downto 0);
            wdata : in  STD_LOGIC_VECTOR (15 downto 0);
            we : in  STD_LOGIC;
-           raddr1 : in  STD_LOGIC_VECTOR (2 downto 0);
+           raddr1 : in  STD_LOGIC_VECTOR (3 downto 0);
            re1 : in  STD_LOGIC;
            rdata1 : out  STD_LOGIC_VECTOR (15 downto 0);
-           raddr2 : in  STD_LOGIC_VECTOR (2 downto 0);
+           raddr2 : in  STD_LOGIC_VECTOR (3 downto 0);
            re2 : in  STD_LOGIC;
            rdata2 : out  STD_LOGIC_VECTOR (15 downto 0));
 end component;
@@ -186,14 +186,14 @@ component id_ex
            id_aluop : in  STD_LOGIC_VECTOR (7 downto 0);
            id_reg1 : in  STD_LOGIC_VECTOR (15 downto 0);
            id_reg2 : in  STD_LOGIC_VECTOR (15 downto 0);
-           id_wd : in  STD_LOGIC_VECTOR (2 downto 0);
+           id_wd : in  STD_LOGIC_VECTOR (3 downto 0);
            id_wreg : in  STD_LOGIC;
 			  id_inst :  in STD_LOGIC_VECTOR (15 downto 0);
            ex_alusel : out  STD_LOGIC_VECTOR (2 downto 0);
            ex_aluop : out  STD_LOGIC_VECTOR (7 downto 0);
            ex_reg1 : out  STD_LOGIC_VECTOR (15 downto 0);
            ex_reg2 : out  STD_LOGIC_VECTOR (15 downto 0);
-           ex_wd : out  STD_LOGIC_VECTOR (2 downto 0);
+           ex_wd : out  STD_LOGIC_VECTOR (3 downto 0);
            ex_wreg : out  STD_LOGIC;
 			  ex_inst :  out STD_LOGIC_VECTOR (15 downto 0);
 			  stall : in STD_LOGIC_VECTOR(5 downto 0)); --暂停信号
@@ -205,9 +205,9 @@ component ex
            aluop_i : in  STD_LOGIC_VECTOR(7 downto 0);
            reg1_i : in  STD_LOGIC_VECTOR(15 downto 0);
            reg2_i : in  STD_LOGIC_VECTOR(15 downto 0);
-           wd_i : in  STD_LOGIC_VECTOR (2 downto 0);
+           wd_i : in  STD_LOGIC_VECTOR (3 downto 0);
            wreg_i : in  STD_LOGIC;
-           wd_o : out  STD_LOGIC_VECTOR (2 downto 0);
+           wd_o : out  STD_LOGIC_VECTOR (3 downto 0);
            wreg_o : out  STD_LOGIC;
            wdata_o : out  STD_LOGIC_VECTOR (15 downto 0);
 			  --暂停请求信号
@@ -227,10 +227,10 @@ end component;
 component ex_mem
     Port ( rst : in  STD_LOGIC;
            clk : in  STD_LOGIC;
-           ex_wd : in  STD_LOGIC_VECTOR (2 downto 0);
+           ex_wd : in  STD_LOGIC_VECTOR (3 downto 0);
            ex_wreg : in  STD_LOGIC;
            ex_wdata : in  STD_LOGIC_VECTOR (15 downto 0);
-           mem_wd : out  STD_LOGIC_VECTOR (2 downto 0);
+           mem_wd : out  STD_LOGIC_VECTOR (3 downto 0);
            mem_wreg : out  STD_LOGIC;
            mem_wdata : out  STD_LOGIC_VECTOR (15 downto 0);
 			  stall : in STD_LOGIC_VECTOR(5 downto 0); --暂停信号
@@ -247,10 +247,10 @@ end component;
 
 component mem
     Port ( rst : in  STD_LOGIC;
-           wd_i : in  STD_LOGIC_VECTOR (2 downto 0);
+           wd_i : in  STD_LOGIC_VECTOR (3 downto 0);
            wreg_i : in  STD_LOGIC;
            wdata_i : in  STD_LOGIC_VECTOR (15 downto 0);
-           wd_o : out  STD_LOGIC_VECTOR (2 downto 0);
+           wd_o : out  STD_LOGIC_VECTOR (3 downto 0);
            wreg_o : out  STD_LOGIC;
            wdata_o : out  STD_LOGIC_VECTOR (15 downto 0);
 			  --访存信号
@@ -270,10 +270,10 @@ end component;
 component mem_wb
     Port ( rst : in  STD_LOGIC;
            clk : in  STD_LOGIC;
-           mem_wd : in  STD_LOGIC_VECTOR (2 downto 0);
+           mem_wd : in  STD_LOGIC_VECTOR (3 downto 0);
            mem_wreg : in  STD_LOGIC;
            mem_wdata : in  STD_LOGIC_VECTOR (15 downto 0);
-           wb_wd : out  STD_LOGIC_VECTOR (2 downto 0);
+           wb_wd : out  STD_LOGIC_VECTOR (3 downto 0);
            wb_wreg : out  STD_LOGIC;
            wb_wdata : out  STD_LOGIC_VECTOR (15 downto 0);
 			  stall : in STD_LOGIC_VECTOR(5 downto 0)); --暂停信号

@@ -33,10 +33,10 @@ use WORK.DEFINES.ALL;
 entity mem_wb is
     Port ( rst : in  STD_LOGIC;
            clk : in  STD_LOGIC;
-           mem_wd : in  STD_LOGIC_VECTOR (2 downto 0);
+           mem_wd : in  STD_LOGIC_VECTOR (3 downto 0);
            mem_wreg : in  STD_LOGIC;
            mem_wdata : in  STD_LOGIC_VECTOR (15 downto 0);
-           wb_wd : out  STD_LOGIC_VECTOR (2 downto 0);
+           wb_wd : out  STD_LOGIC_VECTOR (3 downto 0);
            wb_wreg : out  STD_LOGIC;
            wb_wdata : out  STD_LOGIC_VECTOR (15 downto 0);
 			  stall : in STD_LOGIC_VECTOR(5 downto 0)); --ÔÝÍ£ÐÅºÅ
@@ -50,11 +50,11 @@ begin
 	begin
 		if(clk'event and clk = Enable) then
 			if(rst = Enable) then
-				wb_wd <= "000";
+				wb_wd <= RegAddrZero;
 				wb_wreg <= Disable;
 				wb_wdata <= ZeroWord;
 			elsif(stall(4)=Stop and stall(5)=NoStop) then
-				wb_wd <= "000";
+				wb_wd <= RegAddrZero;
 				wb_wreg <= Disable;
 				wb_wdata <= ZeroWord;
 			elsif(stall(4)=NoStop) then
