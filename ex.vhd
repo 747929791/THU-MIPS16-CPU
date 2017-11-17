@@ -44,7 +44,15 @@ entity ex is
            wreg_o : out  STD_LOGIC;
            wdata_o : out  STD_LOGIC_VECTOR (15 downto 0);
 			  --暂停请求信号
-			  stallreq : out STD_LOGIC);
+			  stallreq : out STD_LOGIC;
+			  --访存信号
+			  mem_read_o : STD_LOGIC;
+			  mem_write_o : STD_LOGIC;
+			  mem_addr_o : STD_LOGIC_VECTOR(15 downto 0);
+			  mem_data_o : STD_LOGIC_VECTOR(15 downto 0);
+			  --指令(用于获取访存立即数)
+			  inst_i : in STD_LOGIC_VECTOR(15 downto 0)
+			  );
 end ex;
 
 architecture Behavioral of ex is
