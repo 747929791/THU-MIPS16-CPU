@@ -51,7 +51,9 @@ entity ex is
 			  mem_addr_o : out STD_LOGIC_VECTOR(15 downto 0);
 			  mem_wdata_o : out STD_LOGIC_VECTOR(15 downto 0);
 			  --指令(用于获取访存立即数)
-			  inst_i : in STD_LOGIC_VECTOR(15 downto 0)
+			  inst_i : in STD_LOGIC_VECTOR(15 downto 0);
+			  --供id阶段检测Load相关
+			  aluop_o : out STD_LOGIC_VECTOR(7 downto 0)
 			  );
 end ex;
 
@@ -59,6 +61,7 @@ architecture Behavioral of ex is
 	signal logicout : std_logic_vector(15 downto 0);
 begin
 	stallreq <= NoStop; --暂时不暂停
+	aluop_o<=aluop_i;
 	calc: process(rst,aluop_i,reg1_i,reg2_i,inst_i)
 	begin
 		if(rst = Enable) then
