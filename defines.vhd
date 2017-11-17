@@ -36,6 +36,23 @@ package defines is
 	constant NoStop : std_logic :='0'; --流水线运行
 	
 	--ALU指令码,实验指导书P23页的编号
+	constant EXE_ADDIU_OP : std_logic_vector(7 downto 0) := "00000010";
+	constant EXE_ADDU_OP : std_logic_vector(7 downto 0) := "00000110";
+	constant EXE_AND_OP : std_logic_vector(7 downto 0) := "00000111";
+	constant EXE_LI_OP : std_logic_vector(7 downto 0) := "00010011";
+	constant EXE_MOVE_OP : std_logic_vector(7 downto 0) := "00011000";
+	constant EXE_NEG_OP : std_logic_vector(7 downto 0) := "00011011";
+	constant EXE_NOT_OP : std_logic_vector(7 downto 0) := "00011100";
+	constant EXE_OR_OP : std_logic_vector(7 downto 0) := "00011110";
+	constant EXE_SLL_OP : std_logic_vector(7 downto 0) := "00011111";
+	constant EXE_SLLV_OP : std_logic_vector(7 downto 0) := "00100000";
+	constant EXE_SRA_OP : std_logic_vector(7 downto 0) := "00100101";
+	constant EXE_SRAV_OP : std_logic_vector(7 downto 0) := "00100110";
+	constant EXE_SRL_OP : std_logic_vector(7 downto 0) := "00100111";
+	constant EXE_SRLV_OP : std_logic_vector(7 downto 0) := "00101000";
+	constant EXE_SUBU_OP : std_logic_vector(7 downto 0) := "00101001";
+	constant EXE_XOR_OP : std_logic_vector(7 downto 0) := "00101101";
+	
 	constant EXE_ADDIU3_OP : std_logic_vector(7 downto 0) := "00000011"; --3
 	constant EXE_LW : std_logic_vector(7 downto 0) := "00010100"; --20
 	constant EXE_LW_SP : std_logic_vector(7 downto 0) := "00010101"; --21
