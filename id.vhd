@@ -59,7 +59,9 @@ entity id is
 			  stallreq : out STD_LOGIC;
 			  --PC跳转信号
 			  branch_flag_o : out STD_LOGIC;
-			  branch_target_address_o : out STD_LOGIC_VECTOR(15 downto 0)
+			  branch_target_address_o : out STD_LOGIC_VECTOR(15 downto 0);
+			  --供访存储的指令信号
+			  inst_o : out STD_LOGIC_VECTOR(15 downto 0)
 			  );
 end id;
 
@@ -70,6 +72,7 @@ signal instvalid:STD_LOGIC; --指令是否有效
 signal reg1_read_e,reg2_read_e:STD_LOGIC;
 signal reg1_addr,reg2_addr:STD_LOGIC_VECTOR(2 downto 0);
 begin
+	inst_o <= inst_i;
 	reg1_read_o <= reg1_read_e;
 	reg2_read_o <= reg2_read_e;
 	reg1_addr_o <= reg1_addr;
@@ -104,6 +107,7 @@ begin
 			rz := inst_i(4 downto 2);
 			imm3 := inst_i(4 downto 2);
 			imm4 := inst_i(3 downto 0);
+			imm5 := inst_i(4 downto 0);
 			imm8 := inst_i(7 downto 0);
 			--默认参数
 			reg1_read_e <= Disable;
@@ -330,6 +334,25 @@ begin
 						branch_flag_o <= Enable;
 						branch_target_address_o <= pc_plus_1 + imm ;
 					end if;
+				when "10011" => --LW
+					wreg_o <= Enable;
+					aluop_o <= EXE_LW;
+					alusel_o <= EXE_RES_LOAD_STORE;
+					reg1_read_e <= Enable;
+					reg1_addr <= rx;
+					reg2_read_e <= Disable;
+					wd_o <=ry;
+					instvalid <= Enable;
+					imm <= SXT(imm5,16);
+				when "11011"=> --SW
+					wreg_o <= Disable;
+					aluop_o <= EXE_SW;
+					alusel_o <= EXE_RES_LOAD_STORE;
+					reg1_read_e <= Enable;
+					reg1_addr <= rx;
+					reg2_read_e <= Enable;
+					reg2_addr <= ry;
+					instvalid <= Enable;
 				when others =>
 			end case;
 		end if;

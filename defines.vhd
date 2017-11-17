@@ -54,11 +54,14 @@ package defines is
 	constant EXE_XOR_OP : std_logic_vector(7 downto 0) := "00101101";
 	
 	constant EXE_ADDIU3_OP : std_logic_vector(7 downto 0) := "00000011"; --3
+	constant EXE_LW : std_logic_vector(7 downto 0) := "00010100"; --20
 	constant EXE_NOP_OP : std_logic_vector(7 downto 0) := "00011101"; --29
+	constant EXE_SW : std_logic_vector(7 downto 0) := "00101010"; --42
 	
 	--ALU操作类型
 	constant EXE_RES_NOP : std_logic_vector(2 downto 0) := "000";
 	constant EXE_RES_LOGIC : std_logic_vector(2 downto 0) := "001";
+	constant EXE_RES_LOAD_STORE : std_logic_vector(2 downto 0) := "100";
 	
 	--辅助函数
 end defines;

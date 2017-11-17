@@ -37,23 +37,58 @@ entity mem is
            wdata_i : in  STD_LOGIC_VECTOR (15 downto 0);
            wd_o : out  STD_LOGIC_VECTOR (2 downto 0);
            wreg_o : out  STD_LOGIC;
-           wdata_o : out  STD_LOGIC_VECTOR (15 downto 0));
+           wdata_o : out  STD_LOGIC_VECTOR (15 downto 0);
+			  --访存信号
+			  mem_read_i : in STD_LOGIC;
+			  mem_write_i : in STD_LOGIC;
+			  mem_addr_i : in STD_LOGIC_VECTOR(15 downto 0);
+			  mem_wdata_i : in STD_LOGIC_VECTOR(15 downto 0);
+			  --存储器信号
+			  mem_rdata_i : in STD_LOGIC_VECTOR(15 downto 0);
+			  mem_read_o : out STD_LOGIC;
+			  mem_write_o : out STD_LOGIC;
+			  mem_addr_o : out STD_LOGIC_VECTOR(15 downto 0);
+			  mem_wdata_o : out STD_LOGIC_VECTOR(15 downto 0);
+			  mem_ce_o : out STD_LOGIC);
 end mem;
 
 architecture Behavioral of mem is
-
+	signal ce : STD_LOGIC;
 begin
-
-	process(rst,wd_i,wreg_i,wdata_i)
+	mem_ce_o <= ce;
+	process(rst,wd_i,wreg_i,wdata_i,mem_read_i,mem_write_i,mem_addr_i,mem_wdata_i,mem_rdata_i)
 	begin
+		mem_read_o <= mem_read_i;
+		mem_write_o <= mem_write_i;
+		mem_addr_o <= mem_addr_i;
+		mem_wdata_o <= mem_wdata_i;
 		if(rst = Enable) then
 			wd_o <= "000";
 			wreg_o <= Disable;
 			wdata_o <= ZeroWord;
+			mem_read_o <= Disable;
+			mem_write_o <= Disable;
+			mem_addr_o <= ZeroWord;
+			mem_wdata_o <= ZeroWord;
+			ce<=Disable;
 		else
-			wd_o <= wd_i;
-			wreg_o <= wreg_i;
-			wdata_o <= wdata_i;
+			--默认值
+			wd_o <= "000";
+			wreg_o <= Disable;
+			wdata_o <= ZeroWord;
+			if(mem_read_i = Enable) then --Load指令
+				wd_o <= wd_i;
+				wreg_o <= wreg_i;
+				wdata_o <= mem_rdata_i;
+				ce<=Enable;
+			elsif(mem_write_i = Enable)then --Save指令
+				ce<=Enable;
+			else --非Load_Save指令
+				wd_o <= wd_i;
+				wreg_o <= wreg_i;
+				wdata_o <= wdata_i;
+				ce<=Disable;
+			end if;
 		end if;
 	end process;
 
