@@ -77,7 +77,7 @@ BEGIN
    begin		
 		rst <= '1';
       -- hold reset state for 100 ns.
-      wait for 100 ns;	
+      wait for 20 ns;	
 		rst <= '0';
       wait for clk_period*10;
 

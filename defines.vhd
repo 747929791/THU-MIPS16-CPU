@@ -29,8 +29,11 @@ package defines is
 -- procedure <procedure_name> (<type_declaration> <constant_name>	: in <type_declaration>);
 --
    constant ZeroWord : std_logic_vector(15 downto 0) := "0000000000000000";
-	constant Enable : std_logic := '1';
-	constant Disable : std_logic := '0';
+	constant NopInst : std_logic_vector(15 downto 0) := "0000100000000000";
+	constant Enable : std_logic := '1'; --使能
+	constant Disable : std_logic := '0'; --禁用
+	constant Stop : std_logic :='1'; --流水线暂停
+	constant NoStop : std_logic :='0'; --流水线运行
 	
 	--ALU指令码,实验指导书P23页的编号
 	constant EXE_ADDIU_OP : std_logic_vector(7 downto 0) := "00000010";
