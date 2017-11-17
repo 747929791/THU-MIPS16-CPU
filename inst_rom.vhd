@@ -42,13 +42,15 @@ architecture Behavioral of inst_rom is
 	constant InstNum : integer := 100;
 	type InstArray is array (0 to InstNum) of STD_LOGIC_VECTOR(15 downto 0);
 	signal insts: InstArray := (
-	  --01000xxxyyy0iiii 转移BEQZ测试
-		"0100000101000000", --R[2]=R[1]
-		"0100000000100000", --R[1]=R[0]
+	  --01000xxxyyy0iiii 访存LWSW测试
+	  --11011xxxyyyiiiii SW (Rx+imm)<-Ry
+	  --10011xxxyyyiiiii SW (Rx+imm)->Ry
+		"0100000000000001", --R[0]+=1
+		"1101100100000011", --SW(R[0])->RAM[R(1)+3]
+		"1001100000100010", --LW(RAM[R[0]+2])->R[1]
+		"0100010010000001", --R[4]++ 现在R[0]=1,R[1]=1,R[4]=1,RAM[3]=1
 		"0100000000000001", --R[0]++
-		"0010001011111100", --BEQZ(R[2])  PC<-PC-4
-		"0100000000000001", --R[0]++
-		"0100000010000001", --R[4]++ 现在R[0]=6,R[1]=4,R[2]=2,R[4]=7
+		"1101100100000011", --SW(R[0])->RAM[R(1)+3] 现在R[0]=2,R[1]=1,R[4]=1,RAM[3]=1,RAM[4]=2
 		others => ZeroWord);
 begin
 	process(ce,addr)

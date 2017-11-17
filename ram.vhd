@@ -44,7 +44,7 @@ end ram;
 
 architecture Behavioral of ram is
 
-type MemArray is array (63 downto 0) of STD_LOGIC_VECTOR(15 downto 0);
+type MemArray is array (0 to 63) of STD_LOGIC_VECTOR(15 downto 0);
 signal rams: MemArray := (others => ZeroWord);
 begin
 
