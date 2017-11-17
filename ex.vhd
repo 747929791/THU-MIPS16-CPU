@@ -46,10 +46,10 @@ entity ex is
 			  --暂停请求信号
 			  stallreq : out STD_LOGIC;
 			  --访存信号
-			  mem_read_o : STD_LOGIC;
-			  mem_write_o : STD_LOGIC;
-			  mem_addr_o : STD_LOGIC_VECTOR(15 downto 0);
-			  mem_data_o : STD_LOGIC_VECTOR(15 downto 0);
+			  mem_read_o : out STD_LOGIC;
+			  mem_write_o : out STD_LOGIC;
+			  mem_addr_o : out STD_LOGIC_VECTOR(15 downto 0);
+			  mem_wdata_o : out STD_LOGIC_VECTOR(15 downto 0);
 			  --指令(用于获取访存立即数)
 			  inst_i : in STD_LOGIC_VECTOR(15 downto 0)
 			  );
@@ -59,14 +59,26 @@ architecture Behavioral of ex is
 	signal logicout : std_logic_vector(15 downto 0);
 begin
 	stallreq <= NoStop; --暂时不暂停
-	calc: process(rst,aluop_i,reg1_i,reg2_i)
+	calc: process(rst,aluop_i,reg1_i,reg2_i,inst_i)
 	begin
 		if(rst = Enable) then
 			logicout <= ZeroWord;
 		else
+			--默认值
+			mem_read_o <= Disable;
+			mem_write_o <= Disable;
+			mem_addr_o <= ZeroWord;
+			mem_wdata_o <= ZeroWord;
 			case aluop_i is
 				when EXE_ADDIU3_OP =>
 					logicout <= reg1_i + reg2_i;
+				when EXE_LW =>
+					mem_read_o <= Enable;
+					mem_addr_o <= reg1_i + reg2_i;
+				when EXE_SW =>
+					mem_write_o <= Enable;
+					mem_addr_o <= reg1_i + SXT(inst_i(4 downto 0),16);
+					mem_wdata_o <= reg2_i;
 				when others =>
 					logicout <= ZeroWord;
 			end case;
