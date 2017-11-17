@@ -76,11 +76,14 @@ begin
 	reg2_addr_o <= reg2_addr;
 	--ÒëÂë
 	id_process : process(rst,pc_i,inst_i,reg1_data_i,reg2_data_i,imm)
-		variable op:STD_LOGIC_VECTOR(4 downto 0);
-		variable rx,ry,rz:STD_LOGIC_VECTOR(2 downto 0);
-		variable imm4:STD_LOGIC_VECTOR(3 downto 0);
-		variable imm8:STD_LOGIC_VECTOR(7 downto 0);
-		variable pc_plus_1:STD_LOGIC_VECTOR(15 downto 0);
+		variable op : STD_LOGIC_VECTOR(4 downto 0);
+		variable sub_op : std_logic_vector(4 downto 0);
+		variable sub_op2 : std_logic_vector(1 downto 0);
+		variable rx, ry, rz : STD_LOGIC_VECTOR(2 downto 0);
+		variable imm4 : STD_LOGIC_VECTOR(3 downto 0);
+		variable imm3 : std_logic_vector(2 downto 0);
+		variable imm8 : STD_LOGIC_VECTOR(7 downto 0);
+		variable pc_plus_1 : STD_LOGIC_VECTOR(15 downto 0);
 	begin
 		if(rst = Enable) then
 			reg1_read_e <= Disable;
@@ -124,7 +127,6 @@ begin
 					reg1_read_e <= Enable;
 					reg1_addr <= rx;
 					reg2_read_e <= Disable;
-					reg1_addr_o <= rx;
 					wd_o <=ry;
 					instvalid <= Enable;
 					imm <= SXT(imm4,16);
@@ -134,7 +136,7 @@ begin
 					alusel_o <= EXE_RES_LOGIC;
 					reg1_read_e <= Enable;
 					reg2_read_e <= Disable;
-					reg1_addr_o <= rx;
+					reg1_addr <= rx;
 					wd_o <=rx;
 					instvalid <= Enable;
 					imm <= SXT(imm8,16);
@@ -146,8 +148,8 @@ begin
 							alusel_o <= EXE_RES_LOGIC;
 							reg1_read_e <= Enable;
 							reg2_read_e <= Enable;
-							reg1_addr_o <= rx;
-							reg2_addr_o <= ry;
+							reg1_addr <= rx;
+							reg2_addr <= ry;
 							wd_o <=rz;
 							instvalid <= Enable;
 						when "11" => --SUBU
@@ -156,8 +158,8 @@ begin
 							alusel_o <= EXE_RES_LOGIC;
 							reg1_read_e <= Enable;
 							reg2_read_e <= Enable;
-							reg1_addr_o <= rx;
-							reg2_addr_o <= ry;
+							reg1_addr <= rx;
+							reg2_addr <= ry;
 							wd_o <=rz;
 							instvalid <= Enable;
 						when others =>
@@ -177,7 +179,7 @@ begin
 					alusel_o <= EXE_RES_LOGIC;
 					reg1_read_e <= Enable;
 					reg2_read_e <= Disable;
-					reg1_addr_o <= ry;
+					reg1_addr <= ry;
 					imm <= ZeroWord;
 					wd_o <=rx;
 					instvalid <= Enable;
@@ -189,8 +191,8 @@ begin
 							alusel_o <= EXE_RES_LOGIC;
 							reg1_read_e <= Enable;
 							reg2_read_e <= Enable;
-							reg1_addr_o <= rx;
-							reg2_addr_o <= ry;
+							reg1_addr <= rx;
+							reg2_addr <= ry;
 							wd_o <=rx;
 							instvalid <= Enable;
 						when "01110" => --XOR
@@ -199,8 +201,8 @@ begin
 							alusel_o <= EXE_RES_LOGIC;
 							reg1_read_e <= Enable;
 							reg2_read_e <= Enable;
-							reg1_addr_o <= rx;
-							reg2_addr_o <= ry;
+							reg1_addr <= rx;
+							reg2_addr <= ry;
 							wd_o <=rx;
 							instvalid <= Enable;
 						when "01011" => --NEG
@@ -209,7 +211,7 @@ begin
 							alusel_o <= EXE_RES_LOGIC;
 							reg1_read_e <= Enable;
 							reg2_read_e <= Disable;
-							reg1_addr_o <= rx;
+							reg1_addr <= ry;
 							wd_o <=rx;
 							instvalid <= Enable;
 							imm <= ZeroWord;
@@ -220,7 +222,7 @@ begin
 							reg1_read_e <= Enable;
 							reg2_read_e <= Disable;
 							wd_o <=rx;
-							reg1_addr_o <= rx;
+							reg1_addr <= ry;
 							imm <= ZeroWord;
 							instvalid <= Enable;
 						when "01101" => --OR
@@ -230,10 +232,9 @@ begin
 							reg1_read_e <= Enable;
 							reg2_read_e <= Enable;
 							wd_o <=rx;
-							reg1_addr_o <= rx;
-							reg2_addr_o <= ry;
+							reg1_addr <= rx;
+							reg2_addr <= ry;
 							instvalid <= Enable;
-						case sub_op2 is 
 						when "00100" => --SLLV
 							wreg_o <= Enable;
 							aluop_o <= EXE_SLLV_OP;
@@ -241,8 +242,8 @@ begin
 							reg1_read_e <= Enable;
 							reg2_read_e <= Enable;
 							wd_o <=ry;
-							reg1_addr_o <= ry;
-							reg2_addr_o <= rx;
+							reg1_addr <= ry;
+							reg2_addr <= rx;
 							instvalid <= Enable; 						
 						when "00111" => --SRAV
 							wreg_o <= Enable;
@@ -251,8 +252,8 @@ begin
 							reg1_read_e <= Enable;
 							reg2_read_e <= Enable;
 							wd_o <=ry;
-							reg1_addr_o <= ry;
-							reg2_addr_o <= rx;
+							reg1_addr <= ry;
+							reg2_addr <= rx;
 							instvalid <= Enable;
 						when "00110" => --SRLV
 							wreg_o <= Enable;
@@ -261,16 +262,14 @@ begin
 							reg1_read_e <= Enable;
 							reg2_read_e <= Enable;
 							wd_o <=ry;
-							reg1_addr_o <= ry;
-							reg2_addr_o <= rx;
+							reg1_addr <= ry;
+							reg2_addr <= rx;
 							instvalid <= Enable;
-						when others =>
-					end case;
 						when others =>
 							reg1_read_e <= Disable;
 							reg2_read_e <= Disable;
-							reg1_addr_o <= "000";
-							reg2_addr_o <= "000";
+							reg1_addr <= "000";
+							reg2_addr <= "000";
 							aluop_o <= EXE_NOP_OP;
 							alusel_o <= EXE_RES_NOP;
 							wd_o <= "000";
@@ -286,7 +285,7 @@ begin
 							reg1_read_e <= Enable;
 							reg2_read_e <= Disable;
 							wd_o <=rx;
-							reg1_addr_o <= ry;
+							reg1_addr <= ry;
 							if(imm3 = "000") then
 								imm <= EXT("1000", 16);
 							else
@@ -300,7 +299,7 @@ begin
 							reg1_read_e <= Enable;
 							reg2_read_e <= Disable;
 							wd_o <=rx;
-							reg1_addr_o <= ry;
+							reg1_addr <= ry;
 							if(imm3 = "000") then
 								imm <= EXT("1000", 16);
 							else
@@ -314,7 +313,7 @@ begin
 							reg1_read_e <= Enable;
 							reg2_read_e <= Disable;
 							wd_o <=rx;
-							reg1_addr_o <= ry;
+							reg1_addr <= ry;
 							if(imm3 = "000") then
 								imm <= EXT("1000", 16);
 							else

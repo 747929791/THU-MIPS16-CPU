@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="D:/Code/VHDL/cpu/CPU/addiu3_test_isim_beh.wdb" id="1" type="auto">
+         <top_modules>
+            <top_module name="addiu3_test" />
+            <top_module name="defines" />
+            <top_module name="std_logic_1164" />
+            <top_module name="std_logic_arith" />
+            <top_module name="std_logic_unsigned" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <WVObjectSize size="5" />
+   <wvobject fp_name="/addiu3_test/rst" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">rst</obj_property>
+      <obj_property name="ObjectShortName">rst</obj_property>
+   </wvobject>
+   <wvobject fp_name="/addiu3_test/clk" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">clk</obj_property>
+      <obj_property name="ObjectShortName">clk</obj_property>
+   </wvobject>
+   <wvobject fp_name="/addiu3_test/clk_period" type="other" db_ref_id="1">
+      <obj_property name="ElementShortName">clk_period</obj_property>
+      <obj_property name="ObjectShortName">clk_period</obj_property>
+   </wvobject>
+   <wvobject fp_name="group4" type="group">
+      <obj_property name="label">cpu</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <wvobject fp_name="/addiu3_test/uut/cpu_component/rom_data_i" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">rom_data_i[15:0]</obj_property>
+         <obj_property name="ObjectShortName">rom_data_i[15:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/addiu3_test/uut/cpu_component/rom_addr_o" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">rom_addr_o[15:0]</obj_property>
+         <obj_property name="ObjectShortName">rom_addr_o[15:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/addiu3_test/uut/cpu_component/rom_ce_o" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">rom_ce_o</obj_property>
+         <obj_property name="ObjectShortName">rom_ce_o</obj_property>
+      </wvobject>
+      <wvobject fp_name="/addiu3_test/uut/cpu_component/pc_pc" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">pc_pc[15:0]</obj_property>
+         <obj_property name="ObjectShortName">pc_pc[15:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/addiu3_test/uut/cpu_component/id_pc_i" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">id_pc_i[15:0]</obj_property>
+         <obj_property name="ObjectShortName">id_pc_i[15:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/addiu3_test/uut/cpu_component/id_inst_i" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">id_inst_i[15:0]</obj_property>
+         <obj_property name="ObjectShortName">id_inst_i[15:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/addiu3_test/uut/cpu_component/id_aluop_o" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">id_aluop_o[7:0]</obj_property>
+         <obj_property name="ObjectShortName">id_aluop_o[7:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/addiu3_test/uut/cpu_component/id_alusel_o" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">id_alusel_o[2:0]</obj_property>
+         <obj_property name="ObjectShortName">id_alusel_o[2:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/addiu3_test/uut/cpu_component/id_reg1_o" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">id_reg1_o[15:0]</obj_property>
+         <obj_property name="ObjectShortName">id_reg1_o[15:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/addiu3_test/uut/cpu_component/id_reg2_o" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">id_reg2_o[15:0]</obj_property>
+         <obj_property name="ObjectShortName">id_reg2_o[15:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/addiu3_test/uut/cpu_component/id_wreg_o" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">id_wreg_o</obj_property>
+         <obj_property name="ObjectShortName">id_wreg_o</obj_property>
+      </wvobject>
+      <wvobject fp_name="/addiu3_test/uut/cpu_component/id_wd_o" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">id_wd_o[2:0]</obj_property>
+         <obj_property name="ObjectShortName">id_wd_o[2:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/addiu3_test/uut/cpu_component/ex_aluop_i" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">ex_aluop_i[7:0]</obj_property>
+         <obj_property name="ObjectShortName">ex_aluop_i[7:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/addiu3_test/uut/cpu_component/ex_alusel_i" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">ex_alusel_i[2:0]</obj_property>
+         <obj_property name="ObjectShortName">ex_alusel_i[2:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/addiu3_test/uut/cpu_component/ex_reg1_i" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">ex_reg1_i[15:0]</obj_property>
+         <obj_property name="ObjectShortName">ex_reg1_i[15:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/addiu3_test/uut/cpu_component/ex_reg2_i" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">ex_reg2_i[15:0]</obj_property>
+         <obj_property name="ObjectShortName">ex_reg2_i[15:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/addiu3_test/uut/cpu_component/ex_wreg_i" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">ex_wreg_i</obj_property>
+         <obj_property name="ObjectShortName">ex_wreg_i</obj_property>
+      </wvobject>
+      <wvobject fp_name="/addiu3_test/uut/cpu_component/ex_wd_i" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">ex_wd_i[2:0]</obj_property>
+         <obj_property name="ObjectShortName">ex_wd_i[2:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/addiu3_test/uut/cpu_component/ex_wreg_o" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">ex_wreg_o</obj_property>
+         <obj_property name="ObjectShortName">ex_wreg_o</obj_property>
+      </wvobject>
+      <wvobject fp_name="/addiu3_test/uut/cpu_component/ex_wd_o" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">ex_wd_o[2:0]</obj_property>
+         <obj_property name="ObjectShortName">ex_wd_o[2:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/addiu3_test/uut/cpu_component/ex_wdata_o" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">ex_wdata_o[15:0]</obj_property>
+         <obj_property name="ObjectShortName">ex_wdata_o[15:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/addiu3_test/uut/cpu_component/mem_wreg_i" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">mem_wreg_i</obj_property>
+         <obj_property name="ObjectShortName">mem_wreg_i</obj_property>
+      </wvobject>
+      <wvobject fp_name="/addiu3_test/uut/cpu_component/mem_wd_i" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">mem_wd_i[2:0]</obj_property>
+         <obj_property name="ObjectShortName">mem_wd_i[2:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/addiu3_test/uut/cpu_component/mem_wdata_i" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">mem_wdata_i[15:0]</obj_property>
+         <obj_property name="ObjectShortName">mem_wdata_i[15:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/addiu3_test/uut/cpu_component/mem_wreg_o" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">mem_wreg_o</obj_property>
+         <obj_property name="ObjectShortName">mem_wreg_o</obj_property>
+      </wvobject>
+      <wvobject fp_name="/addiu3_test/uut/cpu_component/mem_wd_o" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">mem_wd_o[2:0]</obj_property>
+         <obj_property name="ObjectShortName">mem_wd_o[2:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/addiu3_test/uut/cpu_component/mem_wdata_o" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">mem_wdata_o[15:0]</obj_property>
+         <obj_property name="ObjectShortName">mem_wdata_o[15:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/addiu3_test/uut/cpu_component/wb_wreg_i" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">wb_wreg_i</obj_property>
+         <obj_property name="ObjectShortName">wb_wreg_i</obj_property>
+      </wvobject>
+      <wvobject fp_name="/addiu3_test/uut/cpu_component/wb_wd_i" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">wb_wd_i[2:0]</obj_property>
+         <obj_property name="ObjectShortName">wb_wd_i[2:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/addiu3_test/uut/cpu_component/wb_wdata_i" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">wb_wdata_i[15:0]</obj_property>
+         <obj_property name="ObjectShortName">wb_wdata_i[15:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/addiu3_test/uut/cpu_component/reg1_read" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">reg1_read</obj_property>
+         <obj_property name="ObjectShortName">reg1_read</obj_property>
+      </wvobject>
+      <wvobject fp_name="/addiu3_test/uut/cpu_component/reg2_read" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">reg2_read</obj_property>
+         <obj_property name="ObjectShortName">reg2_read</obj_property>
+      </wvobject>
+      <wvobject fp_name="/addiu3_test/uut/cpu_component/reg1_data" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">reg1_data[15:0]</obj_property>
+         <obj_property name="ObjectShortName">reg1_data[15:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/addiu3_test/uut/cpu_component/reg2_data" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">reg2_data[15:0]</obj_property>
+         <obj_property name="ObjectShortName">reg2_data[15:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/addiu3_test/uut/cpu_component/reg1_addr" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">reg1_addr[2:0]</obj_property>
+         <obj_property name="ObjectShortName">reg1_addr[2:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/addiu3_test/uut/cpu_component/reg2_addr" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">reg2_addr[2:0]</obj_property>
+         <obj_property name="ObjectShortName">reg2_addr[2:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/addiu3_test/uut/cpu_component/stallreq_id" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">stallreq_id</obj_property>
+         <obj_property name="ObjectShortName">stallreq_id</obj_property>
+      </wvobject>
+      <wvobject fp_name="/addiu3_test/uut/cpu_component/stallreq_ex" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">stallreq_ex</obj_property>
+         <obj_property name="ObjectShortName">stallreq_ex</obj_property>
+      </wvobject>
+      <wvobject fp_name="/addiu3_test/uut/cpu_component/stall" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">stall[5:0]</obj_property>
+         <obj_property name="ObjectShortName">stall[5:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/addiu3_test/uut/cpu_component/branch_flag" type="logic" db_ref_id="1">
+         <obj_property name="ElementShortName">branch_flag</obj_property>
+         <obj_property name="ObjectShortName">branch_flag</obj_property>
+      </wvobject>
+      <wvobject fp_name="/addiu3_test/uut/cpu_component/branch_target_address" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">branch_target_address[15:0]</obj_property>
+         <obj_property name="ObjectShortName">branch_target_address[15:0]</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject fp_name="/addiu3_test/uut/cpu_component/regfile_component/regs" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">regs[7:0]</obj_property>
+      <obj_property name="ObjectShortName">regs[7:0]</obj_property>
+   </wvobject>
+</wave_config>

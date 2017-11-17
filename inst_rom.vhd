@@ -42,13 +42,16 @@ architecture Behavioral of inst_rom is
 	constant InstNum : integer := 100;
 	type InstArray is array (0 to InstNum) of STD_LOGIC_VECTOR(15 downto 0);
 	signal insts: InstArray := (
-	  --01000xxxyyy0iiii ×ªÒÆBEQZ²âÊÔ
-		"0100000101000000", --R[2]=R[1]
-		"0100000000100000", --R[1]=R[0]
-		"0100000000000001", --R[0]++
-		"0010001011111100", --BEQZ(R[2])  PC<-PC-4
-		"0100000000000001", --R[0]++
-		"0100000010000001", --R[4]++ ÏÖÔÚR[0]=6,R[1]=4,R[2]=2,R[4]=7
+		--Test the ADDIU, ADDU, AND, LI, MOVE, SUBU, XOR
+		"0100100000001010", --R[0]= R[0] + 1010 ADDIU
+		"0100100000001010", --R[0]= R[0] + 1010 ADDIU
+		"0100000000100001", --R[1]= R[0] + 1 ADDIU3
+		"1110000100010111", --R[5]= R[1] - R[0] SUBU
+		"1110000000101001", --R[2]= R[0] + R[1] ADDU
+		"1110100000101100", --R[0]= R[0] and R[1]
+		"0110101100101100", --R[3]= 00101100 LI
+		"0111110001100000", --R[4]= R[3] MOVE
+		"1110110000101110", --R[4]= R[4] XOR R[1]
 		others => ZeroWord);
 begin
 	process(ce,addr)
