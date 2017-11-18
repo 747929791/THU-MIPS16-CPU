@@ -31,7 +31,22 @@ use IEEE.STD_LOGIC_1164.ALL;
 
 entity sopc is
     Port ( rst : in  STD_LOGIC;
-           clk : in  STD_LOGIC);
+           clk : in  STD_LOGIC;
+			  data_ready: in STD_LOGIC;
+			  tbre: in STD_LOGIC;
+			  tsre: in STD_LOGIC;
+			  Ram1Addr: out STD_LOGIC_VECTOR(17 downto 0);
+			  Ram1Data: inout STD_LOGIC_VECTOR(15 downto 0);
+			  Ram1OE: out STD_LOGIC;
+			  Ram1WE: out STD_LOGIC;
+			  Ram1EN: out STD_LOGIC;
+			  rdn: out STD_LOGIC;
+			  wrn: out STD_LOGIC;			  
+			  Ram2Addr: out STD_LOGIC_VECTOR(17 downto 0);
+			  Ram2Data: inout STD_LOGIC_VECTOR(15 downto 0);
+			  Ram2OE: out STD_LOGIC;
+			  Ram2WE: out STD_LOGIC;
+			  Ram2EN: out STD_LOGIC);
 end sopc;
 
 architecture Behavioral of sopc is
@@ -63,7 +78,19 @@ end component;
 
 component inst_rom
     Port ( ce : in  STD_LOGIC;
+			  clk : in STD_LOGIC;
+			  rst : in STD_LOGIC;
            addr : in  STD_LOGIC_VECTOR (15 downto 0);
+			  data_ready: in STD_LOGIC;
+			  tbre: in STD_LOGIC;
+			  tsre: in STD_LOGIC;
+			  Ram1Addr: out STD_LOGIC_VECTOR(17 downto 0);
+			  Ram1Data: inout STD_LOGIC_VECTOR(15 downto 0);
+			  Ram1OE: out STD_LOGIC;
+			  Ram1WE: out STD_LOGIC;
+			  Ram1EN: out STD_LOGIC;
+			  rdn: out STD_LOGIC;
+			  wrn: out STD_LOGIC;
            inst : out  STD_LOGIC_VECTOR (15 downto 0));
 end component;
 
@@ -74,6 +101,11 @@ component ram
            we : in  STD_LOGIC;
            addr : in  STD_LOGIC_VECTOR (15 downto 0);
            wdata : in  STD_LOGIC_VECTOR (15 downto 0);
+			  Ram2Addr: out STD_LOGIC_VECTOR(17 downto 0);
+			  Ram2Data: inout STD_LOGIC_VECTOR(15 downto 0);
+			  Ram2OE: out STD_LOGIC;
+			  Ram2WE: out STD_LOGIC;
+			  Ram2EN: out STD_LOGIC;
            rdata : out  STD_LOGIC_VECTOR (15 downto 0));
 end component;
 
@@ -81,8 +113,10 @@ begin
 
 	cpu_component : cpu port map(rst=>rst,clk=>clk,rom_data_i=>rom_data, rom_addr_o=>rom_addr, rom_ce_o=>rom_ce,
 										  ram_rdata_i=>ram_rdata,ram_read_o=>ram_read,ram_write_o=>ram_write,ram_addr_o=>ram_addr,ram_wdata_o=>ram_wdata,ram_ce_o=>ram_ce);
-	inst_rom_component : inst_rom port map(inst=>rom_data, addr=>rom_addr, ce=>rom_ce);
-	ram_component : ram port map(rst=>rst,clk=>clk,re=>ram_read,we=>ram_write,addr=>ram_addr,wdata=>ram_wdata,rdata=>ram_rdata);
+	inst_rom_component : inst_rom port map(rst=>rst, clk=>clk, data_ready=>data_ready, tbre=>tbre, tsre=>tsre, Ram1Addr=>Ram1Addr, Ram1Data=>Ram1Data,
+	Ram1OE=>Ram1OE, Ram1WE=>Ram1WE, Ram1EN=>Ram1EN, rdn=>rdn, wrn=>wrn, inst=>rom_data, addr=>rom_addr, ce=>rom_ce);
+	ram_component : ram port map(rst=>rst,clk=>clk,re=>ram_read,we=>ram_write,addr=>ram_addr,wdata=>ram_wdata,rdata=>ram_rdata,
+	Ram2Addr=>Ram2Addr, Ram2Data=>Ram2Data, Ram2OE=>Ram2OE, Ram2WE=>Ram2WE, Ram2EN=>Ram2EN);
 
 end Behavioral;
 

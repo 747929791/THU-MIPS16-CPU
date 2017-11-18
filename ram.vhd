@@ -39,6 +39,11 @@ entity ram is
            we : in  STD_LOGIC;
            addr : in  STD_LOGIC_VECTOR (15 downto 0);
            wdata : in  STD_LOGIC_VECTOR (15 downto 0);
+			  Ram2Addr: out STD_LOGIC_VECTOR(17 downto 0);
+			  Ram2Data: inout STD_LOGIC_VECTOR(15 downto 0);
+			  Ram2OE: out STD_LOGIC;
+			  Ram2WE: out STD_LOGIC;
+			  Ram2EN: out STD_LOGIC;
            rdata : out  STD_LOGIC_VECTOR (15 downto 0));
 end ram;
 
@@ -47,13 +52,17 @@ architecture Behavioral of ram is
 type MemArray is array (0 to 63) of STD_LOGIC_VECTOR(15 downto 0);
 signal rams: MemArray := (others => ZeroWord);
 begin
-
-	WriteOperator : process(clk)
+	Ram2EN <= '0';
+	Ram2OE <= we;
+	Ram2WE <= clk or not(we);
+	Ram2Addr <= "00" & addr;
+	
+	WriteOperator : process(clk,addr)
 	begin
 		if(clk'event and clk = Enable) then
 			if(rst = Disable) then
 				if(we = Enable) then
-					rams(conv_integer(addr)) <= wdata;
+					Ram2Data <= wdata;
 				end if;
 			end if;
 		end if;
@@ -66,7 +75,7 @@ begin
 		elsif(re = Disable) then
 			rdata <= ZeroWord;
 		else
-			rdata <= rams(conv_integer(addr));
+			rdata <= Ram2Data;
 		end if;
 	end process;
 	

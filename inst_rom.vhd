@@ -35,7 +35,19 @@ use WORK.DEFINES.ALL;
 --Ö¸Áî´æ´¢Æ÷ROMÄ£ÄâÄ£¿é
 entity inst_rom is
     Port ( ce : in  STD_LOGIC;
+			  clk : in STD_LOGIC;
+			  rst : in STD_LOGIC;
            addr : in  STD_LOGIC_VECTOR (15 downto 0);
+			  data_ready: in STD_LOGIC;
+			  tbre: in STD_LOGIC;
+			  tsre: in STD_LOGIC;
+			  Ram1Addr: out STD_LOGIC_VECTOR(17 downto 0);
+			  Ram1Data: inout STD_LOGIC_VECTOR(15 downto 0);
+			  Ram1OE: out STD_LOGIC;
+			  Ram1WE: out STD_LOGIC;
+			  Ram1EN: out STD_LOGIC;
+			  rdn: out STD_LOGIC;
+			  wrn: out STD_LOGIC;
            inst : out  STD_LOGIC_VECTOR (15 downto 0));
 end inst_rom;
 architecture Behavioral of inst_rom is
@@ -62,10 +74,30 @@ begin
 			if(id>InstNum) then
 				inst <= ZeroWord;
 			else
-				inst <= insts(id);
+				inst <= Ram1Data;
 			end if;
 		else
 			inst <= ZeroWord;
+		end if;
+	end process;
+	
+	process(addr,rst)
+	begin
+		if (rst = Enable) then
+			Ram1Addr <= (others => '0');
+			Ram1Data <= (others => 'Z');
+			Ram1OE <= '1';
+			Ram1WE <= '1';
+			Ram1EN <= '0';
+			rdn <= '1';
+			wrn <= '1';
+		else
+			Ram1Addr <= "00" & addr;
+			Ram1OE <= '0';
+			Ram1WE <= '1';
+			Ram1EN <= '0';
+			rdn <= '1';
+			wrn <= '1';
 		end if;
 	end process;
 end Behavioral;

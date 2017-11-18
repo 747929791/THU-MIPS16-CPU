@@ -85,6 +85,7 @@ begin
 		variable rx, ry, rz : STD_LOGIC_VECTOR(2 downto 0);
 		variable imm4 : STD_LOGIC_VECTOR(3 downto 0);
 		variable imm3 : std_logic_vector(2 downto 0);
+		variable imm5 : STD_LOGIC_VECTOR(4 downto 0);
 		variable imm8 : STD_LOGIC_VECTOR(7 downto 0);
 		variable pc_plus_1 : STD_LOGIC_VECTOR(15 downto 0);
 	begin
