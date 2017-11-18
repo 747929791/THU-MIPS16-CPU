@@ -61,7 +61,9 @@ entity id is
 			  branch_flag_o : out STD_LOGIC;
 			  branch_target_address_o : out STD_LOGIC_VECTOR(15 downto 0);
 			  --供访存储的指令信号
-			  inst_o : out STD_LOGIC_VECTOR(15 downto 0)
+			  inst_o : out STD_LOGIC_VECTOR(15 downto 0);
+			  --ex阶段aluop信号检测Load相关
+			  ex_aluop_i : in STD_LOGIC_VECTOR(7 downto 0)
 			  );
 end id;
 
@@ -80,11 +82,11 @@ begin
 	--译码
 	id_process : process(rst,pc_i,inst_i,reg1_data_i,reg2_data_i,imm)
 		variable op : STD_LOGIC_VECTOR(4 downto 0);
-		variable sub_op : std_logic_vector(4 downto 0);
-		variable sub_op2 : std_logic_vector(1 downto 0);
+		variable sub_op : STD_LOGIC_VECTOR(4 downto 0);
+		variable sub_op2 : STD_LOGIC_VECTOR(1 downto 0);
 		variable rx, ry, rz : STD_LOGIC_VECTOR(2 downto 0);
+		variable imm3 : STD_LOGIC_VECTOR(2 downto 0);
 		variable imm4 : STD_LOGIC_VECTOR(3 downto 0);
-		variable imm3 : std_logic_vector(2 downto 0);
 		variable imm5 : STD_LOGIC_VECTOR(4 downto 0);
 		variable imm8 : STD_LOGIC_VECTOR(7 downto 0);
 		variable pc_plus_1 : STD_LOGIC_VECTOR(15 downto 0);
@@ -119,7 +121,6 @@ begin
 			alusel_o <= EXE_RES_NOP;
 			wd_o <= "000";
 			wreg_o <= Disable;
-			stallreq  <= NoStop;
 			branch_flag_o <= Disable;
 			branch_target_address_o <= ZeroWord;
 			instvalid <= Disable;
@@ -392,6 +393,24 @@ begin
 			reg2_o<=imm;
 		else
 			reg2_o<=ZeroWord;
+		end if;
+	end process;
+
+	--Load相关流水线暂停
+	LoadRelate: process(ex_aluop_i,ex_wd_i,reg1_addr,reg1_read_e,reg2_addr,reg2_read_e)
+		variable pre_inst_is_load : STD_LOGIC;
+	begin
+		if(ex_aluop_i = EXE_LW or ex_aluop_i = EXE_LW_SP) then
+			pre_inst_is_load := '1';
+		else
+			pre_inst_is_load := '0';
+		end if;
+		stallreq <= NoStop;
+		if(pre_inst_is_load = '1' and ex_wd_i = reg1_addr and reg1_read_e = Enable) then
+			stallreq<=Stop;
+		end if;
+		if(pre_inst_is_load = '1' and ex_wd_i = reg2_addr and reg2_read_e = Enable) then
+			stallreq<=Stop;
 		end if;
 	end process;
 

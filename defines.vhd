@@ -55,6 +55,7 @@ package defines is
 	
 	constant EXE_ADDIU3_OP : std_logic_vector(7 downto 0) := "00000011"; --3
 	constant EXE_LW : std_logic_vector(7 downto 0) := "00010100"; --20
+	constant EXE_LW_SP : std_logic_vector(7 downto 0) := "00010101"; --21
 	constant EXE_NOP_OP : std_logic_vector(7 downto 0) := "00011101"; --29
 	constant EXE_SW : std_logic_vector(7 downto 0) := "00101010"; --42
 	

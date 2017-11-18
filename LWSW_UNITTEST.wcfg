@@ -169,6 +169,10 @@
          <obj_property name="ElementShortName">ex_mem_wdata_o[15:0]</obj_property>
          <obj_property name="ObjectShortName">ex_mem_wdata_o[15:0]</obj_property>
       </wvobject>
+      <wvobject fp_name="/addiu3_test/uut/cpu_component/ex_aluop_o" type="array" db_ref_id="1">
+         <obj_property name="ElementShortName">ex_aluop_o[7:0]</obj_property>
+         <obj_property name="ObjectShortName">ex_aluop_o[7:0]</obj_property>
+      </wvobject>
       <wvobject fp_name="/addiu3_test/uut/cpu_component/mem_wreg_i" type="logic" db_ref_id="1">
          <obj_property name="ElementShortName">mem_wreg_i</obj_property>
          <obj_property name="ObjectShortName">mem_wreg_i</obj_property>

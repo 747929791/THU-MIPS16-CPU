@@ -54,16 +54,16 @@ architecture Behavioral of inst_rom is
 	constant InstNum : integer := 100;
 	type InstArray is array (0 to InstNum) of STD_LOGIC_VECTOR(15 downto 0);
 	signal insts: InstArray := (
-		--Test the ADDIU, ADDU, AND, LI, MOVE, SUBU, XOR
-		"0100100000001010", --R[0]= R[0] + 1010 ADDIU
-		"0100100000001010", --R[0]= R[0] + 1010 ADDIU
-		"0100000000100001", --R[1]= R[0] + 1 ADDIU3
-		"1110000100010111", --R[5]= R[1] - R[0] SUBU
-		"1110000000101001", --R[2]= R[0] + R[1] ADDU
-		"1110100000101100", --R[0]= R[0] and R[1]
-		"0110101100101100", --R[3]= 00101100 LI
-		"0111110001100000", --R[4]= R[3] MOVE
-		"1110110000101110", --R[4]= R[4] XOR R[1]
+	  --01000xxxyyy0iiii 访存LWSW测试
+	  --11011xxxyyyiiiii SW (Rx+imm)<-Ry
+	  --10011xxxyyyiiiii SW (Rx+imm)->Ry
+		"0100000000000001", --R[0]+=1
+		"1101100100000011", --SW(R[0])->RAM[R(1)+3]
+		"1001100000100010", --LW(RAM[R[0]+2])->R[1]
+		"0100000100100001", --R[1]++
+		"0100010010000001", --R[4]++ 现在R[0]=1,R[1]=1,R[4]=1,RAM[3]=1
+		"0100000000000001", --R[0]++
+		"1101100100000011", --SW(R[0])->RAM[R(1)+3] 现在R[0]=2,R[1]=2,R[4]=1,RAM[3]=1,RAM[4]=2
 		others => ZeroWord);
 begin
 	process(ce,addr)
