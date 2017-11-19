@@ -68,7 +68,7 @@ begin
 		end if;
 	end process;
 
-	READ : process(rst,re,addr,we,wdata,rams)
+	READ : process(rst,re,addr,we,wdata,rams,Ram2Data)
 	begin
 		if(rst = Enable) then
 			rdata <= ZeroWord;

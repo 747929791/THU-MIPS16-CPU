@@ -66,7 +66,7 @@ architecture Behavioral of inst_rom is
 		"1101100100000011", --SW(R[0])->RAM[R(1)+3] ÏÖÔÚR[0]=2,R[1]=2,R[4]=1,RAM[3]=1,RAM[4]=2
 		others => ZeroWord);
 begin
-	process(ce,addr)
+	process(ce,addr,Ram1Data)
 		variable id : integer;
 	begin
 		if(ce = Enable) then
@@ -74,7 +74,8 @@ begin
 			if(id>InstNum) then
 				inst <= ZeroWord;
 			else
-				inst <= Ram1Data;
+				inst <= insts(id);
+				--inst <= Ram1Data;
 			end if;
 		else
 			inst <= ZeroWord;
