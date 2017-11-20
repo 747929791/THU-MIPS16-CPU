@@ -58,23 +58,29 @@ begin
 	Ram2Addr <= "00" & addr;
 	
 	WriteOperator : process(clk,addr)
+	variable id : integer;
 	begin
 		if(clk'event and clk = Enable) then
 			if(rst = Disable) then
 				if(we = Enable) then
+					--id:=conv_integer(addr);
+					--rams(id) <= wdata;
 					Ram2Data <= wdata;
 				end if;
 			end if;
 		end if;
 	end process;
 
-	READ : process(rst,re,addr,we,wdata,rams)
+	READ : process(rst,re,addr,we,wdata,rams,Ram2Data)
+	variable id : integer;
 	begin
 		if(rst = Enable) then
 			rdata <= ZeroWord;
 		elsif(re = Disable) then
 			rdata <= ZeroWord;
 		else
+			--id:=conv_integer(addr);
+			--rdata <= rams(id);
 			rdata <= Ram2Data;
 		end if;
 	end process;

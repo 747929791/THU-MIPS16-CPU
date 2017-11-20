@@ -34,6 +34,7 @@ use IEEE.STD_LOGIC_ARITH.ALL;
 entity cpu is
 	    Port ( rst : in  STD_LOGIC;
            clk : in  STD_LOGIC;
+			  LED : out STD_LOGIC_VECTOR(15 downto 0);
            rom_data_i : in STD_LOGIC_VECTOR(15 downto 0); --取得的指令
            rom_addr_o : out STD_LOGIC_VECTOR(15 downto 0); --指令寄存器地址
            rom_ce_o : out STD_LOGIC; --指令存储器使能
@@ -168,6 +169,7 @@ end component;
 component regfile
     Port ( rst : in  STD_LOGIC;
            clk : in  STD_LOGIC;
+			  LED : out STD_LOGIC_VECTOR(15 downto 0);
            waddr : in  STD_LOGIC_VECTOR (2 downto 0);
            wdata : in  STD_LOGIC_VECTOR (15 downto 0);
            we : in  STD_LOGIC;
@@ -295,7 +297,7 @@ begin
 										aluop_o=>id_aluop_o, alusel_o=>id_alusel_o, reg1_o=>id_reg1_o, reg2_o=>id_reg2_o, wd_o=>id_wd_o, wreg_o=>id_wreg_o,
 										ex_wreg_i=>ex_wreg_o, ex_wd_i=>ex_wd_o, ex_wdata_i=>ex_wdata_o, mem_wreg_i=>mem_wreg_o, mem_wd_i=>mem_wd_o, mem_wdata_i=>mem_wdata_o,
 										stallreq=>stallreq_id, branch_flag_o=>branch_flag, branch_target_address_o=>branch_target_address, inst_o=>id_inst_o, ex_aluop_i=>ex_aluop_o);
-	regfile_component : regfile port map(rst=>rst, clk=>clk, waddr=>wb_wd_i, wdata=>wb_wdata_i, we=>wb_wreg_i, raddr1=>reg1_addr, re1=>reg1_read, 
+	regfile_component : regfile port map(rst=>rst, clk=>clk, waddr=>wb_wd_i, wdata=>wb_wdata_i, we=>wb_wreg_i, raddr1=>reg1_addr, re1=>reg1_read, LED=>LED, 
 													 rdata1=>reg1_data, raddr2=>reg2_addr, re2=>reg2_read, rdata2=>reg2_data);
 	id_ex_component : id_ex port map(rst=>rst, clk=>clk, id_alusel=>id_alusel_o, id_aluop=>id_aluop_o, id_reg1=>id_reg1_o, id_reg2=>id_reg2_o, id_wd=>id_wd_o, id_wreg=>id_wreg_o,
 												ex_alusel=>ex_alusel_i, ex_aluop=>ex_aluop_i, ex_reg1=>ex_reg1_i, ex_reg2=>ex_reg2_i, ex_wd=>ex_wd_i, ex_wreg=>ex_wreg_i, stall=>stall,

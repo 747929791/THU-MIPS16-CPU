@@ -40,26 +40,46 @@ ARCHITECTURE behavior OF addiu3_test IS
     -- Component Declaration for the Unit Under Test (UUT)
  
     COMPONENT sopc
-    PORT(
-         rst : IN  std_logic;
-         clk : IN  std_logic
-        );
+    Port ( rst : in  STD_LOGIC;
+           clk : in  STD_LOGIC;
+			  data_ready: in STD_LOGIC;
+			  tbre: in STD_LOGIC;
+			  tsre: in STD_LOGIC;
+			  Ram1Addr: out STD_LOGIC_VECTOR(17 downto 0);
+			  Ram1Data: inout STD_LOGIC_VECTOR(15 downto 0);
+			  Ram1OE: out STD_LOGIC;
+			  Ram1WE: out STD_LOGIC;
+			  Ram1EN: out STD_LOGIC;
+			  rdn: out STD_LOGIC;
+			  wrn: out STD_LOGIC;			  
+			  Ram2Addr: out STD_LOGIC_VECTOR(17 downto 0);
+			  Ram2Data: inout STD_LOGIC_VECTOR(15 downto 0);
+			  Ram2OE: out STD_LOGIC;
+			  Ram2WE: out STD_LOGIC;
+			  Ram2EN: out STD_LOGIC;
+			  LED: out STD_LOGIC_VECTOR(15 downto 0));
     END COMPONENT;
     
 
    --Inputs
    signal rst : std_logic := '0';
    signal clk : std_logic := '0';
+	signal data_ready : std_logic := '0';
+   signal tbre : std_logic := '0';
+	signal tsre : std_logic := '0';
 
    -- Clock period definitions
    constant clk_period : time := 10 ns;
  
 BEGIN
- 
+
 	-- Instantiate the Unit Under Test (UUT)
    uut: sopc PORT MAP (
           rst => rst,
-          clk => clk
+          clk => clk,
+			 data_ready => data_ready,
+			 tbre => tbre,
+			 tsre => tsre
         );
 
    -- Clock process definitions
