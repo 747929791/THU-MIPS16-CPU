@@ -93,13 +93,13 @@ begin
 					if(reg1_i = reg2_i)then
 						logicout <= ZeroWord;
 					else
-						logicout <= ZeroWord + "0000000000000001";
+						logicout <= "0000000000000001";
 					end if;
 				when EXE_CMPI_OP =>
 					if(reg1_i = reg2_i)then
 						logicout <= ZeroWord;
 					else
-						logicout <= ZeroWord + "0000000000000001";
+						logicout <= "0000000000000001";
 					end if;
 				when EXE_LI_OP =>
 					logicout <= reg1_i;
@@ -128,10 +128,55 @@ begin
 				when EXE_LW =>
 					mem_read_o <= Enable;
 					mem_addr_o <= reg1_i + reg2_i;
+				when EXE_LW_SP =>
+					mem_read_o <= Enable;
+					mem_addr_o <= reg1_i + reg2_i;
 				when EXE_SW =>
 					mem_write_o <= Enable;
 					mem_addr_o <= reg1_i + SXT(inst_i(4 downto 0),16);
 					mem_wdata_o <= reg2_i;
+				when EXE_SW_RS =>
+					mem_write_o <= Enable;
+					mem_addr_o <= reg1_i + SXT(inst_i(7 downto 0),16);
+					mem_wdata_o <= reg2_i;
+				when EXE_SW_SP =>
+					mem_write_o <= Enable;
+					mem_addr_o <= reg1_i + SXT(inst_i(7 downto 0),16);
+					mem_wdata_o <= reg2_i;
+				when EXE_MFIH =>
+					logicout <= reg1_i;
+				when EXE_MFPC => 
+					logicout <= reg1_i;
+				when EXE_MTIH =>
+					logicout <= reg1_i;
+				when EXE_MTSP =>
+					logicout <= reg1_i;
+				when EXE_SLT_OP =>
+					if(conv_integer(reg1_i(14 downto 0)) - conv_integer(reg1_i(15) & "000000000000000") < 
+					   conv_integer(reg2_i(14 downto 0)) - conv_integer(reg2_i(15) & "000000000000000")) then
+						logicout <= "0000000000000001";
+					else
+						logicout <= ZeroWord;
+					end if;
+				when EXE_SLTI_OP =>
+					if(conv_integer(reg1_i(14 downto 0)) - conv_integer(reg1_i(15) & "000000000000000") < 
+					   conv_integer(reg2_i(14 downto 0)) - conv_integer(reg2_i(15) & "000000000000000")) then
+						logicout <= "0000000000000001";
+					else
+						logicout <= ZeroWord;
+					end if;
+				when EXE_SLTU_OP =>
+					if(conv_integer(reg1_i) < conv_integer(reg2_i)) then
+						logicout <= "0000000000000001";
+					else
+						logicout <= ZeroWord;
+					end if;
+				when EXE_SLTUI_OP =>
+					if(conv_integer(reg1_i) < conv_integer(reg2_i)) then
+						logicout <= "0000000000000001";
+					else
+						logicout <= ZeroWord;
+					end if;
 				when others =>
 					logicout <= ZeroWord;
 			end case;

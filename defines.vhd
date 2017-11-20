@@ -51,19 +51,28 @@ package defines is
 	constant EXE_LI_OP : std_logic_vector(7 downto 0) := "00010011"; --19
 	constant EXE_LW : std_logic_vector(7 downto 0) := "00010100"; --20
 	constant EXE_LW_SP : std_logic_vector(7 downto 0) := "00010101"; --21
+	constant EXE_MFIH : std_logic_vector(7 downto 0) := "00010110"; --22
+	constant EXE_MFPC : std_logic_vector(7 downto 0) := "00010111"; --23
 	constant EXE_MOVE_OP : std_logic_vector(7 downto 0) := "00011000"; --24
+	constant EXE_MTIH : std_logic_vector(7 downto 0) := "00011001"; --25
+	constant EXE_MTSP : std_logic_vector(7 downto 0) := "00011010"; --26
 	constant EXE_NEG_OP : std_logic_vector(7 downto 0) := "00011011"; --27
 	constant EXE_NOT_OP : std_logic_vector(7 downto 0) := "00011100"; --28
 	constant EXE_NOP_OP : std_logic_vector(7 downto 0) := "00011101"; --29
 	constant EXE_OR_OP : std_logic_vector(7 downto 0) := "00011110"; --30
 	constant EXE_SLL_OP : std_logic_vector(7 downto 0) := "00011111"; --31
 	constant EXE_SLLV_OP : std_logic_vector(7 downto 0) := "00100000"; --32
+	constant EXE_SLT_OP : std_logic_vector(7 downto 0) := "00100001"; --33
+	constant EXE_SLTI_OP : std_logic_vector(7 downto 0) := "00100010"; --34
+	constant EXE_SLTU_OP : std_logic_vector(7 downto 0) := "00100011"; --35
+	constant EXE_SLTUI_OP : std_logic_vector(7 downto 0) := "00100100"; --36
 	constant EXE_SRA_OP : std_logic_vector(7 downto 0) := "00100101"; --37
 	constant EXE_SRAV_OP : std_logic_vector(7 downto 0) := "00100110"; --38
 	constant EXE_SRL_OP : std_logic_vector(7 downto 0) := "00100111"; --39
 	constant EXE_SRLV_OP : std_logic_vector(7 downto 0) := "00101000"; --40
 	constant EXE_SUBU_OP : std_logic_vector(7 downto 0) := "00101001"; --41
 	constant EXE_SW : std_logic_vector(7 downto 0) := "00101010"; --42
+	constant EXE_SW_RS : std_logic_vector(7 downto 0) := "00101011"; --43
 	constant EXE_XOR_OP : std_logic_vector(7 downto 0) := "00101101"; --45
 	
 	
