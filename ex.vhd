@@ -79,16 +79,34 @@ begin
 					logicout <= reg1_i + reg2_i;
 				when EXE_ADDU_OP =>
 					logicout <= reg1_i + reg2_i;
+				when EXE_ADDSP3_OP =>
+					logicout <= reg1_i + reg2_i;
+				when EXE_ADDSP3_OP =>
+					logicout <= reg1_i + reg2_i;
 				when EXE_SUBU_OP =>
 					logicout <= reg1_i - reg2_i;
 				when EXE_AND_OP =>
 					logicout <= reg1_i and reg2_i;
 				when EXE_XOR_OP =>
 					logicout <= reg1_i xor reg2_i;
+				when EXE_CMP_OP =>
+					if(reg1_i = reg2_i)then
+						logicout <= ZeroWord;
+					else
+						logicout <= ZeroWord + "0000000000000001";
+					end if;
+				when EXE_CMPI_OP =>
+					if(reg1_i = reg2_i)then
+						logicout <= ZeroWord;
+					else
+						logicout <= ZeroWord + "0000000000000001";
+					end if;
 				when EXE_LI_OP =>
 					logicout <= reg1_i;
 				when EXE_MOVE_OP =>
 					logicout <= reg1_i;
+				when EXE_JALR_OP =>
+					logicout <= reg2_i;
 				when EXE_NEG_OP =>
 					logicout <= reg2_i - reg1_i;
 				when EXE_NOT_OP =>

@@ -89,6 +89,7 @@ begin
 		variable imm4 : STD_LOGIC_VECTOR(3 downto 0);
 		variable imm5 : STD_LOGIC_VECTOR(4 downto 0);
 		variable imm8 : STD_LOGIC_VECTOR(7 downto 0);
+		variable imm11 : std_logic_vector(10 downto 0);
 		variable pc_plus_1 : STD_LOGIC_VECTOR(15 downto 0);
 	begin
 		if(rst = Enable) then
@@ -112,6 +113,7 @@ begin
 			imm4 := inst_i(3 downto 0);
 			imm5 := inst_i(4 downto 0);
 			imm8 := inst_i(7 downto 0);
+			imm11 := inst_i(10 downto 0);
 			--Ä¬ÈÏ²ÎÊý
 			reg1_read_e <= Disable;
 			reg2_read_e <= Disable;
@@ -281,6 +283,16 @@ begin
 							reg1_addr <= ry;
 							reg2_addr <= rx;
 							instvalid <= Enable;
+						when "01010" => --CMP
+							wreg_o <= Enable;
+							aluop_o <= EXE_CMP_OP;
+							alusel_o <= EXE_RES_LOGIC;
+							reg1_read_e <= Enable;
+							reg2_read_e <= Enable;
+							wd_o <= T_REGISTER;
+							reg1_addr <= rx;
+							reg2_addr <= ry;
+							instvalid <= Enable;
 						when others =>
 							reg1_read_e <= Disable;
 							reg2_read_e <= Disable;
@@ -345,6 +357,70 @@ begin
 					if(reg1_data_i = ZeroWord) then
 						branch_flag_o <= Enable;
 						branch_target_address_o <= pc_plus_1 + imm ;
+					end if;
+				when "00101" => --BNEZ
+					reg1_read_e <= Enable;
+					reg1_addr <= rx;
+					imm <= SXT(imm8,16);
+					if(reg1_data_i /= ZeroWord) then
+						branch_flag_o <= Enable;
+						branch_target_address_o <= pc_plus_1 + imm ;
+					end if;
+				when "01100" => 
+					case rx is =>
+					
+						when "0011" => --ADDSP
+							wreg_o <= Enable;
+							aluop_o <= EXE_ADDSP_OP;
+							alusel_o <= EXE_RES_LOGIC;
+							reg1_read_e <= Enable;
+							reg1_addr <= SP_REGISTER;
+							reg2_read_e <= Disable;
+							wd_o <= SP_REGISTER;
+							instvalid <= Enable;
+							imm <= SXT(imm8,16);
+					
+						when "0000" => --BTEQZ	
+							reg1_read_e <= Enable;
+							reg1_addr <= T_REGISTER;
+							imm <= SXT(imm8,16);
+							if(reg1_data_i = ZeroWord) then
+								branch_flag_o <= Enable;
+								branch_target_address_o <= pc_plus_1 + imm ;
+							end if;
+						when "0001" => --BTNEZ
+							reg1_read_e <= Enable;
+							reg1_addr <= T_REGISTER;
+							imm <= SXT(imm8,16);
+							if(reg1_data_i /= ZeroWord) then
+								branch_flag_o <= Enable;
+								branch_target_address_o <= pc_plus_1 + imm ;
+							end if;
+						when others =>
+					end case;
+				when "00010" => --B
+					imm <= SXT(imm11, 16);
+					branch_flag_o <= Enable;
+					branch_target_address_o <= pc_plus_1 + imm;
+				when "01110" => --CMPI
+					wreg_o <= Enable;
+					aluop_o <= EXE_CMPI_OP;
+					alusel_o <= EXE_RES_LOGIC;
+					reg1_read_e <= Enable;
+					reg2_read_e <= Disable;
+					wd_o <= T_REGISTER;
+					reg1_addr <= rx;
+					imm <= SXT(imm8, 16);
+					instvalid <= Enable;
+				when "11101" => --JALR
+					wreg_o <= Enable;
+					aluop_o <= EXE_JALR_OP;
+					reg1_read_e <= Enable;
+					reg1_addr <= rx;
+					imm <= pc_plus_1 + "0000000000000001";
+					wd_o <= RA_REGISTER;
+					branch_flag_o <= Enable;
+					branch_target_address_o <= reg1_data_i;
 					end if;
 				when "10011" => --LW
 					wreg_o <= Enable;

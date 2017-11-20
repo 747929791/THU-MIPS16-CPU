@@ -37,11 +37,17 @@ package defines is
 	constant NoStop : std_logic :='0'; --流水线运行
 	
 	--ALU指令码,实验指导书P23页的编号
+	
+	--
 	constant EXE_ADDIU_OP : std_logic_vector(7 downto 0) := "00000010"; --2
 	constant EXE_ADDIU3_OP : std_logic_vector(7 downto 0) := "00000011"; --3
 	constant EXE_ADDSP3_OP : std_logic_vector(7 downto 0) := "00000100"; --4
+	constant EXE_ADDSP_OP : std_logic_vector(7 downto 0) := "00000101"; --4
 	constant EXE_ADDU_OP : std_logic_vector(7 downto 0) := "00000110"; --6
 	constant EXE_AND_OP : std_logic_vector(7 downto 0) := "00000111"; --7
+	constant EXE_CMP_OP : std_logic_vector(7 downto 0) := "00001101"; --13
+	constant EXE_CMPI_OP : std_logic_vector(7 downto 0) := "00001110"; --14
+	constant EXE_JALR_OP : std_logic_vector(7 downto 0) := "00010000"; -- 16
 	constant EXE_LI_OP : std_logic_vector(7 downto 0) := "00010011"; --19
 	constant EXE_LW : std_logic_vector(7 downto 0) := "00010100"; --20
 	constant EXE_LW_SP : std_logic_vector(7 downto 0) := "00010101"; --21
