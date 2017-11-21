@@ -81,7 +81,7 @@ begin
 					logicout <= reg1_i + reg2_i;
 				when EXE_ADDSP3_OP =>
 					logicout <= reg1_i + reg2_i;
-				when EXE_ADDSP3_OP =>
+				when EXE_ADDSP_OP =>
 					logicout <= reg1_i + reg2_i;
 				when EXE_SUBU_OP =>
 					logicout <= reg1_i - reg2_i;
@@ -139,10 +139,6 @@ begin
 					mem_write_o <= Enable;
 					mem_addr_o <= reg1_i + SXT(inst_i(7 downto 0),16);
 					mem_wdata_o <= reg2_i;
-				when EXE_SW_SP =>
-					mem_write_o <= Enable;
-					mem_addr_o <= reg1_i + SXT(inst_i(7 downto 0),16);
-					mem_wdata_o <= reg2_i;
 				when EXE_MFIH =>
 					logicout <= reg1_i;
 				when EXE_MFPC => 
@@ -152,15 +148,13 @@ begin
 				when EXE_MTSP =>
 					logicout <= reg1_i;
 				when EXE_SLT_OP =>
-					if(conv_integer(reg1_i(14 downto 0)) - conv_integer(reg1_i(15) & "000000000000000") < 
-					   conv_integer(reg2_i(14 downto 0)) - conv_integer(reg2_i(15) & "000000000000000")) then
+					if(conv_integer(signed(reg1_i)) < conv_integer(signed(reg2_i))) then
 						logicout <= "0000000000000001";
 					else
 						logicout <= ZeroWord;
 					end if;
 				when EXE_SLTI_OP =>
-					if(conv_integer(reg1_i(14 downto 0)) - conv_integer(reg1_i(15) & "000000000000000") < 
-					   conv_integer(reg2_i(14 downto 0)) - conv_integer(reg2_i(15) & "000000000000000")) then
+					if(conv_integer(signed(reg1_i)) < conv_integer(signed(reg2_i))) then
 						logicout <= "0000000000000001";
 					else
 						logicout <= ZeroWord;

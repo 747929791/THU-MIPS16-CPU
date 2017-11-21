@@ -419,7 +419,7 @@ begin
 						branch_target_address_o <= pc_plus_1 + imm ;
 					end if;
 				when "01100" => 
-					case rx is =>
+					case rx is
 						when "0011" => --ADDSP
 							wreg_o <= Enable;
 							aluop_o <= EXE_ADDSP_OP;
@@ -531,15 +531,7 @@ begin
 					reg2_read_e <= Enable;
 					reg2_addr <= ry;
 					instvalid <= Enable;
-				when "11101" => --SW_SP
-					wreg_o <= Disable;
-					aluop_o <= EXE_SW_SP;
-					alusel_o <= EXE_RES_LOAD_STORE;
-					reg1_read_e <= Enable;
-					reg1_addr <= SP_REGISTER;
-					reg2_read_e <= Enable;
-					reg2_addr <= rx;
-					instvalid <= Enable;
+				
 				when "11110" => 
 					case sub_op is
 						when "00000" => --MFIH
