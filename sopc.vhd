@@ -99,6 +99,7 @@ component inst_rom
 			  rst : in STD_LOGIC;
            addr : in  STD_LOGIC_VECTOR (15 downto 0);
 			  inst : out  STD_LOGIC_VECTOR (15 downto 0);
+			  inst_ready : out STD_LOGIC;
 			  
 			  data_ready: in STD_LOGIC;
 			  tbre: in STD_LOGIC;
@@ -139,11 +140,16 @@ end component;
 begin
 	rst_reversed <= not(rst);
 	rst_cpu <= rst_reversed or not(inst_ready);
-	cpu_component : cpu port map(rst=>rst_cpu,clk=>clk,rom_data_i=>rom_data, rom_addr_o=>rom_addr, rom_ce_o=>rom_ce,LED=>LED,
+	
+	cpu_component : cpu port map(rst=>rst_cpu,clk=>clk,rom_data_i=>rom_data, rom_addr_o=>rom_addr, rom_ce_o=>rom_ce,
+											LED=>LED,
 										  ram_rdata_i=>ram_rdata,ram_read_o=>ram_read,ram_write_o=>ram_write,ram_addr_o=>ram_addr,ram_wdata_o=>ram_wdata,ram_ce_o=>ram_ce);
+	
 	inst_rom_component : inst_rom port map(rst=>rst_reversed, clk=>clk, data_ready=>data_ready, tbre=>tbre, tsre=>tsre, Ram1Addr=>Ram1Addr, Ram1Data=>Ram1Data,
 	Ram1OE=>Ram1OE, Ram1WE=>Ram1WE, Ram1EN=>Ram1EN, rdn=>rdn, wrn=>wrn, inst=>rom_data, addr=>rom_addr, ce=>rom_ce,
-	FlashByte=>FlashByte, FlashVpen=>FlashVpen, FlashCE=>FlashCE, FlashOE=>FlashOE, FlashWE=>FlashWE, FlashRP=>FlashRP, FlashAddr=>FlashAddr, FlashData=>FlashData);
+	FlashByte=>FlashByte, FlashVpen=>FlashVpen, FlashCE=>FlashCE, FlashOE=>FlashOE, FlashWE=>FlashWE, FlashRP=>FlashRP, FlashAddr=>FlashAddr, FlashData=>FlashData,
+	inst_ready=>inst_ready);
+	
 	ram_component : ram port map(rst=>rst_reversed,clk=>clk,re=>ram_read,we=>ram_write,addr=>ram_addr,wdata=>ram_wdata,rdata=>ram_rdata,
 	Ram2Addr=>Ram2Addr, Ram2Data=>Ram2Data, Ram2OE=>Ram2OE, Ram2WE=>Ram2WE, Ram2EN=>Ram2EN);
 

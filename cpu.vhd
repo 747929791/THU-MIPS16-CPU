@@ -156,7 +156,6 @@ component id
 			  --暂停请求信号
 			  stallreq : out STD_LOGIC;
 			  --PC跳转信号
-			  --PC跳转信号
 			  branch_flag_o : out STD_LOGIC;
 			  branch_target_address_o : out STD_LOGIC_VECTOR(15 downto 0);
 			  --供访存储的指令信号
@@ -297,7 +296,8 @@ begin
 										aluop_o=>id_aluop_o, alusel_o=>id_alusel_o, reg1_o=>id_reg1_o, reg2_o=>id_reg2_o, wd_o=>id_wd_o, wreg_o=>id_wreg_o,
 										ex_wreg_i=>ex_wreg_o, ex_wd_i=>ex_wd_o, ex_wdata_i=>ex_wdata_o, mem_wreg_i=>mem_wreg_o, mem_wd_i=>mem_wd_o, mem_wdata_i=>mem_wdata_o,
 										stallreq=>stallreq_id, branch_flag_o=>branch_flag, branch_target_address_o=>branch_target_address, inst_o=>id_inst_o, ex_aluop_i=>ex_aluop_o);
-	regfile_component : regfile port map(rst=>rst, clk=>clk, waddr=>wb_wd_i, wdata=>wb_wdata_i, we=>wb_wreg_i, raddr1=>reg1_addr, re1=>reg1_read, LED=>LED, 
+	regfile_component : regfile port map(rst=>rst, clk=>clk, waddr=>wb_wd_i, wdata=>wb_wdata_i, we=>wb_wreg_i, raddr1=>reg1_addr, re1=>reg1_read, 
+													 LED=>LED, 
 													 rdata1=>reg1_data, raddr2=>reg2_addr, re2=>reg2_read, rdata2=>reg2_data);
 	id_ex_component : id_ex port map(rst=>rst, clk=>clk, id_alusel=>id_alusel_o, id_aluop=>id_aluop_o, id_reg1=>id_reg1_o, id_reg2=>id_reg2_o, id_wd=>id_wd_o, id_wreg=>id_wreg_o,
 												ex_alusel=>ex_alusel_i, ex_aluop=>ex_aluop_i, ex_reg1=>ex_reg1_i, ex_reg2=>ex_reg2_i, ex_wd=>ex_wd_i, ex_wreg=>ex_wreg_i, stall=>stall,

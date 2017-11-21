@@ -66,6 +66,7 @@ end inst_rom;
 
 architecture Behavioral of inst_rom is
 	constant InstNum : integer := 100;
+	constant kernelInstNum : integer := 10;
 	type InstArray is array (0 to InstNum) of STD_LOGIC_VECTOR(15 downto 0);
 	signal insts: InstArray := (
 	  --01000xxxyyy0iiii ·Ã´æLWSW²âÊÔ
@@ -88,7 +89,6 @@ architecture Behavioral of inst_rom is
 	
 	component flash_io
     Port ( addr : in  STD_LOGIC_VECTOR (22 downto 1);
-           data_in : in  STD_LOGIC_VECTOR (15 downto 0);
            data_out : out  STD_LOGIC_VECTOR (15 downto 0);
 			  clk : in std_logic;
 			  reset : in std_logic;
@@ -102,9 +102,7 @@ architecture Behavioral of inst_rom is
 			  flash_addr : out std_logic_vector(22 downto 1);
 			  flash_data : inout std_logic_vector(15 downto 0);
 			  
-           ctl_read : in  STD_LOGIC;
-           ctl_write : in  STD_LOGIC;
-			  ctl_erase : in STD_LOGIC
+           ctl_read : in  STD_LOGIC
 	);
 	end component;
 	
@@ -130,30 +128,30 @@ begin
 	end if;
 	end process;
 
-	flash_io_component: flash_io port map(addr=>FlashAddrIn, data_in=>(others => '0'), data_out=>FlashDataOut, clk=>clk, reset=>FlashReset,
+	flash_io_component: flash_io port map(addr=>FlashAddrIn, data_out=>FlashDataOut, clk=>clk, reset=>FlashReset,
 														flash_byte=>FlashByte, flash_vpen=>FlashVpen, flash_ce=>FlashCE, flash_oe=>FlashOE, flash_we=>FlashWE,
-														flash_rp=>FlashRP, flash_addr=>FlashAddr, flash_data=>FlashData, ctl_read=>FlashRead, ctl_write=>'0', ctl_erase=>'0');
+														flash_rp=>FlashRP, flash_addr=>FlashAddr, flash_data=>FlashData, ctl_read=>FlashRead);
 
 	inst_ready <= LoadComplete;
-	Ram1WE <= clk or rst or not(LoadComplete);
+	Ram1WE <= clk or rst or LoadComplete;
 
 	process(rst,ce,addr,Ram1Data)
-		variable id : integer;
+	variable id:integer;
 	begin
 		if((ce = Enable) and (rst = Disable) and (LoadComplete = Enable)) then
-			id:=conv_integer(addr);
-			if(id>InstNum) then
-				inst <= ZeroWord;
-			else
-				inst <= insts(id);
-				--inst <= Ram1Data;
-			end if;
+--			id:= conv_integer(addr);
+--			if (id < InstNum) then
+--				inst <= insts(id);
+--			else
+--				inst <= ZeroWord;
+--			end if;
+			inst <= Ram1Data;
 		else
 			inst <= ZeroWord;
 		end if;
 	end process;
 	
-	process(addr,clk_8,rst)
+	process(addr,clk_8,rst,i)
 	begin
 		if (rst = Enable) then
 			Ram1Addr <= (others => '0');
@@ -168,13 +166,14 @@ begin
 		else
 			if (LoadComplete = '1') then 
 				Ram1Addr <= "00" & addr;
+				Ram1Data <= (others => 'Z');
 				Ram1OE <= '0';
 				Ram1EN <= '0';
 				rdn <= '1';
 				wrn <= '1';
 				FlashReset <= '0';
 			else
-				if (i = 1000) then 
+				if (i = kernelInstNum) then 
 					Ram1Addr <= "00" & addr;
 					Ram1OE <= '0';
 					Ram1EN <= '0';
