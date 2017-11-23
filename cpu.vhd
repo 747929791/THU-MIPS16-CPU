@@ -34,12 +34,12 @@ use IEEE.STD_LOGIC_ARITH.ALL;
 entity cpu is
 	    Port ( rst : in  STD_LOGIC;
            clk : in  STD_LOGIC;
-		   LED : out STD_LOGIC_VECTOR(15 downto 0);
-		   rom_ready_i : in STD_LOGIC; --取指是否成功
+			  LED : out STD_LOGIC_VECTOR(15 downto 0);
+			  rom_ready_i : in STD_LOGIC; --取指是否成功
            rom_data_i : in STD_LOGIC_VECTOR(15 downto 0); --取得的指令
            rom_addr_o : out STD_LOGIC_VECTOR(15 downto 0); --指令寄存器地址
            rom_ce_o : out STD_LOGIC; --指令存储器使能
-		   ram_ready_i : in STD_LOGIC; --访存是否成功
+		     ram_ready_i : in STD_LOGIC; --访存是否成功
            ram_rdata_i : in STD_LOGIC_VECTOR(15 downto 0);
            ram_read_o : out STD_LOGIC;
            ram_write_o : out STD_LOGIC;
