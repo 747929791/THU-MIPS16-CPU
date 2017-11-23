@@ -32,8 +32,10 @@ use WORK.DEFINES.ALL;
 
 entity ctrl is
     Port ( rst : in  STD_LOGIC;
+           stallreq_from_if : in  STD_LOGIC;
            stallreq_from_id : in  STD_LOGIC;
            stallreq_from_ex : in  STD_LOGIC;
+           stallreq_from_mem : in  STD_LOGIC;
            stall : out  STD_LOGIC_VECTOR (5 downto 0));
 end ctrl;
 
@@ -41,14 +43,18 @@ architecture Behavioral of ctrl is
 
 begin
 
-	process(rst,stallreq_from_id,stallreq_from_ex)
+	process(rst,stallreq_from_if,stallreq_from_id,stallreq_from_ex, stallreq_from_mem)
 	begin
 		if(rst = Enable) then
 			stall <= "000000";
+		elsif(stallreq_from_mem = Stop) then
+			stall <= "011111";
 		elsif(stallreq_from_ex = Stop) then
 			stall <= "001111";
 		elsif(stallreq_from_id = Stop) then
 			stall <= "000111";
+		elsif(stallreq_from_if = Stop) then
+			stall <= "000011";
 		else
 			stall <= "000000";
 		end if;

@@ -69,17 +69,14 @@ architecture Behavioral of inst_rom is
 	constant kernelInstNum : integer := 10;
 	type InstArray is array (0 to InstNum) of STD_LOGIC_VECTOR(15 downto 0);
 	signal insts: InstArray := (
-	  --01000xxxyyy0iiii 访存LWSW测试
-	  --11011xxxyyyiiiii SW (Rx+imm)<-Ry
-	  --10011xxxyyyiiiii SW (Rx+imm)->Ry
-		"0100000000000001", --R[0]+=1
-		"1101100100000011", --SW(R[0])->RAM[R(1)+3]
-		"1001100000100010", --LW(RAM[R[0]+2])->R[1]
-		"0100000100100001", --R[1]++
-		"0100010010000001", --R[4]++ 现在R[0]=1,R[1]=1,R[4]=1,RAM[3]=1
+		--BNEQZ测试
+		"0110101000000011", --LI R[2], 3
+		"1110101001001011", --NEG R[2], R[2]
+		"0110100000000100", --LI R[0], 4
+		"1110100000001011", --NEG R[0], R[0]
 		"0100000000000001", --R[0]++
 		"1101100100000011", --SW(R[0])->RAM[R(1)+3] 现在R[0]=2,R[1]=2,R[4]=1,RAM[3]=1,RAM[4]=2
-		others => ZeroWord);
+		others => NopInst);
 	signal clk_2,clk_4,clk_8: STD_LOGIC;
 	signal FlashRead, FlashReset: STD_LOGIC;
 	signal FlashDataOut: STD_LOGIC_VECTOR(15 downto 0);

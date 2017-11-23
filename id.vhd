@@ -40,20 +40,20 @@ entity id is
            reg2_data_i : in  STD_LOGIC_VECTOR (15 downto 0);
            reg1_read_o : out  STD_LOGIC;
            reg2_read_o : out  STD_LOGIC;
-           reg1_addr_o : out  STD_LOGIC_VECTOR (2 downto 0);
-           reg2_addr_o : out  STD_LOGIC_VECTOR (2 downto 0);
+           reg1_addr_o : out  STD_LOGIC_VECTOR (3 downto 0);
+           reg2_addr_o : out  STD_LOGIC_VECTOR (3 downto 0);
            aluop_o : out  STD_LOGIC_VECTOR (7 downto 0);
            alusel_o : out  STD_LOGIC_VECTOR (2 downto 0);
            reg1_o : out  STD_LOGIC_VECTOR (15 downto 0);
            reg2_o : out  STD_LOGIC_VECTOR (15 downto 0);
-           wd_o : out  STD_LOGIC_VECTOR (2 downto 0);
+           wd_o : out  STD_LOGIC_VECTOR (3 downto 0);
            wreg_o : out  STD_LOGIC;
 			  --数据旁路技术需要的ex与mem阶段的信号
 			  ex_wreg_i : in STD_LOGIC;
-			  ex_wd_i : in STD_LOGIC_VECTOR(2 downto 0);
+			  ex_wd_i : in STD_LOGIC_VECTOR(3 downto 0);
 			  ex_wdata_i : in STD_LOGIC_VECTOR(15 downto 0);
 			  mem_wreg_i : in STD_LOGIC;
-			  mem_wd_i : in STD_LOGIC_VECTOR(2 downto 0);
+			  mem_wd_i : in STD_LOGIC_VECTOR(3 downto 0);
 			  mem_wdata_i : in STD_LOGIC_VECTOR(15 downto 0);
 			  --暂停请求信号
 			  stallreq : out STD_LOGIC;
@@ -72,7 +72,8 @@ signal imm:STD_LOGIC_VECTOR(15 downto 0);
 signal instvalid:STD_LOGIC; --指令是否有效
 --内部信号
 signal reg1_read_e,reg2_read_e:STD_LOGIC;
-signal reg1_addr,reg2_addr:STD_LOGIC_VECTOR(2 downto 0);
+signal reg1_addr,reg2_addr:STD_LOGIC_VECTOR(3 downto 0);
+signal reg1_data,reg2_data:STD_LOGIC_VECTOR(15 downto 0); --考虑旁路取得的正确reg_data
 begin
 	inst_o <= inst_i;
 	reg1_read_o <= reg1_read_e;
@@ -80,38 +81,40 @@ begin
 	reg1_addr_o <= reg1_addr;
 	reg2_addr_o <= reg2_addr;
 	--译码
-	id_process : process(rst,pc_i,inst_i,reg1_data_i,reg2_data_i,imm)
+	id_process : process(rst,pc_i,inst_i,reg1_data,imm)
 		variable op : STD_LOGIC_VECTOR(4 downto 0);
 		variable sub_op : STD_LOGIC_VECTOR(4 downto 0);
 		variable sub_op2 : STD_LOGIC_VECTOR(1 downto 0);
-		variable rx, ry, rz : STD_LOGIC_VECTOR(2 downto 0);
+		variable rx, ry, rz : STD_LOGIC_VECTOR(3 downto 0);
 		variable imm3 : STD_LOGIC_VECTOR(2 downto 0);
 		variable imm4 : STD_LOGIC_VECTOR(3 downto 0);
 		variable imm5 : STD_LOGIC_VECTOR(4 downto 0);
 		variable imm8 : STD_LOGIC_VECTOR(7 downto 0);
+		variable imm11 : std_logic_vector(10 downto 0);
 		variable pc_plus_1 : STD_LOGIC_VECTOR(15 downto 0);
 	begin
 		if(rst = Enable) then
 			reg1_read_e <= Disable;
 			reg2_read_e <= Disable;
-			reg1_addr <= "000";
-			reg2_addr <= "000";
+			reg1_addr <= RegAddrZero;
+			reg2_addr <= RegAddrZero;
 			aluop_o <= EXE_NOP_OP;
 			alusel_o <= EXE_RES_NOP;
-			wd_o <= "000";
+			wd_o <= RegAddrZero;
 			wreg_o <= Disable;
 			instvalid <= Disable;
 		else
 			op := inst_i(15 downto 11);
 			sub_op := inst_i(4 downto 0);
 			sub_op2 := inst_i(1 downto 0);
-			rx := inst_i(10 downto 8);
-			ry := inst_i(7 downto 5);
-			rz := inst_i(4 downto 2);
+			rx := "0"&inst_i(10 downto 8);
+			ry := "0"&inst_i(7 downto 5);
+			rz := "0"&inst_i(4 downto 2);
 			imm3 := inst_i(4 downto 2);
 			imm4 := inst_i(3 downto 0);
 			imm5 := inst_i(4 downto 0);
 			imm8 := inst_i(7 downto 0);
+			imm11 := inst_i(10 downto 0);
 			--默认参数
 			reg1_read_e <= Disable;
 			reg2_read_e <= Disable;
@@ -119,7 +122,7 @@ begin
 			--reg2_addr_o <= "000";
 			aluop_o <= EXE_NOP_OP;
 			alusel_o <= EXE_RES_NOP;
-			wd_o <= "000";
+			wd_o <= RegAddrZero;
 			wreg_o <= Disable;
 			branch_flag_o <= Disable;
 			branch_target_address_o <= ZeroWord;
@@ -143,6 +146,16 @@ begin
 					reg1_read_e <= Enable;
 					reg2_read_e <= Disable;
 					reg1_addr <= rx;
+					wd_o <=rx;
+					instvalid <= Enable;
+					imm <= SXT(imm8,16);
+				when "00000" => --ADDSP3
+					wreg_o <= Enable;
+					aluop_o <= EXE_ADDSP3_OP;
+					alusel_o <= EXE_RES_LOGIC;
+					reg1_read_e <= Enable;
+					reg1_addr <= SP_REGISTER;
+					reg2_read_e <= Disable;
 					wd_o <=rx;
 					instvalid <= Enable;
 					imm <= SXT(imm8,16);
@@ -271,14 +284,76 @@ begin
 							reg1_addr <= ry;
 							reg2_addr <= rx;
 							instvalid <= Enable;
+						when "01010" => --CMP
+							wreg_o <= Enable;
+							aluop_o <= EXE_CMP_OP;
+							alusel_o <= EXE_RES_LOGIC;
+							reg1_read_e <= Enable;
+							reg2_read_e <= Enable;
+							wd_o <= T_REGISTER;
+							reg1_addr <= rx;
+							reg2_addr <= ry;
+							instvalid <= Enable;
+						when "00010" => --SLT
+							wreg_o <= Enable;
+							aluop_o <= EXE_SLT_OP;
+							alusel_o <= EXE_RES_LOGIC;
+							reg1_read_e <= Enable;
+							reg2_read_e <= Enable;
+							reg1_addr <= rx;
+							reg2_addr <= ry;
+							wd_o <= T_REGISTER;
+							instvalid <= Enable;
+						when "00011" => --SLTU
+							wreg_o <= Enable;
+							aluop_o <= EXE_SLT_OP;
+							alusel_o <= EXE_RES_LOGIC;
+							reg1_read_e <= Enable;
+							reg2_read_e <= Enable;
+							reg1_addr <= rx;
+							reg2_addr <= ry;
+							wd_o <= T_REGISTER;
+							instvalid <= Enable;
+						when "00000" => 
+							case ry is
+								when "0010" => --MFPC
+									wreg_o <= Enable;
+									aluop_o <= EXE_MFPC;
+									alusel_o <= EXE_RES_LOGIC;
+									reg1_read_e <= Disable;
+									reg2_read_e <= Disable;
+									wd_o <=rx;
+									imm <= pc_i;
+									instvalid <= Enable;
+								when "0110" => --JALR
+									wreg_o <= Enable;
+									aluop_o <= EXE_JALR_OP;
+									reg1_read_e <= Enable;
+									reg1_addr <= rx;
+									imm <= pc_plus_1 + "0000000000000001";
+									wd_o <= RA_REGISTER;
+									branch_flag_o <= Enable;
+									branch_target_address_o <= reg1_data;
+								when "0000" => --JR
+									reg1_read_e <= Enable;
+									reg1_addr <= rx;
+									branch_flag_o <= Enable;
+									branch_target_address_o <= reg1_data;
+								when "0001" => --JRRA
+									reg1_read_e <= Enable;
+									reg1_addr <= RA_REGISTER;
+									branch_flag_o <= Enable;
+									branch_target_address_o <= reg1_data;
+								when others =>
+							end case;
 						when others =>
 							reg1_read_e <= Disable;
 							reg2_read_e <= Disable;
-							reg1_addr <= "000";
-							reg2_addr <= "000";
+							reg1_addr <= RegAddrZero;
+							reg2_addr <= RegAddrZero;
 							aluop_o <= EXE_NOP_OP;
 							alusel_o <= EXE_RES_NOP;
-							wd_o <= "000";
+							wd_o <= RegAddrZero;
 							wreg_o <= Disable;
 							instvalid <= Disable;
 					end case;
@@ -332,10 +407,82 @@ begin
 					reg1_read_e <= Enable;
 					reg1_addr <= rx;
 					imm <= SXT(imm8,16);
-					if(reg1_data_i = ZeroWord) then
+					if(reg1_data = ZeroWord) then
 						branch_flag_o <= Enable;
 						branch_target_address_o <= pc_plus_1 + imm ;
 					end if;
+				when "00101" => --BNEZ
+					reg1_read_e <= Enable;
+					reg1_addr <= rx;
+					imm <= SXT(imm8,16);
+					if(reg1_data /= ZeroWord) then
+						branch_flag_o <= Enable;
+						branch_target_address_o <= pc_plus_1 + imm ;
+					end if;
+				when "01100" => 
+					case rx is
+						when "0011" => --ADDSP
+							wreg_o <= Enable;
+							aluop_o <= EXE_ADDSP_OP;
+							alusel_o <= EXE_RES_LOGIC;
+							reg1_read_e <= Enable;
+							reg1_addr <= SP_REGISTER;
+							reg2_read_e <= Disable;
+							wd_o <= SP_REGISTER;
+							instvalid <= Enable;
+							imm <= SXT(imm8,16);
+					
+						when "0000" => --BTEQZ	
+							reg1_read_e <= Enable;
+							reg1_addr <= T_REGISTER;
+							imm <= SXT(imm8,16);
+							if(reg1_data = ZeroWord) then
+								branch_flag_o <= Enable;
+								branch_target_address_o <= pc_plus_1 + imm ;
+							end if;
+						when "0001" => --BTNEZ
+							reg1_read_e <= Enable;
+							reg1_addr <= T_REGISTER;
+							imm <= SXT(imm8,16);
+							if(reg1_data /= ZeroWord) then
+								branch_flag_o <= Enable;
+								branch_target_address_o <= pc_plus_1 + imm ;
+							end if;
+						when "0100" => --MTSP
+							wreg_o <= Enable;
+							aluop_o <= EXE_MTSP;
+							alusel_o <= EXE_RES_LOGIC;
+							reg1_read_e <= Enable;
+							reg2_read_e <= Disable;
+							wd_o <= SP_REGISTER;
+							reg1_addr <= ry;
+							imm <= ZeroWord;
+							instvalid <= Enable;
+						when "0010" => --SW_RS
+							wreg_o <= Disable;
+							aluop_o <= EXE_SW_RS;
+							alusel_o <= EXE_RES_LOAD_STORE;
+							reg1_read_e <= Enable;
+							reg1_addr <= SP_REGISTER;
+							reg2_read_e <= Enable;
+							reg2_addr <= RA_REGISTER;
+							instvalid <= Enable;
+						when others =>
+					end case;
+				when "00010" => --B
+					imm <= SXT(imm11, 16);
+					branch_flag_o <= Enable;
+					branch_target_address_o <= pc_plus_1 + imm;
+				when "01110" => --CMPI
+					wreg_o <= Enable;
+					aluop_o <= EXE_CMPI_OP;
+					alusel_o <= EXE_RES_LOGIC;
+					reg1_read_e <= Enable;
+					reg2_read_e <= Disable;
+					wd_o <= T_REGISTER;
+					reg1_addr <= rx;
+					imm <= SXT(imm8, 16);
+					instvalid <= Enable;
 				when "10011" => --LW
 					wreg_o <= Enable;
 					aluop_o <= EXE_LW;
@@ -346,7 +493,37 @@ begin
 					wd_o <=ry;
 					instvalid <= Enable;
 					imm <= SXT(imm5,16);
-				when "11011"=> --SW
+				when "10010" => --LW_SP
+					wreg_o <= Enable;
+					aluop_o <= EXE_LW_SP;
+					alusel_o <= EXE_RES_LOAD_STORE;
+					reg1_read_e <= Enable;
+					reg1_addr <= SP_REGISTER;
+					reg2_read_e <= Disable;
+					wd_o <=rx;
+					instvalid <= Enable;
+					imm <= SXT(imm8,16);
+				when "01010" => --SLTI
+					wreg_o <= Enable;
+					aluop_o <= EXE_SLTI_OP;
+					alusel_o <= EXE_RES_LOGIC;
+					reg1_read_e <= Enable;
+					reg2_read_e <= Disable;
+					reg1_addr <= rx;
+					imm <= SXT(imm8, 16);
+					wd_o <= T_REGISTER;
+					instvalid <= Enable;
+				when "01011" => --SLTUI
+					wreg_o <= Enable;
+					aluop_o <= EXE_SLTI_OP;
+					alusel_o <= EXE_RES_LOGIC;
+					reg1_read_e <= Enable;
+					reg2_read_e <= Disable;
+					reg1_addr <= rx;
+					imm <= EXT(imm8, 16);
+					wd_o <= T_REGISTER;
+					instvalid <= Enable;
+				when "11011" => --SW
 					wreg_o <= Disable;
 					aluop_o <= EXE_SW;
 					alusel_o <= EXE_RES_LOAD_STORE;
@@ -355,22 +532,43 @@ begin
 					reg2_read_e <= Enable;
 					reg2_addr <= ry;
 					instvalid <= Enable;
+				
+				when "11110" => 
+					case sub_op is
+						when "00000" => --MFIH
+							wreg_o <= Enable;
+							aluop_o <= EXE_MFIH;
+							alusel_o <= EXE_RES_LOGIC;
+							reg1_read_e <= Enable;
+							reg2_read_e <= Disable;
+							wd_o <=rx;
+							reg1_addr <= IH_REGISTER;
+							imm <= ZeroWord;
+							instvalid <= Enable;
+						when "00001" => --MTIH
+							wreg_o <= Enable;
+							aluop_o <= EXE_MTIH;
+							alusel_o <= EXE_RES_LOGIC;
+							reg1_read_e <= Enable;
+							reg2_read_e <= Disable;
+							wd_o <= IH_REGISTER;
+							reg1_addr <= rx;
+							imm <= ZeroWord;
+							instvalid <= Enable;
+						when others =>
+					end case;
 				when others =>
 			end case;
 		end if;
 	end process;
 
 	--确定源操作数1
-	reg1_process : process(rst,reg1_data_i,imm,reg1_read_e,ex_wreg_i,ex_wd_i,ex_wdata_i,mem_wreg_i,mem_wd_i,mem_wdata_i,reg1_addr)
+	reg1_process : process(rst,imm,reg1_read_e,reg1_data)
 	begin
 		if(rst = Enable) then
 			reg1_o <= ZeroWord;
-		elsif(reg1_read_e = Enable and ex_wreg_i = Enable and ex_wd_i=reg1_addr) then
-			reg1_o <= ex_wdata_i;
-		elsif(reg1_read_e = Enable and mem_wreg_i = Enable and mem_wd_i=reg1_addr) then
-			reg1_o <= mem_wdata_i;
 		elsif(reg1_read_e = Enable) then
-			reg1_o <= reg1_data_i;
+			reg1_o <= reg1_data;
 		elsif(reg1_read_e = Disable) then
 			reg1_o<=imm;
 		else
@@ -379,20 +577,52 @@ begin
 	end process;
 
 	--确定源操作数2
-	reg2_process : process(rst,reg2_data_i,imm,reg2_read_e,ex_wreg_i,ex_wd_i,ex_wdata_i,mem_wreg_i,mem_wd_i,mem_wdata_i,reg2_addr)
+	reg2_process : process(rst,imm,reg2_read_e,reg2_data)
 	begin
 		if(rst = Enable) then
 			reg2_o <= ZeroWord;
-		elsif(reg2_read_e = Enable and ex_wreg_i = Enable and ex_wd_i=reg2_addr) then
-			reg2_o <= ex_wdata_i;
-		elsif(reg2_read_e = Enable and mem_wreg_i = Enable and mem_wd_i=reg2_addr) then
-			reg2_o <= mem_wdata_i;
 		elsif(reg2_read_e = Enable) then
-			reg2_o <= reg2_data_i;
+			reg2_o <= reg2_data;
 		elsif(reg2_read_e = Disable) then
 			reg2_o<=imm;
 		else
 			reg2_o<=ZeroWord;
+		end if;
+	end process;
+
+	--确定寄存器1正确值(考虑旁路)
+	reg1_data_process : process(rst,reg1_data_i,imm,reg1_read_e,ex_wreg_i,ex_wd_i,ex_wdata_i,mem_wreg_i,mem_wd_i,mem_wdata_i,reg1_addr)
+	begin
+		if(rst = Enable) then
+			reg1_data <= ZeroWord;
+		elsif(reg1_read_e = Enable and ex_wreg_i = Enable and ex_wd_i=reg1_addr) then
+			reg1_data <= ex_wdata_i;
+		elsif(reg1_read_e = Enable and mem_wreg_i = Enable and mem_wd_i=reg1_addr) then
+			reg1_data <= mem_wdata_i;
+		elsif(reg1_read_e = Enable) then
+			reg1_data <= reg1_data_i;
+		elsif(reg1_read_e = Disable) then
+			reg1_data<=ZeroWord;
+		else
+			reg1_data<=ZeroWord;
+		end if;
+	end process;
+
+	--确定寄存器2正确返回值(考虑旁路)
+	reg2_data_process : process(rst,reg2_data_i,imm,reg2_read_e,ex_wreg_i,ex_wd_i,ex_wdata_i,mem_wreg_i,mem_wd_i,mem_wdata_i,reg2_addr)
+	begin
+		if(rst = Enable) then
+			reg2_data <= ZeroWord;
+		elsif(reg2_read_e = Enable and ex_wreg_i = Enable and ex_wd_i=reg2_addr) then
+			reg2_data <= ex_wdata_i;
+		elsif(reg2_read_e = Enable and mem_wreg_i = Enable and mem_wd_i=reg2_addr) then
+			reg2_data <= mem_wdata_i;
+		elsif(reg2_read_e = Enable) then
+			reg2_data <= reg2_data_i;
+		elsif(reg2_read_e = Disable) then
+			reg2_data<=ZeroWord;
+		else
+			reg2_data<=ZeroWord;
 		end if;
 	end process;
 

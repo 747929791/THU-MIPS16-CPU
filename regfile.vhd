@@ -32,23 +32,24 @@ use WORK.DEFINES.ALL;
 --library UNISIM;
 --use UNISIM.VComponents.all;
 
+--À©Õ¹¼Ä´æÆ÷¶Ñ£¬0~7ÎªÍ¨ÓÃ¼Ä´æÆ÷£¬8~15Îª×¨ÓÃ¼Ä´æÆ÷
 entity regfile is
     Port ( rst : in  STD_LOGIC;
            clk : in  STD_LOGIC;
-			  LED : out STD_LOGIC_VECTOR(15 downto 0);
-           waddr : in  STD_LOGIC_VECTOR (2 downto 0);
+		   LED : out STD_LOGIC_VECTOR(15 downto 0);
+           waddr : in  STD_LOGIC_VECTOR (3 downto 0);
            wdata : in  STD_LOGIC_VECTOR (15 downto 0);
            we : in  STD_LOGIC;
-           raddr1 : in  STD_LOGIC_VECTOR (2 downto 0);
+           raddr1 : in  STD_LOGIC_VECTOR (3 downto 0);
            re1 : in  STD_LOGIC;
            rdata1 : out  STD_LOGIC_VECTOR (15 downto 0);
-           raddr2 : in  STD_LOGIC_VECTOR (2 downto 0);
+           raddr2 : in  STD_LOGIC_VECTOR (3 downto 0);
            re2 : in  STD_LOGIC;
            rdata2 : out  STD_LOGIC_VECTOR (15 downto 0));
 end regfile;
 
 architecture Behavioral of regfile is
-type RegArray is array (7 downto 0) of STD_LOGIC_VECTOR(15 downto 0);
+type RegArray is array (0 to 15) of STD_LOGIC_VECTOR(15 downto 0);
 signal regs: RegArray := (others => ZeroWord);
 begin
 

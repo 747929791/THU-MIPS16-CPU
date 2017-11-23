@@ -38,9 +38,9 @@ entity ex is
            aluop_i : in  STD_LOGIC_VECTOR(7 downto 0);
            reg1_i : in  STD_LOGIC_VECTOR(15 downto 0);
            reg2_i : in  STD_LOGIC_VECTOR(15 downto 0);
-           wd_i : in  STD_LOGIC_VECTOR (2 downto 0);
+           wd_i : in  STD_LOGIC_VECTOR (3 downto 0);
            wreg_i : in  STD_LOGIC;
-           wd_o : out  STD_LOGIC_VECTOR (2 downto 0);
+           wd_o : out  STD_LOGIC_VECTOR (3 downto 0);
            wreg_o : out  STD_LOGIC;
            wdata_o : out  STD_LOGIC_VECTOR (15 downto 0);
 			  --‘›Õ£«Î«Û–≈∫≈
@@ -79,16 +79,34 @@ begin
 					logicout <= reg1_i + reg2_i;
 				when EXE_ADDU_OP =>
 					logicout <= reg1_i + reg2_i;
+				when EXE_ADDSP3_OP =>
+					logicout <= reg1_i + reg2_i;
+				when EXE_ADDSP_OP =>
+					logicout <= reg1_i + reg2_i;
 				when EXE_SUBU_OP =>
 					logicout <= reg1_i - reg2_i;
 				when EXE_AND_OP =>
 					logicout <= reg1_i and reg2_i;
 				when EXE_XOR_OP =>
 					logicout <= reg1_i xor reg2_i;
+				when EXE_CMP_OP =>
+					if(reg1_i = reg2_i)then
+						logicout <= ZeroWord;
+					else
+						logicout <= "0000000000000001";
+					end if;
+				when EXE_CMPI_OP =>
+					if(reg1_i = reg2_i)then
+						logicout <= ZeroWord;
+					else
+						logicout <= "0000000000000001";
+					end if;
 				when EXE_LI_OP =>
 					logicout <= reg1_i;
 				when EXE_MOVE_OP =>
 					logicout <= reg1_i;
+				when EXE_JALR_OP =>
+					logicout <= reg2_i;
 				when EXE_NEG_OP =>
 					logicout <= reg2_i - reg1_i;
 				when EXE_NOT_OP =>
@@ -110,10 +128,49 @@ begin
 				when EXE_LW =>
 					mem_read_o <= Enable;
 					mem_addr_o <= reg1_i + reg2_i;
+				when EXE_LW_SP =>
+					mem_read_o <= Enable;
+					mem_addr_o <= reg1_i + reg2_i;
 				when EXE_SW =>
 					mem_write_o <= Enable;
 					mem_addr_o <= reg1_i + SXT(inst_i(4 downto 0),16);
 					mem_wdata_o <= reg2_i;
+				when EXE_SW_RS =>
+					mem_write_o <= Enable;
+					mem_addr_o <= reg1_i + SXT(inst_i(7 downto 0),16);
+					mem_wdata_o <= reg2_i;
+				when EXE_MFIH =>
+					logicout <= reg1_i;
+				when EXE_MFPC => 
+					logicout <= reg1_i;
+				when EXE_MTIH =>
+					logicout <= reg1_i;
+				when EXE_MTSP =>
+					logicout <= reg1_i;
+				when EXE_SLT_OP =>
+					if(conv_integer(signed(reg1_i)) < conv_integer(signed(reg2_i))) then
+						logicout <= "0000000000000001";
+					else
+						logicout <= ZeroWord;
+					end if;
+				when EXE_SLTI_OP =>
+					if(conv_integer(signed(reg1_i)) < conv_integer(signed(reg2_i))) then
+						logicout <= "0000000000000001";
+					else
+						logicout <= ZeroWord;
+					end if;
+				when EXE_SLTU_OP =>
+					if(conv_integer(reg1_i) < conv_integer(reg2_i)) then
+						logicout <= "0000000000000001";
+					else
+						logicout <= ZeroWord;
+					end if;
+				when EXE_SLTUI_OP =>
+					if(conv_integer(reg1_i) < conv_integer(reg2_i)) then
+						logicout <= "0000000000000001";
+					else
+						logicout <= ZeroWord;
+					end if;
 				when others =>
 					logicout <= ZeroWord;
 			end case;
