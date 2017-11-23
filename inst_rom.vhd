@@ -34,14 +34,25 @@ use WORK.DEFINES.ALL;
 
 --指令存储器ROM模拟模块
 entity inst_rom is
-    Port ( ce : in  STD_LOGIC;
-			  clk : in STD_LOGIC;
+    Port ( clk : in STD_LOGIC;
 			  rst : in STD_LOGIC;
-           addr : in  STD_LOGIC_VECTOR (15 downto 0);
-			  inst : out  STD_LOGIC_VECTOR (15 downto 0);
-			  inst_ready : out STD_LOGIC;
 			  
-			  --ram相关接口
+			  --id段信号
+			  ce_id : in  STD_LOGIC;
+           addr_id : in  STD_LOGIC_VECTOR (15 downto 0);
+			  inst_id : out  STD_LOGIC_VECTOR (15 downto 0);
+			  inst_ready : out STD_LOGIC;
+			  rom_ready_o : out STD_LOGIC;
+			  
+			  --mem段信号
+			  re_mem : in  STD_LOGIC;
+           we_mem : in  STD_LOGIC;
+           addr_mem : in  STD_LOGIC_VECTOR (15 downto 0);
+           wdata_mem : in  STD_LOGIC_VECTOR (15 downto 0);
+			  rdata_mem : out  STD_LOGIC_VECTOR (15 downto 0);
+			  ram_ready_o : out STD_LOGIC;
+			  
+			  --ram1相关接口
 			  data_ready: in STD_LOGIC;
 			  tbre: in STD_LOGIC;
 			  tsre: in STD_LOGIC;
@@ -52,6 +63,13 @@ entity inst_rom is
 			  Ram1EN: out STD_LOGIC;
 			  rdn: out STD_LOGIC;
 			  wrn: out STD_LOGIC;
+			  
+			  --ram2相关接口
+			  Ram2Addr: out STD_LOGIC_VECTOR(17 downto 0);
+			  Ram2Data: inout STD_LOGIC_VECTOR(15 downto 0);
+			  Ram2OE: out STD_LOGIC;
+			  Ram2WE: out STD_LOGIC;
+			  Ram2EN: out STD_LOGIC;
 			  
 			  --flash相关接口
 			  FlashByte: out STD_LOGIC;
@@ -83,6 +101,8 @@ architecture Behavioral of inst_rom is
 	signal FlashAddrIn : STD_LOGIC_VECTOR(22 downto 1);
 	signal LoadComplete: STD_LOGIC;
 	signal i: STD_LOGIC_VECTOR(15 downto 0);
+	signal write_prep: STD_LOGIC;
+	signal read_prep: STD_LOGIC;
 	
 	component flash_io
     Port ( addr : in  STD_LOGIC_VECTOR (22 downto 1);
@@ -130,64 +150,192 @@ begin
 														flash_rp=>FlashRP, flash_addr=>FlashAddr, flash_data=>FlashData, ctl_read=>FlashRead);
 
 	inst_ready <= LoadComplete;
-	Ram1WE <= clk or rst or LoadComplete;
+	
+	Ram2WE <= clk or rst or LoadComplete;
+	Ram2EN <= '0';
+	
+	ram_ready_o <= '1';
 
-	process(rst,ce,addr,Ram1Data)
-	variable id:integer;
+	Rom_ready_state: process(addr_id,we_mem,re_mem)
 	begin
-		if((ce = Enable) and (rst = Disable) and (LoadComplete = Enable)) then
---			id:= conv_integer(addr);
---			if (id < InstNum) then
---				inst <= insts(id);
---			else
---				inst <= ZeroWord;
---			end if;
-			inst <= Ram1Data;
-		else
-			inst <= ZeroWord;
+		if ((addr_id >= x"4000") and (addr_id < x"8000") and ((we_mem = Enable) or (re_mem = Enable))) then
+			rom_ready_o <= '0';
+		else 
+			rom_ready_o <= '1';
 		end if;
 	end process;
 	
-	process(addr,clk_8,rst,i)
+	Ram1WE_control: process(rst,clk,we_mem,re_mem,read_prep,write_prep)
+	begin
+		if ((rst = Enable) or (we_mem = Disable) or (re_mem = Enable) or (read_prep = Enable) or (write_prep = Enable)) then
+			Ram1WE <= '1';
+		else 
+			Ram1WE <= clk;
+		end if;
+	end process;
+	
+	wrn_control: process(rst,clk,write_prep)
+	begin
+		if ((write_prep = Disable) or (rst = Enable)) then
+			wrn <= '1';
+		elsif (write_prep = Enable) then
+			wrn <= clk;
+		else 
+			wrn <= '1';
+		end if;
+	end process;
+			
+	rdn_control: process(rst,clk,read_prep)
+	begin
+		if ((read_prep = Disable) or (rst = Enable)) then
+			rdn <= '1';
+		elsif (read_prep = Enable) then
+			rdn <= clk;
+		else 
+			rdn <= '1';
+		end if;
+	end process;
+	
+	Ram_control: process(clk, rst, addr_id, addr_mem, addr_id, addr_mem, we_mem, re_mem, wdata_mem)
 	begin
 		if (rst = Enable) then
+			Ram1EN <= '0';
+			Ram1OE <= we_mem;
 			Ram1Addr <= (others => '0');
 			Ram1Data <= (others => 'Z');
-			Ram1OE <= '1';
-			Ram1EN <= '0';
-			rdn <= '1';
-			wrn <= '1';
+			read_prep <= Disable;
+			write_prep <= Disable;
+		elsif(clk'event and clk = Enable) then
+			if ((we_mem = Disable) and (re_mem = Disable)) then
+				if ((addr_id >= x"4000") and (addr_id < x"8000")) then
+					--无冲突情况下读用户指令
+					Ram1EN <= '0';
+					Ram1OE <= '0';
+					Ram1Addr <= "00" & addr_id;
+					Ram1Data <= (others => 'Z');
+				else 
+					--默认读数据
+					Ram1EN <= '0';
+					Ram1OE <= '0';
+					Ram1Addr <= "00" & addr_mem;
+					Ram1Data <= (others => 'Z');
+				end if;
+			elsif (we_mem = Enable) then
+				if (addr_mem = x"bf00") then
+					--写串口
+					Ram1EN <= '1';
+					Ram1OE <= '1';
+					Ram1Addr <= "00" & addr_mem;
+					Ram1Data <= wdata_mem;
+					write_prep <= Disable;
+				elsif (addr_mem = x"bf01") then
+					--准备写串口
+					Ram1EN <= '0';
+					Ram1OE <= '1';
+					Ram1Addr <= "00" & addr_mem;
+					Ram1Data <= x"0001";
+					write_prep <= Enable;
+				else
+					--写数据
+					Ram1EN <= '0';
+					Ram1OE <= '1';
+					Ram1Addr <= "00" & addr_mem;
+					Ram1Data <= wdata_mem;
+				end if;
+			elsif (re_mem = Enable) then
+				if (addr_mem = x"bf00") then
+					--读串口
+					Ram1EN <= '1';
+					Ram1OE <= '1';
+					Ram1Addr <= "00" & addr_mem;
+					Ram1Data <= (others => 'Z');
+					read_prep <= Disable;
+				elsif (addr_mem = x"bf01") then	
+					--准备读串口
+					Ram1EN <= '0';
+					Ram1OE <= '1';
+					Ram1Addr <= "00" & addr_mem;
+					if (data_ready = '1') then 
+						--有串口数据
+						Ram1Data <= x"0002";
+						read_prep <= Enable;
+					else 
+						--无串口数据
+						Ram1Data <= (others => '0');
+						read_prep <= Disable;
+					end if;
+				else 
+					--读数据
+					Ram1EN <= '0';
+					Ram1OE <= '0';
+					Ram1Addr <= "00" & addr_mem;
+					Ram1Data <= (others => 'Z');
+				end if;
+			else 
+				--不应到达这里
+				Ram1EN <= '0';
+				Ram1OE <= '0';
+				Ram1Addr <= "00" & addr_mem;
+				Ram1Data <= (others => 'Z');
+			end if;
+		end if;
+	end process;
+
+	Mem_read : process(rst,addr_id,addr_mem,re_mem,wdata_mem,Ram1Data)
+	variable id : integer;
+	begin
+		if(rst = Enable) then
+			rdata_mem <= ZeroWord;
+		elsif(re_mem = Disable) then
+			rdata_mem <= ZeroWord;
+		else
+			rdata_mem <= Ram1Data;
+		end if;
+	end process;
+
+	Inst: process(rst,ce_id,addr_mem,addr_id,Ram2Data)
+	begin
+		if((ce_id = Enable) and (rst = Disable) and (LoadComplete = Enable)) then
+			if ((addr_id >= x"4000") and (addr_id < x"8000")) then
+				inst_id <= Ram1Data;
+			else
+				inst_id <= Ram2Data;
+			end if;
+		else
+			inst_id <= NopInst;
+		end if;
+	end process;
+	
+	Rom: process(addr_id,clk_8,rst,i)
+	begin
+		if (rst = Enable) then
+			Ram2Addr <= (others => '0');
+			Ram2Data <= (others => 'Z');
+			Ram2OE <= '1';
 			LoadComplete <= '0';
 			FlashReset <= '0';
 			i <= (others => '0');			
 		else
 			if (LoadComplete = '1') then 
-				Ram1Addr <= "00" & addr;
-				Ram1Data <= (others => 'Z');
-				Ram1OE <= '0';
-				Ram1EN <= '0';
-				rdn <= '1';
-				wrn <= '1';
+				Ram2Addr <= "00" & addr_id;
+				Ram2Data <= (others => 'Z');
+				Ram2OE <= '0';
 				FlashReset <= '0';
 			else
 				if (i = kernelInstNum) then 
-					Ram1Addr <= "00" & addr;
-					Ram1OE <= '0';
-					Ram1EN <= '0';
-					rdn <= '1';
-					wrn <= '1';
+					Ram2Addr <= "00" & addr_id;
+					Ram2OE <= '0';
+					Ram2EN <= '0';
 					FlashReset <= '0';
 					LoadComplete <= '1';
-					Ram1Data <= (others => 'Z');
+					Ram2Data <= (others => 'Z');
 				else 
-					Ram1OE <= '1';
-					Ram1EN <= '0';
-					rdn <= '1';
-					wrn <= '1';
+					Ram2OE <= '1';
+					Ram2EN <= '0';
 					FlashReset <= '1';
-					Ram1Addr <= "00" & i;
+					Ram2Addr <= "00" & i;
 					FlashAddrIn <= "000000" & i;
-					Ram1Data <= FlashDataOut;				
+					Ram2Data <= FlashDataOut;				
 					if (clk_8'event and (clk_8 = '1')) then 
 						FlashRead <= not(FlashRead);
 						i <= i+1;
@@ -197,5 +345,6 @@ begin
 			
 		end if;
 	end process;
+	
 end Behavioral;
 
