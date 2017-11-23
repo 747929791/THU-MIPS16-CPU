@@ -34,9 +34,11 @@ use IEEE.STD_LOGIC_ARITH.ALL;
 entity cpu is
 	    Port ( rst : in  STD_LOGIC;
            clk : in  STD_LOGIC;
+			  rom_ready_i : in STD_LOGIC; --取指是否成功
            rom_data_i : in STD_LOGIC_VECTOR(15 downto 0); --取得的指令
            rom_addr_o : out STD_LOGIC_VECTOR(15 downto 0); --指令寄存器地址
            rom_ce_o : out STD_LOGIC; --指令存储器使能
+			  ram_ready_i : in STD_LOGIC; --访存是否成功
            ram_rdata_i : in STD_LOGIC_VECTOR(15 downto 0);
            ram_read_o : out STD_LOGIC;
            ram_write_o : out STD_LOGIC;
@@ -101,12 +103,16 @@ signal reg2_data : STD_LOGIC_VECTOR(15 downto 0);
 signal reg1_addr : STD_LOGIC_VECTOR(3 downto 0);
 signal reg2_addr : STD_LOGIC_VECTOR(3 downto 0);
 --CTRL暂停信号
+signal stallreq_if : STD_LOGIC;
 signal stallreq_id : STD_LOGIC;
 signal stallreq_ex : STD_LOGIC;
+signal stallreq_mem : STD_LOGIC;
 signal stall : STD_LOGIC_VECTOR(5 downto 0);
 --ID/PC转移信号
 signal branch_flag : STD_LOGIC;
 signal branch_target_address : STD_LOGIC_VECTOR(15 downto 0);
+--暂停信号
+
 
 component pc
     Port ( rst : in  STD_LOGIC; --复位信号
@@ -281,8 +287,10 @@ end component;
 
 component ctrl
     Port ( rst : in  STD_LOGIC;
+           stallreq_from_if : in  STD_LOGIC;
            stallreq_from_id : in  STD_LOGIC;
            stallreq_from_ex : in  STD_LOGIC;
+           stallreq_from_mem : in  STD_LOGIC;
            stall : out  STD_LOGIC_VECTOR (5 downto 0));
 end component;
 
@@ -310,6 +318,8 @@ begin
 										  mem_read_i=>mem_mem_read_i,mem_write_i=>mem_mem_write_i,mem_addr_i=>mem_mem_addr_i,mem_wdata_i=>mem_mem_wdata_i,
 										  mem_read_o=>ram_read_o, mem_write_o=>ram_write_o, mem_addr_o=>ram_addr_o, mem_wdata_o=>ram_wdata_o, mem_rdata_i=>ram_rdata_i,mem_ce_o=>ram_ce_o);
 	mem_wb_component : mem_wb port map(rst=>rst, clk=>clk, mem_wd=>mem_wd_o, mem_wreg=>mem_wreg_o, mem_wdata=>mem_wdata_o, wb_wd=>wb_wd_i, wb_wreg=>wb_wreg_i, wb_wdata=>wb_wdata_i, stall=>stall);
-	ctrl_component : ctrl port map(rst=>rst, stallreq_from_id=>stallreq_id, stallreq_from_ex=>stallreq_ex, stall=>stall);
+	stallreq_if <= not rom_ready_i;
+	stallreq_mem <= not ram_ready_i;
+	ctrl_component : ctrl port map(rst=>rst, stallreq_from_id=>stallreq_id, stallreq_from_ex=>stallreq_ex, stall=>stall, stallreq_from_if=>stallreq_if, stallreq_from_mem=>stallreq_mem);
 end Behavioral;
 
