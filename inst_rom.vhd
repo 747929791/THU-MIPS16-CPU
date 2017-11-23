@@ -200,7 +200,7 @@ begin
 	begin
 		if (rst = Enable) then
 			Ram1EN <= '0';
-			Ram1OE <= '1';
+			Ram1OE <= we_mem;
 			Ram1Addr <= (others => '0');
 			Ram1Data <= (others => 'Z');
 			read_prep <= Disable;
