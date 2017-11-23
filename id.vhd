@@ -73,6 +73,7 @@ signal instvalid:STD_LOGIC; --指令是否有效
 --内部信号
 signal reg1_read_e,reg2_read_e:STD_LOGIC;
 signal reg1_addr,reg2_addr:STD_LOGIC_VECTOR(3 downto 0);
+signal reg1_data,reg2_data:STD_LOGIC_VECTOR(15 downto 0); --考虑旁路取得的正确reg_data
 begin
 	inst_o <= inst_i;
 	reg1_read_o <= reg1_read_e;
@@ -80,7 +81,7 @@ begin
 	reg1_addr_o <= reg1_addr;
 	reg2_addr_o <= reg2_addr;
 	--译码
-	id_process : process(rst,pc_i,inst_i,reg1_data_i,reg2_data_i,imm)
+	id_process : process(rst,pc_i,inst_i,reg1_data,imm)
 		variable op : STD_LOGIC_VECTOR(4 downto 0);
 		variable sub_op : STD_LOGIC_VECTOR(4 downto 0);
 		variable sub_op2 : STD_LOGIC_VECTOR(1 downto 0);
@@ -332,17 +333,17 @@ begin
 									imm <= pc_plus_1 + "0000000000000001";
 									wd_o <= RA_REGISTER;
 									branch_flag_o <= Enable;
-									branch_target_address_o <= reg1_data_i;
+									branch_target_address_o <= reg1_data;
 								when "0000" => --JR
 									reg1_read_e <= Enable;
 									reg1_addr <= rx;
 									branch_flag_o <= Enable;
-									branch_target_address_o <= reg1_data_i;
+									branch_target_address_o <= reg1_data;
 								when "0001" => --JRRA
 									reg1_read_e <= Enable;
 									reg1_addr <= RA_REGISTER;
 									branch_flag_o <= Enable;
-									branch_target_address_o <= reg1_data_i;
+									branch_target_address_o <= reg1_data;
 								when others =>
 							end case;
 						when others =>
@@ -406,7 +407,7 @@ begin
 					reg1_read_e <= Enable;
 					reg1_addr <= rx;
 					imm <= SXT(imm8,16);
-					if(reg1_data_i = ZeroWord) then
+					if(reg1_data = ZeroWord) then
 						branch_flag_o <= Enable;
 						branch_target_address_o <= pc_plus_1 + imm ;
 					end if;
@@ -414,7 +415,7 @@ begin
 					reg1_read_e <= Enable;
 					reg1_addr <= rx;
 					imm <= SXT(imm8,16);
-					if(reg1_data_i /= ZeroWord) then
+					if(reg1_data /= ZeroWord) then
 						branch_flag_o <= Enable;
 						branch_target_address_o <= pc_plus_1 + imm ;
 					end if;
@@ -435,7 +436,7 @@ begin
 							reg1_read_e <= Enable;
 							reg1_addr <= T_REGISTER;
 							imm <= SXT(imm8,16);
-							if(reg1_data_i = ZeroWord) then
+							if(reg1_data = ZeroWord) then
 								branch_flag_o <= Enable;
 								branch_target_address_o <= pc_plus_1 + imm ;
 							end if;
@@ -443,7 +444,7 @@ begin
 							reg1_read_e <= Enable;
 							reg1_addr <= T_REGISTER;
 							imm <= SXT(imm8,16);
-							if(reg1_data_i /= ZeroWord) then
+							if(reg1_data /= ZeroWord) then
 								branch_flag_o <= Enable;
 								branch_target_address_o <= pc_plus_1 + imm ;
 							end if;
@@ -562,16 +563,12 @@ begin
 	end process;
 
 	--确定源操作数1
-	reg1_process : process(rst,reg1_data_i,imm,reg1_read_e,ex_wreg_i,ex_wd_i,ex_wdata_i,mem_wreg_i,mem_wd_i,mem_wdata_i,reg1_addr)
+	reg1_process : process(rst,imm,reg1_read_e,reg1_data)
 	begin
 		if(rst = Enable) then
 			reg1_o <= ZeroWord;
-		elsif(reg1_read_e = Enable and ex_wreg_i = Enable and ex_wd_i=reg1_addr) then
-			reg1_o <= ex_wdata_i;
-		elsif(reg1_read_e = Enable and mem_wreg_i = Enable and mem_wd_i=reg1_addr) then
-			reg1_o <= mem_wdata_i;
 		elsif(reg1_read_e = Enable) then
-			reg1_o <= reg1_data_i;
+			reg1_o <= reg1_data;
 		elsif(reg1_read_e = Disable) then
 			reg1_o<=imm;
 		else
@@ -580,20 +577,52 @@ begin
 	end process;
 
 	--确定源操作数2
-	reg2_process : process(rst,reg2_data_i,imm,reg2_read_e,ex_wreg_i,ex_wd_i,ex_wdata_i,mem_wreg_i,mem_wd_i,mem_wdata_i,reg2_addr)
+	reg2_process : process(rst,imm,reg2_read_e,reg2_data)
 	begin
 		if(rst = Enable) then
 			reg2_o <= ZeroWord;
-		elsif(reg2_read_e = Enable and ex_wreg_i = Enable and ex_wd_i=reg2_addr) then
-			reg2_o <= ex_wdata_i;
-		elsif(reg2_read_e = Enable and mem_wreg_i = Enable and mem_wd_i=reg2_addr) then
-			reg2_o <= mem_wdata_i;
 		elsif(reg2_read_e = Enable) then
-			reg2_o <= reg2_data_i;
+			reg2_o <= reg2_data;
 		elsif(reg2_read_e = Disable) then
 			reg2_o<=imm;
 		else
 			reg2_o<=ZeroWord;
+		end if;
+	end process;
+
+	--确定寄存器1正确值(考虑旁路)
+	reg1_data_process : process(rst,reg1_data_i,imm,reg1_read_e,ex_wreg_i,ex_wd_i,ex_wdata_i,mem_wreg_i,mem_wd_i,mem_wdata_i,reg1_addr)
+	begin
+		if(rst = Enable) then
+			reg1_data <= ZeroWord;
+		elsif(reg1_read_e = Enable and ex_wreg_i = Enable and ex_wd_i=reg1_addr) then
+			reg1_data <= ex_wdata_i;
+		elsif(reg1_read_e = Enable and mem_wreg_i = Enable and mem_wd_i=reg1_addr) then
+			reg1_data <= mem_wdata_i;
+		elsif(reg1_read_e = Enable) then
+			reg1_data <= reg1_data_i;
+		elsif(reg1_read_e = Disable) then
+			reg1_data<=ZeroWord;
+		else
+			reg1_data<=ZeroWord;
+		end if;
+	end process;
+
+	--确定寄存器2正确返回值(考虑旁路)
+	reg2_data_process : process(rst,reg2_data_i,imm,reg2_read_e,ex_wreg_i,ex_wd_i,ex_wdata_i,mem_wreg_i,mem_wd_i,mem_wdata_i,reg2_addr)
+	begin
+		if(rst = Enable) then
+			reg2_data <= ZeroWord;
+		elsif(reg2_read_e = Enable and ex_wreg_i = Enable and ex_wd_i=reg2_addr) then
+			reg2_data <= ex_wdata_i;
+		elsif(reg2_read_e = Enable and mem_wreg_i = Enable and mem_wd_i=reg2_addr) then
+			reg2_data <= mem_wdata_i;
+		elsif(reg2_read_e = Enable) then
+			reg2_data <= reg2_data_i;
+		elsif(reg2_read_e = Disable) then
+			reg2_data<=ZeroWord;
+		else
+			reg2_data<=ZeroWord;
 		end if;
 	end process;
 
