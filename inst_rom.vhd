@@ -84,7 +84,7 @@ end inst_rom;
 
 architecture Behavioral of inst_rom is
 	constant InstNum : integer := 100;
-	constant kernelInstNum : integer := 10;
+	constant kernelInstNum : integer := 1000;
 	type InstArray is array (0 to InstNum) of STD_LOGIC_VECTOR(15 downto 0);
 	signal insts: InstArray := (
 		--BNEQZ测试
@@ -207,6 +207,8 @@ begin
 			write_prep <= Disable;
 		elsif(clk'event and clk = Enable) then
 			if ((we_mem = Disable) and (re_mem = Disable)) then
+				read_prep <= Disable;
+				write_prep <= Disable;
 				if ((addr_id >= x"4000") and (addr_id < x"8000")) then
 					--无冲突情况下读用户指令
 					Ram1EN <= '0';
@@ -221,20 +223,29 @@ begin
 					Ram1Data <= (others => 'Z');
 				end if;
 			elsif (we_mem = Enable) then
+				read_prep <= Disable;
 				if (addr_mem = x"bf00") then
 					--写串口
 					Ram1EN <= '1';
 					Ram1OE <= '1';
 					Ram1Addr <= "00" & addr_mem;
 					Ram1Data <= wdata_mem;
-					write_prep <= Disable;
+					read_prep <= Disable;
 				elsif (addr_mem = x"bf01") then
 					--准备写串口
 					Ram1EN <= '0';
 					Ram1OE <= '1';
 					Ram1Addr <= "00" & addr_mem;
-					Ram1Data <= x"0001";
-					write_prep <= Enable;
+					
+					if ((tbre = '1') and (tsre= '1')) then 
+						--有串口数据
+						Ram1Data <= x"0001";
+						write_prep <= Enable;
+					else 
+						--无串口数据
+						Ram1Data <= (others => '0');
+						write_prep <= Disable;
+					end if;
 				else
 					--写数据
 					Ram1EN <= '0';
@@ -243,6 +254,7 @@ begin
 					Ram1Data <= wdata_mem;
 				end if;
 			elsif (re_mem = Enable) then
+				write_prep <= Disable;
 				if (addr_mem = x"bf00") then
 					--读串口
 					Ram1EN <= '1';
@@ -273,6 +285,8 @@ begin
 				end if;
 			else 
 				--不应到达这里
+				read_prep <= Disable;
+				write_prep <= Disable;
 				Ram1EN <= '0';
 				Ram1OE <= '0';
 				Ram1Addr <= "00" & addr_mem;
@@ -293,7 +307,7 @@ begin
 		end if;
 	end process;
 
-	Inst: process(rst,ce_id,addr_mem,addr_id,Ram2Data)
+	Inst: process(rst,ce_id,addr_mem,addr_id,Ram1Data,Ram2Data,LoadComplete)
 	begin
 		if((ce_id = Enable) and (rst = Disable) and (LoadComplete = Enable)) then
 			if ((addr_id >= x"4000") and (addr_id < x"8000")) then
@@ -306,11 +320,12 @@ begin
 		end if;
 	end process;
 	
-	Rom: process(addr_id,clk_8,rst,i)
+	Rom: process(addr_id,clk_8,clk,FlashDataOut,rst,i,LoadComplete)
 	begin
 		if (rst = Enable) then
 			Ram2Addr <= (others => '0');
-			Ram2Data <= (others => 'Z');
+			Ram2Data <= (others => '0');
+			FlashAddrIn <= (others => '0');
 			Ram2OE <= '1';
 			LoadComplete <= '0';
 			FlashReset <= '0';
@@ -333,10 +348,12 @@ begin
 					Ram2OE <= '1';
 					Ram2EN <= '0';
 					FlashReset <= '1';
-					Ram2Addr <= "00" & i;
-					FlashAddrIn <= "000000" & i;
-					Ram2Data <= FlashDataOut;				
-					if (clk_8'event and (clk_8 = '1')) then 
+					if (i>0) then
+						Ram2Addr <= "00" & (i-1);
+						FlashAddrIn <= "000000" & (i-1);	
+						Ram2Data <= FlashDataOut;	
+					end if;
+					if (clk_8'event and (clk_8 = '1')) then 		
 						FlashRead <= not(FlashRead);
 						i <= i+1;
 					end if;

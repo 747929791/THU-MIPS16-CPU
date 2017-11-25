@@ -79,58 +79,58 @@ architecture Behavioral of flash_io is
 	
 begin
 
-	process(addr)
-	variable id : integer;
-	begin
-		id := conv_integer(addr);
-		data_out <= insts(id);
-	end process;
-
---	flash_byte <= '1';
---	flash_vpen <= '1';
---	flash_ce <= '0';
---	flash_rp <= '1';
---	
---	process (clk, reset)
+--	process(addr)
+--	variable id : integer;
 --	begin
---		if (reset = '0') then
---			flash_oe <= '1';
---			flash_we <= '1';
---			state <= waiting;
---			next_state <= waiting;
---			ctl_read_last <= ctl_read;
---			flash_data <= (others => 'Z');
---		elsif (clk'event and clk = '1') then
---			case state is
---				when waiting =>
---					if (ctl_read /= ctl_read_last) then
---						flash_we <= '0';
---						state <= read1;
---						ctl_read_last <= ctl_read;
---					end if;
---				when read1 =>
---					flash_data <= x"00FF";
---					state <= read2;
---				when read2 =>
---					flash_we <= '1';
---					state <= read3;
---				when read3 =>
---					flash_oe <= '0';
---					flash_addr <= addr;
---					flash_data <= (others => 'Z');
---					state <= read4;
---				when read4 =>
---					data_out <= flash_data;
---					state <= done;
---					
---				when others =>
---					flash_oe <= '1';
---					flash_we <= '1';
---					flash_data <= (others => 'Z');
---					state <= waiting;
---			end case;
---		end if;
+--		id := conv_integer(addr);
+--		data_out <= insts(id);
 --	end process;
+
+	flash_byte <= '1';
+	flash_vpen <= '1';
+	flash_ce <= '0';
+	flash_rp <= '1';
+	
+	process (clk, reset, ctl_read)
+	begin
+		if (reset = '0') then
+			flash_oe <= '1';
+			flash_we <= '1';
+			state <= waiting;
+			next_state <= waiting;
+			ctl_read_last <= ctl_read;
+			flash_data <= (others => 'Z');
+		elsif (clk'event and clk = '1') then
+			case state is
+				when waiting =>
+					if (ctl_read /= ctl_read_last) then
+						flash_we <= '0';
+						state <= read1;
+						ctl_read_last <= ctl_read;
+					end if;
+				when read1 =>
+					flash_data <= x"00FF";
+					state <= read2;
+				when read2 =>
+					flash_we <= '1';
+					state <= read3;
+				when read3 =>
+					flash_oe <= '0';
+					flash_addr <= addr;
+					flash_data <= (others => 'Z');
+					state <= read4;
+				when read4 =>
+					data_out <= flash_data;
+					state <= done;
+					
+				when others =>
+					flash_oe <= '1';
+					flash_we <= '1';
+					flash_data <= (others => 'Z');
+					state <= waiting;
+			end case;
+		end if;
+	end process;
 	
 
 
