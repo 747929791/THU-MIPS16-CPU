@@ -36,26 +36,33 @@ use WORK.DEFINES.ALL;
 entity inst_rom is
     Port ( ce : in  STD_LOGIC;
            addr : in  STD_LOGIC_VECTOR (15 downto 0);
-           inst : out  STD_LOGIC_VECTOR (15 downto 0));
+           inst : out  STD_LOGIC_VECTOR (15 downto 0);
+			  ready : out STD_LOGIC);
+
 end inst_rom;
 architecture Behavioral of inst_rom is
 	constant InstNum : integer := 100;
 	type InstArray is array (0 to InstNum) of STD_LOGIC_VECTOR(15 downto 0);
 	signal insts: InstArray := (
-		--BNEQZ≤‚ ‘
+		--LW_SW_MT_MF_TEST
+		"0110100000000101", --LI R[0], 5
+		"0110100100000100", --LI R[1], 4
 		"0110101000000011", --LI R[2], 3
-		"1110101001001011", --NEG R[2], R[2]
-		"0110100000000100", --LI R[0], 4
-		"1110100000001011", --NEG R[0], R[0]
-		"0100000000000001", --R[0]++
-		"0010100011111110", --BNEQZ(R[0])  PC<-PC-3
-		"0100000100100001", --R[1]++
-		"0100001101100001", --R[3]++
+		"1101100000100001", --SW R[0], R[1], 1
+		"1001100001100001", --LW R[0], R[3], 1
+		"0110010001000001", --MTSP R[2]
+		"1111000000000001", --MTIH R[0]
+		"0110001100000010", --ADDSP 2
+		"1101000000000101", --SW_SP R[0], 5
+		"1001001100000101", --LW_SP R[3], 5
+		"1111010000000000", --MFIH R[4]
+		"1110110101000000", --MFPC R[5]
 		others => NopInst);
 begin
 	process(ce,addr)
 		variable id : integer;
 	begin
+		ready <= '1';
 		if(ce = Enable) then
 			id:=conv_integer(addr);
 			if(id>InstNum) then

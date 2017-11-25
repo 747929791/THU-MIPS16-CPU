@@ -323,7 +323,7 @@ begin
 									reg1_read_e <= Disable;
 									reg2_read_e <= Disable;
 									wd_o <=rx;
-									imm <= pc_i;
+									imm <= pc_plus_1;
 									instvalid <= Enable;
 								when "0110" => --JALR
 									wreg_o <= Enable;
@@ -532,7 +532,15 @@ begin
 					reg2_read_e <= Enable;
 					reg2_addr <= ry;
 					instvalid <= Enable;
-				
+				when "11010" => --SW_SP
+					wreg_o <= Disable;
+					aluop_o <= EXE_SW_SP;
+					alusel_o <= EXE_RES_LOAD_STORE;
+					reg1_read_e <= Enable;
+					reg1_addr <= SP_REGISTER;
+					reg2_read_e <= Enable;
+					reg2_addr <= rx;
+					instvalid <= Enable;
 				when "11110" => 
 					case sub_op is
 						when "00000" => --MFIH

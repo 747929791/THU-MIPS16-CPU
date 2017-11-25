@@ -39,7 +39,8 @@ entity ram is
            we : in  STD_LOGIC;
            addr : in  STD_LOGIC_VECTOR (15 downto 0);
            wdata : in  STD_LOGIC_VECTOR (15 downto 0);
-           rdata : out  STD_LOGIC_VECTOR (15 downto 0));
+           rdata : out  STD_LOGIC_VECTOR (15 downto 0);
+			  ready : out STD_LOGIC);
 end ram;
 
 architecture Behavioral of ram is
@@ -61,6 +62,7 @@ begin
 
 	READ : process(rst,re,addr,we,wdata,rams)
 	begin
+		ready <= '1';
 		if(rst = Enable) then
 			rdata <= ZeroWord;
 		elsif(re = Disable) then

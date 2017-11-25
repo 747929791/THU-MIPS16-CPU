@@ -36,9 +36,11 @@ end sopc;
 
 architecture Behavioral of sopc is
 
+signal rom_ready : STD_LOGIC;
 signal rom_data : STD_LOGIC_VECTOR(15 downto 0);
 signal rom_addr : STD_LOGIC_VECTOR(15 downto 0);
 signal rom_ce : STD_LOGIC;
+signal ram_ready : STD_LOGIC;
 signal ram_rdata : STD_LOGIC_VECTOR(15 downto 0);
 signal ram_read : STD_LOGIC;
 signal ram_write : STD_LOGIC;
@@ -49,9 +51,11 @@ signal ram_ce : STD_LOGIC;
 component cpu
 	    Port ( rst : in  STD_LOGIC;
            clk : in  STD_LOGIC;
+			  rom_ready_i : in STD_LOGIC; --取指是否成功
            rom_data_i : in STD_LOGIC_VECTOR(15 downto 0); --取得的指令
            rom_addr_o : out STD_LOGIC_VECTOR(15 downto 0); --指令寄存器地址
            rom_ce_o : out STD_LOGIC; --指令存储器使能
+			  ram_ready_i : in STD_LOGIC; --访存是否成功
            ram_rdata_i : in STD_LOGIC_VECTOR(15 downto 0);
            ram_read_o : out STD_LOGIC;
            ram_write_o : out STD_LOGIC;
@@ -64,7 +68,8 @@ end component;
 component inst_rom
     Port ( ce : in  STD_LOGIC;
            addr : in  STD_LOGIC_VECTOR (15 downto 0);
-           inst : out  STD_LOGIC_VECTOR (15 downto 0));
+           inst : out  STD_LOGIC_VECTOR (15 downto 0);
+			  ready : out STD_LOGIC);
 end component;
 
 component ram
@@ -74,15 +79,16 @@ component ram
            we : in  STD_LOGIC;
            addr : in  STD_LOGIC_VECTOR (15 downto 0);
            wdata : in  STD_LOGIC_VECTOR (15 downto 0);
-           rdata : out  STD_LOGIC_VECTOR (15 downto 0));
+           rdata : out  STD_LOGIC_VECTOR (15 downto 0);
+			  ready : out STD_LOGIC);
 end component;
 
 begin
 
-	cpu_component : cpu port map(rst=>rst,clk=>clk,rom_data_i=>rom_data, rom_addr_o=>rom_addr, rom_ce_o=>rom_ce,
+	cpu_component : cpu port map(rst=>rst,clk=>clk, rom_ready_i => rom_ready, rom_data_i=>rom_data, rom_addr_o=>rom_addr, rom_ce_o=>rom_ce, ram_ready_i => ram_ready,
 										  ram_rdata_i=>ram_rdata,ram_read_o=>ram_read,ram_write_o=>ram_write,ram_addr_o=>ram_addr,ram_wdata_o=>ram_wdata,ram_ce_o=>ram_ce);
-	inst_rom_component : inst_rom port map(inst=>rom_data, addr=>rom_addr, ce=>rom_ce);
-	ram_component : ram port map(rst=>rst,clk=>clk,re=>ram_read,we=>ram_write,addr=>ram_addr,wdata=>ram_wdata,rdata=>ram_rdata);
+	inst_rom_component : inst_rom port map(inst=>rom_data, addr=>rom_addr, ce=>rom_ce, ready => rom_ready);
+	ram_component : ram port map(rst=>rst,clk=>clk,re=>ram_read,we=>ram_write,addr=>ram_addr,wdata=>ram_wdata,rdata=>ram_rdata, ready => ram_ready);
 
 end Behavioral;
 
