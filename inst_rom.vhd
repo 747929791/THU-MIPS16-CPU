@@ -44,19 +44,39 @@ architecture Behavioral of inst_rom is
 	constant InstNum : integer := 100;
 	type InstArray is array (0 to InstNum) of STD_LOGIC_VECTOR(15 downto 0);
 	signal insts: InstArray := (
-		--LW_SW_MT_MF_TEST
-		"0110100000000101", --LI R[0], 5
-		"0110100100000100", --LI R[1], 4
-		"0110101000000011", --LI R[2], 3
-		"1101100000100001", --SW R[0], R[1], 1
-		"1001100001100001", --LW R[0], R[3], 1
-		"0110010001000001", --MTSP R[2]
-		"1111000000000001", --MTIH R[0]
-		"0110001100000010", --ADDSP 2
-		"1101000000000101", --SW_SP R[0], 5
-		"1001001100000101", --LW_SP R[3], 5
-		"1111010000000000", --MFIH R[4]
-		"1110110101000000", --MFPC R[5]
+		x"6800",    --LI R0 0000
+		x"3000",    --SLL R0 R0 0000
+		x"6905",    --LI R1 0005
+		x"d820",    --SW R0 R1 0000
+		x"6908",    --LI R1 0008
+		x"d821",    --SW R0 R1 0001
+		x"6904",    --LI R1 0004
+		x"d822",    --SW R0 R1 0002
+		x"6916",    --LI R1 0016
+		x"d823",    --SW R0 R1 0003
+		x"6902",    --LI R1 0002
+		x"d824",    --SW R0 R1 0004
+		x"6901",    --LI R1 0001
+		x"d825",    --SW R0 R1 0005
+		x"9820",    --LW R0 R1 0000
+		x"4801",    --ADDIU R0 0001
+		x"49ff",    --ADDIU R1 ffff
+		x"7a00",    --MOVE R2 R0
+		x"7b20",    --MOVE R3 R1
+		x"9a80",    --LW R2 R4 0000
+		x"9aa1",    --LW R2 R5 0001
+		x"eca2",    --SLT R4 R5
+		x"6103",    --BTNEZ 0003
+		x"0800",    --NOP
+		x"daa0",    --SW R2 R5 0000
+		x"da81",    --SW R2 R4 0001
+		x"4a01",    --ADDIU R2 0001
+		x"4bff",    --ADDIU R3 ffff
+		x"2bf6",    --BNEZ R3 fff6
+		x"0800",    --NOP
+		x"49ff",    --ADDIU R1 ffff
+		x"29f1",    --BNEZ R1 fff1
+		x"0800",    --NOP
 		others => NopInst);
 begin
 	process(ce,addr)

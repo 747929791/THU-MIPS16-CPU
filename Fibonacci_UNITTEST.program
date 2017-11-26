@@ -1,0 +1,13 @@
+x¡±6901¡±,     --LI R1 0001
+x¡±6a01¡±,     --LI R2 0001
+x¡±6b80¡±,     --LI R3 0080
+x¡±3360¡±,     --SLL R3 R3 0000
+x¡±6c09¡±,     --LI R4 0009
+x¡±db20¡±,     --SW R3 R1 0000
+x¡±db41¡±,     --SW R3 R2 0001
+x¡±e145¡±,     --ADDU R1 R2 R1
+x¡±e149¡±,     --ADDU R1 R2 R2
+x¡±4b02¡±,     --ADDIU R3 0002
+x¡±4cff¡±,     --ADDIU R4 ffff
+x¡±2cf9¡±,     --BNEZ R4 fff9
+x¡±0800¡±,     --NOP
