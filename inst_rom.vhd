@@ -84,7 +84,7 @@ end inst_rom;
 
 architecture Behavioral of inst_rom is
 	constant InstNum : integer := 100;
-	constant kernelInstNum : integer := 100;
+	constant kernelInstNum : integer := 1000;
 	type InstArray is array (0 to InstNum) of STD_LOGIC_VECTOR(15 downto 0);
 	signal insts: InstArray := (
 		--BNEQZ≤‚ ‘

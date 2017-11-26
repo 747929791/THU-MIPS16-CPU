@@ -139,6 +139,10 @@ begin
 					mem_write_o <= Enable;
 					mem_addr_o <= reg1_i + SXT(inst_i(7 downto 0),16);
 					mem_wdata_o <= reg2_i;
+				when EXE_SW_SP =>
+					mem_write_o <= Enable;
+					mem_addr_o <= reg1_i + SXT(inst_i(7 downto 0),16);
+					mem_wdata_o <= reg2_i;
 				when EXE_MFIH =>
 					logicout <= reg1_i;
 				when EXE_MFPC => 
