@@ -195,7 +195,7 @@ begin
 		end if;
 	end process;
 	
-	Ram_control: process(clk, rst, addr_id, addr_mem, addr_id, addr_mem, we_mem, re_mem, wdata_mem)
+	Ram_control: process(clk, rst, addr_id, addr_mem, addr_id, addr_mem, we_mem, re_mem, wdata_mem, data_ready, tbre, tsre)
 	begin
 		if (rst = Enable) then
 			Ram1EN <= '0';
