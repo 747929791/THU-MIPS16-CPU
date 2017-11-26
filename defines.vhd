@@ -73,6 +73,7 @@ package defines is
 	constant EXE_SUBU_OP : std_logic_vector(7 downto 0) := "00101001"; --41
 	constant EXE_SW : std_logic_vector(7 downto 0) := "00101010"; --42
 	constant EXE_SW_RS : std_logic_vector(7 downto 0) := "00101011"; --43
+	constant EXE_SW_SP : std_logic_vector(7 downto 0) := "00101100"; --44
 	constant EXE_XOR_OP : std_logic_vector(7 downto 0) := "00101101"; --45
 	
 	
