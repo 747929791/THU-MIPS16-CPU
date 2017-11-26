@@ -84,7 +84,7 @@ end inst_rom;
 
 architecture Behavioral of inst_rom is
 	constant InstNum : integer := 100;
-	constant kernelInstNum : integer := 1000;
+	constant kernelInstNum : integer := 100;
 	type InstArray is array (0 to InstNum) of STD_LOGIC_VECTOR(15 downto 0);
 	signal insts: InstArray := (
 		--BNEQZ测试
@@ -101,6 +101,7 @@ architecture Behavioral of inst_rom is
 	signal FlashAddrIn : STD_LOGIC_VECTOR(22 downto 1);
 	signal LoadComplete: STD_LOGIC;
 	signal i: STD_LOGIC_VECTOR(15 downto 0);
+	signal read_prep, write_prep: STD_LOGIC;
 	
 	component flash_io
     Port ( addr : in  STD_LOGIC_VECTOR (22 downto 1);
@@ -172,22 +173,22 @@ begin
 		end if;
 	end process;
 	
-	wrn_control: process(rst,clk,we_mem,addr_mem,LoadComplete)
+	wrn_control: process(rst,clk,we_mem,write_prep,LoadComplete)
 	begin
 		if ((LoadComplete = '0') or (rst = Enable) or (we_mem = Disable)) then
 			wrn <= '1';
-		elsif (addr_mem = x"bf00") then
+		elsif (write_prep = Enable) then
 			wrn <= clk;
 		else 
 			wrn <= '1';
 		end if;
 	end process;
 			
-	rdn_control: process(rst,clk,re_mem,addr_mem,LoadComplete)
+	rdn_control: process(rst,clk,re_mem,read_prep,LoadComplete)
 	begin
 		if ((LoadComplete = '0') or (rst = Enable) or (re_mem = Disable)) then
 			rdn <= '1';
-		elsif (addr_mem = x"bf00") then
+		elsif (read_prep = Enable) then
 			rdn <= clk;
 		else 
 			rdn <= '1';
@@ -201,8 +202,13 @@ begin
 			Ram1OE <= '1';
 			Ram1Addr <= (others => '0');
 			Ram1Data <= (others => 'Z');
-		elsif(clk'event and clk = Enable) then
+			read_prep <= Disable;
+			write_prep <= Disable;
+		elsif(Enable = Enable) then
+		--elsif(clk'event and clk = Enable) then
 			if ((we_mem = Disable) and (re_mem = Disable)) then
+				read_prep <= Disable;
+				write_prep <= Disable;
 				if ((addr_id >= x"4000") and (addr_id < x"8000")) then
 					--无冲突情况下读用户指令
 					Ram1EN <= '0';
@@ -221,27 +227,35 @@ begin
 					--写串口
 					Ram1EN <= '1';
 					Ram1OE <= '1';
-					Ram1Addr <= "00" & addr_mem;
+					Ram1Addr <= "00" & x"bf00";
 					Ram1Data <= wdata_mem;
+					read_prep <= Disable;
+					write_prep <= Enable;
 				else
 					--写数据
 					Ram1EN <= '0';
 					Ram1OE <= '1';
 					Ram1Addr <= "00" & addr_mem;
 					Ram1Data <= wdata_mem;
+					read_prep <= Disable;
+					write_prep <= Disable;
 				end if;
 			elsif (re_mem = Enable) then
 				if (addr_mem = x"bf00") then
 					--读串口
 					Ram1EN <= '1';
 					Ram1OE <= '1';
-					Ram1Addr <= "00" & addr_mem;
+					Ram1Addr <= "00" & x"bf00";
 					Ram1Data <= (others => 'Z');
+					read_prep <= Enable;
+					write_prep <= Disable;
 				elsif (addr_mem = x"bf01") then	
 					--准备读或写串口
 					Ram1EN <= '0';
 					Ram1OE <= '1';
 					Ram1Addr <= "00" & addr_mem;
+					read_prep <= Disable;
+					write_prep <= Disable;
 					
 					if ((data_ready = '1') and (tbre = '1') and (tsre= '1')) then 
 						--串口数据可读写
@@ -262,6 +276,8 @@ begin
 					Ram1OE <= '0';
 					Ram1Addr <= "00" & addr_mem;
 					Ram1Data <= (others => 'Z');
+					read_prep <= Disable;
+					write_prep <= Disable;
 				end if;
 			else 
 				--不应到达这里
@@ -269,6 +285,8 @@ begin
 				Ram1OE <= '0';
 				Ram1Addr <= "00" & addr_mem;
 				Ram1Data <= (others => 'Z');
+				read_prep <= Disable;
+				write_prep <= Disable;
 			end if;
 		end if;
 	end process;

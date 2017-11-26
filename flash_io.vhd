@@ -68,70 +68,98 @@ architecture Behavioral of flash_io is
 	  --01000xxxyyy0iiii 访存LWSW测试
 	  --11011xxxyyyiiiii SW (Rx+imm)<-Ry
 	  --10011xxxyyyiiiii SW (Rx+imm)->Ry
-		"0100000000000001", --R[0]+=1
-		"1101100100000011", --SW(R[0])->RAM[R(1)+3]
-		"1001100000100010", --LW(RAM[R[0]+2])->R[1]
-		"0100000100100001", --R[1]++
-		"0100010010000001", --R[4]++ 现在R[0]=1,R[1]=1,R[4]=1,RAM[3]=1
-		"0100000000000001", --R[0]++
-		"1101100100000011", --SW(R[0])->RAM[R(1)+3] 现在R[0]=2,R[1]=2,R[4]=1,RAM[3]=1,RAM[4]=2
-		others => ZeroWord);
+--		"0100000000000001", --R[0]+=1
+--		"1101100100000011", --SW(R[0])->RAM[R(1)+3]
+--		"1001100000100010", --LW(RAM[R[0]+2])->R[1]
+--		"0100000100100001", --R[1]++
+--		"0100010010000001", --R[4]++ 现在R[0]=1,R[1]=1,R[4]=1,RAM[3]=1
+--		"0100000000000001", --R[0]++
+--		"1101100100000011", --SW(R[0])->RAM[R(1)+3] 现在R[0]=2,R[1]=2,R[4]=1,RAM[3]=1,RAM[4]=2
+		"0000100000000000", --noP
+		"0110111010111111", --LI R6 00BF
+		"0011011011000000", --SLL R6 R6 0000
+		"0100111000000001", --ADDIU R6 0001
+		"1001111000000000", --LW R6 R0 0000
+		"0110111000000001", --LI R6 0001
+		"1110100011001100", --AND R0 R6
+		"0010000011111000", --BEQZ R0 -0008
+		"0000100000000000", --noP
+		"0110111010111111", --LI R6 00BF
+		"0011011011000000", --SLL R6 R6 0000
+		"0110100001001111", --LI R0 004F
+		"1101111000000000", --SW R6 R0 0000
+		"0000100000000000", --noP
+		"0000100000000000", --noP
+		"0110111010111111", --LI R6 00BF
+		"0011011011000000", --SLL R6 R6 0000
+		"0100111000000001", --ADDIU R6 0001
+		"1001111000000000", --LW R6 R0 0000
+		"0110111000000001", --LI R6 0001
+		"1110100011001100", --AND R0 R6
+		"0010000011111000", --BEQZ R0 -0008
+		"0000100000000000", --noP
+		"0110111010111111", --LI R6 00BF
+		"0011011011000000", --SLL R6 R6 0000
+		"0110100001001011", --LI R0 004B
+		"1101111000000000", --SW R6 R0 0000
+		"0000100000000000", --noP
+		others => "0000100000000000");
 	
 begin
 
---	process(addr)
---	variable id : integer;
---	begin
---		id := conv_integer(addr);
---		data_out <= insts(id);
---	end process;
-
-	flash_byte <= '1';
-	flash_vpen <= '1';
-	flash_ce <= '0';
-	flash_rp <= '1';
-	
-	process (clk, reset, ctl_read)
+	process(addr)
+	variable id : integer;
 	begin
-		if (reset = '0') then
-			flash_oe <= '1';
-			flash_we <= '1';
-			state <= waiting;
-			next_state <= waiting;
-			ctl_read_last <= ctl_read;
-			flash_data <= (others => 'Z');
-		elsif (clk'event and clk = '1') then
-			case state is
-				when waiting =>
-					if (ctl_read /= ctl_read_last) then
-						flash_we <= '0';
-						state <= read1;
-						ctl_read_last <= ctl_read;
-					end if;
-				when read1 =>
-					flash_data <= x"00FF";
-					state <= read2;
-				when read2 =>
-					flash_we <= '1';
-					state <= read3;
-				when read3 =>
-					flash_oe <= '0';
-					flash_addr <= addr;
-					flash_data <= (others => 'Z');
-					state <= read4;
-				when read4 =>
-					data_out <= flash_data;
-					state <= done;
-					
-				when others =>
-					flash_oe <= '1';
-					flash_we <= '1';
-					flash_data <= (others => 'Z');
-					state <= waiting;
-			end case;
-		end if;
+		id := conv_integer(addr);
+		data_out <= insts(id);
 	end process;
-	
+
+--	flash_byte <= '1';
+--	flash_vpen <= '1';
+--	flash_ce <= '0';
+--	flash_rp <= '1';
+--	
+--	process (clk, reset, ctl_read)
+--	begin
+--		if (reset = '0') then
+--			flash_oe <= '1';
+--			flash_we <= '1';
+--			state <= waiting;
+--			next_state <= waiting;
+--			ctl_read_last <= ctl_read;
+--			flash_data <= (others => 'Z');
+--		elsif (clk'event and clk = '1') then
+--			case state is
+--				when waiting =>
+--					if (ctl_read /= ctl_read_last) then
+--						flash_we <= '0';
+--						state <= read1;
+--						ctl_read_last <= ctl_read;
+--					end if;
+--				when read1 =>
+--					flash_data <= x"00FF";
+--					state <= read2;
+--				when read2 =>
+--					flash_we <= '1';
+--					state <= read3;
+--				when read3 =>
+--					flash_oe <= '0';
+--					flash_addr <= addr;
+--					flash_data <= (others => 'Z');
+--					state <= read4;
+--				when read4 =>
+--					data_out <= flash_data;
+--					state <= done;
+--					
+--				when others =>
+--					flash_oe <= '1';
+--					flash_we <= '1';
+--					flash_data <= (others => 'Z');
+--					state <= waiting;
+--			end case;
+--		end if;
+--	end process;
+--	
 
 
 end Behavioral;

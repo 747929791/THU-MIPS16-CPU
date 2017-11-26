@@ -53,14 +53,17 @@ type RegArray is array (0 to 15) of STD_LOGIC_VECTOR(15 downto 0);
 signal regs: RegArray := (others => ZeroWord);
 begin
 
-	LED(15 downto 14) <= regs(7)(1 downto 0);
-	LED(13 downto 12) <= regs(6)(1 downto 0);
-	LED(11 downto 10) <= regs(5)(1 downto 0);
-	LED(9 downto 8) <= regs(4)(1 downto 0);
-	LED(7 downto 6) <= regs(3)(1 downto 0);
-	LED(5 downto 4) <= regs(2)(1 downto 0);
-	LED(3 downto 2) <= regs(1)(1 downto 0);
-	LED(1 downto 0) <= regs(0)(1 downto 0);
+--	LED(15 downto 14) <= regs(7)(1 downto 0);
+--	LED(13 downto 12) <= regs(6)(1 downto 0);
+--	LED(11 downto 10) <= regs(5)(1 downto 0);
+--	LED(9 downto 8) <= regs(4)(1 downto 0);
+--	LED(7 downto 6) <= regs(3)(1 downto 0);
+--	LED(5 downto 4) <= regs(2)(1 downto 0);
+--	LED(3 downto 2) <= regs(1)(1 downto 0);
+--	LED(1 downto 0) <= regs(0)(1 downto 0);
+
+	LED(15 downto 8) <= regs(6)(7 downto 0);
+	LED(7 downto 0) <= regs(0)(7 downto 0);
 
 	WriteOperator : process(clk)
 	begin
