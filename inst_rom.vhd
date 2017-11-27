@@ -158,8 +158,7 @@ begin
 	Rom_ready_state: process(addr_mem,we_mem,re_mem)
 	begin
 		if ((addr_mem >= x"4000") and (addr_mem < x"8000") and (we_mem = Enable)) then
-			rom_ready <= '1';
-			--?????????
+			rom_ready <= '0';
 		else 
 			rom_ready <= '1';
 		end if;
