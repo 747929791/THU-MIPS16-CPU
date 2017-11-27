@@ -102,6 +102,8 @@ architecture Behavioral of inst_rom is
 	signal LoadComplete: STD_LOGIC;
 	signal i: STD_LOGIC_VECTOR(15 downto 0);
 	signal read_prep, write_prep: STD_LOGIC;
+	signal Ram2OE_tmp: STD_LOGIC;
+	signal rom_ready: STD_LOGIC;
 	
 	component flash_io
     Port ( addr : in  STD_LOGIC_VECTOR (22 downto 1);
@@ -150,17 +152,16 @@ begin
 
 	inst_ready <= LoadComplete;
 	
-	Ram2WE <= clk or rst or LoadComplete;
-	Ram2EN <= '0';
-	
 	ram_ready_o <= '1';
+	rom_ready_o <= rom_ready;
 
-	Rom_ready_state: process(addr_id,we_mem,re_mem)
+	Rom_ready_state: process(addr_mem,we_mem,re_mem)
 	begin
-		if ((addr_id >= x"4000") and (addr_id < x"8000") and ((we_mem = Enable) or (re_mem = Enable))) then
-			rom_ready_o <= '0';
+		if ((addr_mem >= x"4000") and (addr_mem < x"8000") and (we_mem = Enable)) then
+			rom_ready <= '1';
+			--?????????
 		else 
-			rom_ready_o <= '1';
+			rom_ready <= '1';
 		end if;
 	end process;
 	
@@ -195,7 +196,7 @@ begin
 		end if;
 	end process;
 	
-	Ram_control: process(clk, rst, addr_id, addr_mem, addr_id, addr_mem, we_mem, re_mem, wdata_mem, data_ready, tbre, tsre)
+	Ram1_control: process(clk, rst, addr_mem, we_mem, re_mem, wdata_mem, data_ready, tbre, tsre)
 	begin
 		if (rst = Enable) then
 			Ram1EN <= '0';
@@ -204,24 +205,14 @@ begin
 			Ram1Data <= (others => 'Z');
 			read_prep <= Disable;
 			write_prep <= Disable;
-		elsif(Enable = Enable) then
-		--elsif(clk'event and clk = Enable) then
+		else
 			if ((we_mem = Disable) and (re_mem = Disable)) then
 				read_prep <= Disable;
 				write_prep <= Disable;
-				if ((addr_id >= x"4000") and (addr_id < x"8000")) then
-					--无冲突情况下读用户指令
-					Ram1EN <= '0';
-					Ram1OE <= '0';
-					Ram1Addr <= "00" & addr_id;
-					Ram1Data <= (others => 'Z');
-				else 
-					--默认读数据
-					Ram1EN <= '0';
-					Ram1OE <= '0';
-					Ram1Addr <= "00" & addr_mem;
-					Ram1Data <= (others => 'Z');
-				end if;
+				Ram1EN <= '0';
+				Ram1OE <= '0';
+				Ram1Addr <= "00" & addr_mem;
+				Ram1Data <= (others => 'Z');
 			elsif (we_mem = Enable) then
 				if (addr_mem = x"bf00") then
 					--写串口
@@ -303,46 +294,50 @@ begin
 		end if;
 	end process;
 
-	Inst: process(rst,ce_id,addr_mem,addr_id,Ram1Data,Ram2Data,LoadComplete)
+	Inst: process(rst,ce_id,rom_ready,Ram2Data,LoadComplete)
 	begin
-		if((ce_id = Enable) and (rst = Disable) and (LoadComplete = Enable)) then
-			if ((addr_id >= x"4000") and (addr_id < x"8000")) then
-				inst_id <= Ram1Data;
-			else
-				inst_id <= Ram2Data;
-			end if;
+		if((ce_id = Enable) and (rst = Disable) and (LoadComplete = Enable) and (rom_ready = Enable)) then
+			inst_id <= Ram2Data;
 		else
 			inst_id <= NopInst;
 		end if;
 	end process;
 	
-	Rom: process(addr_id,clk_8,clk,FlashDataOut,rst,i,LoadComplete)
+	Ram2OE <= Ram2OE_tmp;
+	Ram2WE <= clk or rst or not(Ram2OE_tmp);
+	Ram2EN <= '0';
+	
+	Rom: process(addr_id,clk_8,clk,FlashDataOut,rst,i,LoadComplete,we_mem,addr_mem,wdata_mem)
 	begin
 		if (rst = Enable) then
 			Ram2Addr <= (others => '0');
 			Ram2Data <= (others => '0');
 			FlashAddrIn <= (others => '0');
-			Ram2OE <= '1';
+			Ram2OE_tmp <= '1';
 			LoadComplete <= '0';
 			FlashReset <= '0';
 			i <= (others => '0');			
 		else
 			if (LoadComplete = '1') then 
-				Ram2Addr <= "00" & addr_id;
-				Ram2Data <= (others => 'Z');
-				Ram2OE <= '0';
+				if ((we_mem = Enable) and (addr_mem >= x"4000") and (addr_mem < x"8000")) then
+					Ram2Addr <= "00" & addr_mem;
+					Ram2Data <= wdata_mem;
+					Ram2OE_tmp <= '1';
+				else
+					Ram2Addr <= "00" & addr_id;
+					Ram2Data <= (others => 'Z');
+					Ram2OE_tmp <= '0';
+				end if;
 				FlashReset <= '0';
 			else
 				if (i = kernelInstNum) then 
 					Ram2Addr <= "00" & addr_id;
-					Ram2OE <= '0';
-					Ram2EN <= '0';
+					Ram2OE_tmp <= '0';
 					FlashReset <= '0';
 					LoadComplete <= '1';
 					Ram2Data <= (others => 'Z');
 				else 
-					Ram2OE <= '1';
-					Ram2EN <= '0';
+					Ram2OE_tmp <= '1';
 					FlashReset <= '1';
 					if (i>0) then
 						Ram2Addr <= "00" & (i-1);
