@@ -40,8 +40,8 @@ ARCHITECTURE behavior OF addiu3_test IS
     -- Component Declaration for the Unit Under Test (UUT)
  
     COMPONENT sopc
-    Port ( rst : in  STD_LOGIC;
-           clk : in  STD_LOGIC;
+    Port ( rst_in : in  STD_LOGIC;
+           clk_in : in  STD_LOGIC;
 			  data_ready: in STD_LOGIC;
 			  tbre: in STD_LOGIC;
 			  tsre: in STD_LOGIC;
@@ -75,8 +75,8 @@ BEGIN
 
 	-- Instantiate the Unit Under Test (UUT)
    uut: sopc PORT MAP (
-          rst => rst,
-          clk => clk,
+          rst_in => rst,
+          clk_in => clk,
 			 data_ready => data_ready,
 			 tbre => tbre,
 			 tsre => tsre

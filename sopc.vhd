@@ -30,8 +30,8 @@ use IEEE.STD_LOGIC_1164.ALL;
 --use UNISIM.VComponents.all;
 
 entity sopc is
-    Port ( rst : in  STD_LOGIC;
-           clk : in  STD_LOGIC;
+    Port ( rst_in : in  STD_LOGIC;
+           clk_in : in  STD_LOGIC;
 			  
 			  data_ready: in STD_LOGIC;
 			  tbre: in STD_LOGIC;
@@ -63,7 +63,7 @@ entity sopc is
 end sopc;
 
 architecture Behavioral of sopc is
-
+signal clk, rst : STD_LOGIC;
 signal rom_data : STD_LOGIC_VECTOR(15 downto 0);
 signal rom_addr : STD_LOGIC_VECTOR(15 downto 0);
 signal rom_ce : STD_LOGIC;
@@ -78,6 +78,7 @@ signal rst_cpu : STD_LOGIC;
 signal inst_ready : STD_LOGIC;
 signal rom_ready : STD_LOGIC;
 signal ram_ready : STD_LOGIC;
+signal zero : STD_LOGIC;
 
 component cpu
 	    Port ( rst : in  STD_LOGIC;
@@ -146,10 +147,28 @@ component inst_rom
 			  FlashData: inout STD_LOGIC_VECTOR(15 downto 0));
 end component;
 
+
+component my_dcm is
+   port ( CLKIN_IN        : in    std_logic; 
+          RST_IN          : in    std_logic; 
+          CLKDV_OUT       : out   std_logic; 
+          CLKFX_OUT       : out   std_logic; 
+          CLKIN_IBUFG_OUT : out   std_logic; 
+          CLK0_OUT        : out   std_logic; 
+          CLK2X_OUT       : out   std_logic; 
+          LOCKED_OUT      : out   std_logic);
+end component;
+
+
+
 begin
+	rst<=rst_in;
+	zero <= '0';
+	--clk <= clk_in;
 	rst_reversed <= not(rst);
 	rst_cpu <= rst_reversed or not(inst_ready);
-	
+	dcm_component : my_dcm port map(CLKIN_IN=>clk_in, RST_IN=>zero, CLKFX_OUT=>clk);
+										  
 	cpu_component : cpu port map(rst=>rst_cpu,clk=>clk,rom_data_i=>rom_data, rom_addr_o=>rom_addr, rom_ce_o=>rom_ce,rom_ready_i=>rom_ready,
 											LED=>LED,
 										  ram_rdata_i=>ram_rdata,ram_read_o=>ram_read,ram_write_o=>ram_write,ram_addr_o=>ram_addr,ram_wdata_o=>ram_wdata,ram_ce_o=>ram_ce,ram_ready_i=>ram_ready);
