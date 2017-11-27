@@ -58,10 +58,6 @@ begin
 	mem_ce_o <= ce;
 	process(rst,wd_i,wreg_i,wdata_i,mem_read_i,mem_write_i,mem_addr_i,mem_wdata_i,mem_rdata_i)
 	begin
-		mem_read_o <= mem_read_i;
-		mem_write_o <= mem_write_i;
-		mem_addr_o <= mem_addr_i;
-		mem_wdata_o <= mem_wdata_i;
 		if(rst = Enable) then
 			wd_o <= RegAddrZero;
 			wreg_o <= Disable;
@@ -76,12 +72,17 @@ begin
 			wd_o <= RegAddrZero;
 			wreg_o <= Disable;
 			wdata_o <= ZeroWord;
+			mem_read_o <= mem_read_i;
+			mem_write_o <= mem_write_i;
 			if(mem_read_i = Enable) then --Load指令
 				wd_o <= wd_i;
 				wreg_o <= wreg_i;
 				wdata_o <= mem_rdata_i;
+				mem_addr_o <= mem_addr_i;
 				ce<=Enable;
 			elsif(mem_write_i = Enable)then --Save指令
+				mem_addr_o <= mem_addr_i;
+				mem_wdata_o <= mem_wdata_i;
 				ce<=Enable;
 			else --非Load_Save指令
 				wd_o <= wd_i;
