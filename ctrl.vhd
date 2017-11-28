@@ -54,7 +54,7 @@ begin
 		elsif(stallreq_from_id = Stop) then
 			stall <= "000111";
 		elsif(stallreq_from_if = Stop) then
-			stall <= "000011";
+			stall <= "001111";
 		else
 			stall <= "000000";
 		end if;
