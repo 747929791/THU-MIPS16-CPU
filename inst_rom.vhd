@@ -103,7 +103,7 @@ architecture Behavioral of inst_rom is
 	signal i: STD_LOGIC_VECTOR(18 downto 0);
 	signal read_prep, write_prep: STD_LOGIC;
 	signal Ram2OE_tmp: STD_LOGIC;
-	signal rom_ready: STD_LOGIC;
+	signal rom_ready,ram_ctrl: STD_LOGIC;
 	
 	component flash_io
     Port ( addr : in  STD_LOGIC_VECTOR (22 downto 1);
@@ -152,8 +152,23 @@ begin
 
 	inst_ready <= LoadComplete;
 	
-	ram_ready_o <= '1';
+	ram_ready_o <= not(ram_ctrl and re_mem);
 	rom_ready_o <= rom_ready;
+	
+	ram_ctrl_state: process(clk,rst,we_mem,re_mem)
+	begin
+		if (rst = Enable) then
+			ram_ctrl <= '1';
+		else
+			if (clk'event and clk = '1') then
+				if (re_mem = Enable) then
+					ram_ctrl <= not(ram_ctrl);
+				else
+					ram_ctrl <= '1';
+				end if;
+			end if;
+		end if;
+	end process;
 
 	Rom_ready_state: process(addr_mem,we_mem,re_mem)
 	begin
@@ -195,7 +210,7 @@ begin
 		end if;
 	end process;
 	
-	Ram1_control: process(clk, rst, addr_mem, we_mem, re_mem, wdata_mem, data_ready, tbre, tsre)
+	Ram1_control: process(rst, addr_mem, we_mem, re_mem, wdata_mem, data_ready, tbre, tsre)
 	begin
 		if (rst = Enable) then
 			Ram1EN <= '0';
