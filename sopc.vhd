@@ -68,7 +68,6 @@ signal clk, rst : STD_LOGIC;
 signal rom_data : STD_LOGIC_VECTOR(15 downto 0);
 signal rom_addr : STD_LOGIC_VECTOR(15 downto 0);
 signal rom_ce : STD_LOGIC;
-signal ram_ready : STD_LOGIC;
 signal ram_rdata : STD_LOGIC_VECTOR(15 downto 0);
 signal ram_read : STD_LOGIC;
 signal ram_write : STD_LOGIC;
