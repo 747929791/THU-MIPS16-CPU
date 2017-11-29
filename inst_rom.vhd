@@ -100,7 +100,7 @@ architecture Behavioral of inst_rom is
 	signal FlashDataOut: STD_LOGIC_VECTOR(15 downto 0);
 	signal FlashAddrIn : STD_LOGIC_VECTOR(22 downto 1);
 	signal LoadComplete: STD_LOGIC;
-	signal i: STD_LOGIC_VECTOR(15 downto 0);
+	signal i: STD_LOGIC_VECTOR(18 downto 0);
 	signal read_prep, write_prep: STD_LOGIC;
 	signal Ram2OE_tmp: STD_LOGIC;
 	signal rom_ready: STD_LOGIC;
@@ -146,7 +146,7 @@ begin
 	end if;
 	end process;
 
-	flash_io_component: flash_io port map(addr=>FlashAddrIn, data_out=>FlashDataOut, clk=>clk, reset=>FlashReset,
+	flash_io_component: flash_io port map(addr=>FlashAddrIn, data_out=>FlashDataOut, clk=>clk_8, reset=>FlashReset,
 														flash_byte=>FlashByte, flash_vpen=>FlashVpen, flash_ce=>FlashCE, flash_oe=>FlashOE, flash_we=>FlashWE,
 														flash_rp=>FlashRP, flash_addr=>FlashAddr, flash_data=>FlashData, ctl_read=>FlashRead);
 
@@ -157,7 +157,7 @@ begin
 
 	Rom_ready_state: process(addr_mem,we_mem,re_mem)
 	begin
-		if ((addr_mem >= x"4000") and (addr_mem < x"8000") and (we_mem = Enable)) then
+		if ((addr_mem(15) = '0') and (addr_mem(14) = '1') and (we_mem = Enable)) then
 			rom_ready <= '0';
 		else 
 			rom_ready <= '1';
@@ -318,7 +318,7 @@ begin
 			i <= (others => '0');			
 		else
 			if (LoadComplete = '1') then 
-				if ((we_mem = Enable) and (addr_mem >= x"4000") and (addr_mem < x"8000")) then
+				if ((we_mem = Enable) and (addr_mem(15) = '0') and (addr_mem(14) = '1')) then
 					Ram2Addr <= "00" & addr_mem;
 					Ram2Data <= wdata_mem;
 					Ram2OE_tmp <= '1';
@@ -329,7 +329,7 @@ begin
 				end if;
 				FlashReset <= '0';
 			else
-				if (i = kernelInstNum) then 
+				if (i(18 downto 3) = kernelInstNum) then 
 					Ram2Addr <= "00" & addr_id;
 					Ram2OE_tmp <= '0';
 					FlashReset <= '0';
@@ -338,13 +338,13 @@ begin
 				else 
 					Ram2OE_tmp <= '1';
 					FlashReset <= '1';
-					if (i>0) then
-						Ram2Addr <= "00" & (i-1);
-						FlashAddrIn <= "000000" & (i-1);	
-						Ram2Data <= FlashDataOut;	
-					end if;
+					Ram2Addr <= "00" & i(18 downto 3);
+					FlashAddrIn <= "000000" & i(18 downto 3);	
+					Ram2Data <= FlashDataOut;	
 					if (clk_8'event and (clk_8 = '1')) then 		
-						FlashRead <= not(FlashRead);
+						if (i(2 downto 0) = "001") then
+							FlashRead <= not(FlashRead);
+						end if;
 						i <= i+1;
 					end if;
 				end if;
