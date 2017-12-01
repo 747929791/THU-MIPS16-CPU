@@ -29,6 +29,7 @@ start_addr="4000"
 define=dict()
 sig_addr=dict() #符号地址，0起始
 
+#对于所有的HI LOW操作，由于LOW是符号扩展加法，故HI在计算时有时要加一
 statement=dict()
 statement["GOTO"]=[
   "LI R6 HI",
@@ -87,10 +88,10 @@ statement["BTNEZ"]=[
 def pretreatment(text):
   text="\n".join([i.split(';')[0] for i in text.split('\n')])
   text=text.replace("\t"," ")
-  p = re.compile(r'\n+');text=p.sub("\n",text)
   p = re.compile(r' +');text=p.sub(" ",text)
   p = re.compile(r'\n ');text=p.sub("\n",text)
   p = re.compile(r' \n');text=p.sub("\n",text)
+  p = re.compile(r'\n+');text=p.sub("\n",text)
   if(text[0]=="\n"):
     text=text[1:]
   if(text[-1]=="\n"):
@@ -163,7 +164,10 @@ def parseFinal(text):
           OFFSET11=""
           OFFSET8=""
           if(b[0]=="GOTO" or b[0]=="CALL" or b[0]=="LOAD_DATA" or b[0]=="SAVE_DATA"):
-            X=hex(int(str(sig_addr[b[1]]),10)+int(start_addr,16))[2:]
+            X=int(str(sig_addr[b[1]]),10)+int(start_addr,16)
+            if((X//32768)%2==1):#对符号加法的扩展
+              X+=65536
+            X=hex(X)[2:][-4:]
             while(len(X)<4):
               X="0"+X
           if(b[0]=="LOAD_DATA" or b[0]=="SAVE_DATA"):

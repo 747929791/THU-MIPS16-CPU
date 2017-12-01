@@ -1,13 +1,3 @@
-MAIN:
-  LI R0 58
-  SLL R0 R0 0
-  ADDIU R0 88
-  LI R1 F1
-  SLL R1 R1 0
-  ADDIU R1 9A
-  CALL MULTI  ;5788*F09A=fABC27D0
-  RET
-
 ;通用函数库
 
 MULTI:  ;布斯算法计算有符号16位整数乘法R0*R1,将LOW保存于R0，HIGH保存于R1
