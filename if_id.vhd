@@ -35,8 +35,10 @@ entity if_id is
            clk : in  STD_LOGIC;
            if_pc : in  STD_LOGIC_VECTOR (15 downto 0);
            if_inst : in  STD_LOGIC_VECTOR (15 downto 0);
+			  if_pc_plus_1 : in STD_LOGIC_VECTOR (15 downto 0);
            id_pc : out  STD_LOGIC_VECTOR (15 downto 0);
            id_inst : out  STD_LOGIC_VECTOR (15 downto 0);
+			  id_pc_plus_1 : out STD_LOGIC_VECTOR (15 downto 0);
 			  stall : in STD_LOGIC_VECTOR(5 downto 0)); --ÔÝÍ£ÐÅºÅ
 end if_id;
 
@@ -49,12 +51,15 @@ begin
 		if(clk'event and clk = Enable) then
 			if(rst = Enable) then
 				id_pc <= ZeroWord;
+				id_pc_plus_1 <= ZeroWord;
 				id_inst <= ZeroWord;
 			elsif(stall(1)=Stop and stall(2)=NoStop) then
 				id_pc <= ZeroWord;
+				id_pc_plus_1 <= ZeroWord;
 				id_inst <= NopInst;
 			elsif(stall(1)=NoStop)then
 				id_pc <= if_pc;
+				id_pc_plus_1 <= if_pc_plus_1;
 				id_inst <= if_inst;
 			end if;
 		end if;

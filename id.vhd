@@ -35,6 +35,7 @@ use WORK.DEFINES.ALL;
 entity id is
     Port ( rst : in  STD_LOGIC;
            pc_i : in  STD_LOGIC_VECTOR (15 downto 0);
+			  pc_plus_1 : in STD_LOGIC_VECTOR(15 downto 0);
            inst_i : in  STD_LOGIC_VECTOR (15 downto 0);
            reg1_data_i : in  STD_LOGIC_VECTOR (15 downto 0);
            reg2_data_i : in  STD_LOGIC_VECTOR (15 downto 0);
@@ -81,7 +82,7 @@ begin
 	reg1_addr_o <= reg1_addr;
 	reg2_addr_o <= reg2_addr;
 	--ÒëÂë
-	id_process : process(rst,pc_i,inst_i,reg1_data,imm)
+	id_process : process(rst,pc_i,inst_i,reg1_data,imm,pc_plus_1)
 		variable op : STD_LOGIC_VECTOR(4 downto 0);
 		variable sub_op : STD_LOGIC_VECTOR(4 downto 0);
 		variable sub_op2 : STD_LOGIC_VECTOR(1 downto 0);
@@ -91,7 +92,6 @@ begin
 		variable imm5 : STD_LOGIC_VECTOR(4 downto 0);
 		variable imm8 : STD_LOGIC_VECTOR(7 downto 0);
 		variable imm11 : std_logic_vector(10 downto 0);
-		variable pc_plus_1 : STD_LOGIC_VECTOR(15 downto 0);
 	begin
 		if(rst = Enable) then
 			reg1_read_e <= Disable;
@@ -127,7 +127,6 @@ begin
 			branch_flag_o <= Disable;
 			branch_target_address_o <= ZeroWord;
 			instvalid <= Disable;
-			pc_plus_1 := pc_i + "0000000000000001";
 			case op is
 				when "01000" => --ADDIU3
 					wreg_o <= Enable;
