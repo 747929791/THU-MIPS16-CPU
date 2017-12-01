@@ -52,10 +52,8 @@ end cpu;
 architecture Behavioral of cpu is
 --连接IF/ID与译码模块ID的变量
 signal pc_pc : STD_LOGIC_VECTOR(15 downto 0);
-signal if_pc_plus_1_o : STD_LOGIC_VECTOR(15 downto 0);
 signal id_pc_i : STD_LOGIC_VECTOR(15 downto 0);
 signal id_inst_i : STD_LOGIC_VECTOR(15 downto 0);
-signal id_pc_plus_1_i : STD_LOGIC_VECTOR(15 downto 0);
 --ID到ID/EX的接口
 signal id_aluop_o : STD_LOGIC_VECTOR(7 downto 0);
 signal id_alusel_o : STD_LOGIC_VECTOR(2 downto 0);
@@ -122,11 +120,10 @@ component pc
            clk : in  STD_LOGIC; --时钟信号
            pc_o : out  STD_LOGIC_VECTOR (15 downto 0); --要读取的指令地址
            ce_o : out  STD_LOGIC; --指令存储器使能
-			  pc_plus_1: out STD_LOGIC_VECTOR(15 downto 0); --ID段使用的信号，性能加速
 			  stall : in STD_LOGIC_VECTOR(5 downto 0); --暂停信号
 			  branch_flag_i : in STD_LOGIC; --是否跳转信号
 			  branch_target_address_i : in STD_LOGIC_VECTOR(15 downto 0)
-		);
+			  );
 end component;
 
 component if_id
@@ -134,17 +131,14 @@ component if_id
            clk : in  STD_LOGIC;
            if_pc : in  STD_LOGIC_VECTOR (15 downto 0);
            if_inst : in  STD_LOGIC_VECTOR (15 downto 0);
-			  if_pc_plus_1 : in STD_LOGIC_VECTOR (15 downto 0);
            id_pc : out  STD_LOGIC_VECTOR (15 downto 0);
            id_inst : out  STD_LOGIC_VECTOR (15 downto 0);
-			  id_pc_plus_1 : out STD_LOGIC_VECTOR (15 downto 0);
-			  stall : in STD_LOGIC_VECTOR(5 downto 0)); --暂停信号end component;
-end component if_id;
+			  stall : in STD_LOGIC_VECTOR(5 downto 0)); --暂停信号
+end component;
 
 component id
     Port ( rst : in  STD_LOGIC;
            pc_i : in  STD_LOGIC_VECTOR (15 downto 0);
-			  pc_plus_1 : in STD_LOGIC_VECTOR(15 downto 0);
            inst_i : in  STD_LOGIC_VECTOR (15 downto 0);
            reg1_data_i : in  STD_LOGIC_VECTOR (15 downto 0);
            reg2_data_i : in  STD_LOGIC_VECTOR (15 downto 0);
@@ -303,9 +297,9 @@ end component;
 
 begin
 	rom_addr_o <= pc_pc;
-	pc_component : pc port map(rst=>rst,clk=>clk,pc_o=>pc_pc,ce_o=>rom_ce_o, stall=>stall, branch_flag_i=>branch_flag, branch_target_address_i=>branch_target_address,pc_plus_1=>if_pc_plus_1_o);
-	if_id_component : if_id port map(rst=>rst,clk=>clk,if_pc=>pc_pc,if_inst=>rom_data_i,id_pc=>id_pc_i,id_inst=>id_inst_i, stall=>stall,if_pc_plus_1=>if_pc_plus_1_o,id_pc_plus_1=>id_pc_plus_1_i);
-	id_component : id port map(rst=>rst, pc_i=>id_pc_i, pc_plus_1=>id_pc_plus_1_i,inst_i=>id_inst_i, reg1_data_i=>reg1_data, reg2_data_i=>reg2_data, 
+	pc_component : pc port map(rst=>rst,clk=>clk,pc_o=>pc_pc,ce_o=>rom_ce_o, stall=>stall, branch_flag_i=>branch_flag, branch_target_address_i=>branch_target_address);
+	if_id_component : if_id port map(rst=>rst,clk=>clk,if_pc=>pc_pc,if_inst=>rom_data_i,id_pc=>id_pc_i,id_inst=>id_inst_i, stall=>stall);
+	id_component : id port map(rst=>rst, pc_i=>id_pc_i, inst_i=>id_inst_i, reg1_data_i=>reg1_data, reg2_data_i=>reg2_data, 
 										reg1_read_o=>reg1_read, reg2_read_o=>reg2_read, reg1_addr_o=>reg1_addr, reg2_addr_o=>reg2_addr, 
 										aluop_o=>id_aluop_o, alusel_o=>id_alusel_o, reg1_o=>id_reg1_o, reg2_o=>id_reg2_o, wd_o=>id_wd_o, wreg_o=>id_wreg_o,
 										ex_wreg_i=>ex_wreg_o, ex_wd_i=>ex_wd_o, ex_wdata_i=>ex_wdata_o, mem_wreg_i=>mem_wreg_o, mem_wd_i=>mem_wd_o, mem_wdata_i=>mem_wdata_o,
