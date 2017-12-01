@@ -33,7 +33,11 @@ entity vga is
 	port(
 		clk: in std_logic;
 		rst: in std_logic; 
-		data_in: in std_logic_vector(15 downto 0);
+		data_in: in std_logic_vector(18 downto 0);
+		control:in std_logic;
+		ram_data: inout std_logic_vector(15 downto 0);
+		ram_addr: out std_logic_vector(17 downto 0);
+		EN, OE, WE: out std_logic;
 		HS, VS: out std_logic;
 		R : out std_logic_vector (2 downto 0);
 		G : out std_logic_vector (2 downto 0);
@@ -42,14 +46,45 @@ entity vga is
 end vga;
 
 -- 640 * 480 @60MHz
+-- divided into 80 * 30 blocks;
 
 architecture Behavioral of vga is
+
+type screen_info is array (80 downto 0, 30 downto 0) of std_logic_vector(6 downto 0);
+signal screen : screen_info;
+
+constant start_addr: std_logic_vector(18 downto 0) := ???;
+constant img_size: integer := 128;
 signal H_count : integer := 0;
 signal V_count : integer := 0;
+signal block_x : integer := 0;
+signal block_y : integer := 0;
+signal inblock_x : integer := 0;
+signal inblock_y : integer := 0;
+
+signal in_x : integer := 0;
+signal in_y : integer := 0;
+signal block_info : std_logic_vector(6 downto 0);
+
 begin
-	R <= data_in(2 downto 0);
-	G <= data_in(5 downto 3);
-	B <= data_in(8 downto 6);
+	R <= ram_data(2 downto 0);
+	G <= ram_data(5 downto 3);
+	B <= ram_data(8 downto 6);
+	
+	EN <= '1';
+	WE <= '1';
+	OE <= not(control);
+	
+	block_x <= V_count / 8;
+	block_y <= H_count / 16;
+	inblock_x <= V_count - 8 * block_x;
+	inblock_y <= H_count - 16 * block_y;
+	
+	in_x <= conv_integer(data_in(18 downto 12));
+	in_y <= conv_integer(data_in(11 downto 7));
+	block_info <= data_in(6 downto 0);
+	
+	ram_addr <= start_addr + conv_integer(screen(block_x)(block_y)) * img_size + inblock_x + inblock_y * 8;
 	
 	update : process(H_count)
 		begin
@@ -67,6 +102,9 @@ begin
 				
 			elsif(rising_edge(clk))then
 				V_count <= (V_count + 1) mod 800;
+				if(control = 1)then
+					screen(in_x)(in_y) <= block_info;
+				end if;
 			end if;
 		end process;
 		
