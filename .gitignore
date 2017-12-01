@@ -73,3 +73,4 @@ isim/
 !CPU.xise
 !*.wcfg
 !*.program
+!Assembler/*
