@@ -31,7 +31,7 @@ LOAD_REG  =>  从堆栈读取所有寄存器(务必与SAVE_REG成对使用)
 """
 
 statement_addr="4000"
-bss_addr="C000" #DATA段起始地址
+bss_addr="8000" #DATA段起始地址
 define=dict()
 sig_addr=dict() #符号地址，0起始
 
@@ -180,6 +180,7 @@ def parseFinal(text):
   ret=[]
   addr=0
   for line in text.split('\n'):
+    #print(line)
     b=line.split(':')
     if(len(b)>1):
       pass

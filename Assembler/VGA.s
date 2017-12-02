@@ -47,3 +47,20 @@ VGA_MEM_INIT:
     NOP
   LOAD_REG
   RET
+  
+VGA_Draw_Block:   ;绘图一个格子，R0用16位表示坐标，R1表示颜色等参数(约定前7位描述类型，后RGB各三位)
+  SAVE_REG
+  MOVE R2 R0  ;R2=R0
+  MOVE R3 R1  ;R3=R1
+  SRL R0 R0 0 ;R0=R0>>8
+  LI R1 VGA_M
+  CALL MULTI
+  SLL R1 R2 0
+  SRL R1 R1 0
+  ADDU R0 R1 R0
+  LOAD_ADDR VGA_MEM R1
+  ADDU R0 R1 R0
+  SW R0 R3 0   ;写入VGA显存
+  LOAD_REG
+  RET
+  
