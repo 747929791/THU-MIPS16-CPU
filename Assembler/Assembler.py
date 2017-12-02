@@ -8,7 +8,7 @@ Moon汇编器，将扩展MIPS16语言转化为基本MIPS16语言
 R6被使用为临时寄存器，R7被使用为返回地址寄存器
 新增语法特性：
 DEFINE X Y  => 替换X为Y
-DATA X LEN => 定义数据段符号X，长度Len个Word，默认1个word
+DATA X LEN => 定义BSS数据段符号X，长度Len个Word，默认1个word
 INT X A   => 定义数据段符号X，1字，初值为A
 STRING X "S" =>定义数据段符号X，长度为|S|+1(\0结尾字符串)，初值为字符串S
 X:        => 定义符号地址
@@ -17,6 +17,7 @@ CALL X    =>    SW_RS
 RET       =>    JR R7, NOP
 LOAD_DATA X R offset(=0) => 从全局地址段读入寄存器
 SAVE_DATA X R offset(=0) => 将寄存器存入全局地址段
+LOAD_ADDR X R =>将全局地址段X地址写入寄存器R
 SAVE_REG  =>  缓存所有寄存器到堆栈
 LOAD_REG  =>  从堆栈读取所有寄存器(务必与SAVE_REG成对使用)
 全部的B类指令支持符号地址跳转(慎用立即数)
@@ -70,6 +71,11 @@ statement["SAVE_DATA"]=[
   "SLL R6 R6 0",
   "ADDIU R6 LOW",
   "SW R6 REG IMM"
+]
+statement["LOAD_ADDR"]=[
+  "LI REG HI",
+  "SLL REG REG 0",
+  "ADDIU REG LOW",
 ]
 statement["B"]=[
   "B OFFSET11"
@@ -189,14 +195,14 @@ def parseFinal(text):
           OFFSET=0 #B指令偏移
           OFFSET11=""
           OFFSET8=""
-          if(b[0]=="GOTO" or b[0]=="CALL" or b[0]=="LOAD_DATA" or b[0]=="SAVE_DATA"):
+          if(b[0]=="GOTO" or b[0]=="CALL" or b[0]=="LOAD_DATA" or b[0]=="SAVE_DATA" or b[0]=="LOAD_ADDR"):
             X=int(str(sig_addr[b[1]]),10)+int(start_addr,16)
-            if((X//32768)%2==1):#对符号加法的扩展
-              X+=65536
+            if((X//(2**7))%2==1):#对符号加法的扩展
+              X+=2**8
             X=hex(X)[2:][-4:]
             while(len(X)<4):
               X="0"+X
-          if(b[0]=="LOAD_DATA" or b[0]=="SAVE_DATA"):
+          if(b[0]=="LOAD_DATA" or b[0]=="SAVE_DATA" or b[0]=="LOAD_ADDR"):
             REG=b[2]
           if(b[0]=="LOAD_DATA" or b[0]=="SAVE_DATA"):
             IMM=b[3]
