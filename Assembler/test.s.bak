@@ -12,7 +12,7 @@ MAIN:
   RET
 ;通用函数库
 
-  RAND:  ;伪随机数发生器，将15位结果返回至寄存器R0
+  RAND:  ;随机数发生器，将15位结果返回至寄存器R0
   ; x(n+1)=(3*x(n)+0x61B9)>>1
     DATA RANDOM_SEED 1
     SW_SP R1 0

@@ -42,7 +42,7 @@ MULTI:  ;布斯算法计算有符号16位整数乘法R0*R1,将LOW保存于R0，HIGH保存于R1
     ADDIU R5 FF
   RET
   
-RAND:  ;伪随机数发生器，将15位结果返回至寄存器R0
+RAND:  ;随机数发生器，将15位结果返回至寄存器R0
 ; x(n+1)=(3*x(n)+0x61B9)>>1
   DATA RANDOM_SEED 1
   SW_SP R1 0
@@ -54,7 +54,6 @@ RAND:  ;伪随机数发生器，将15位结果返回至寄存器R0
   ADDU R0 R1 R1
   ADDU R0 R1 R1
   ADDU R0 R1 R0
-  SRL R0 R0 1
   SAVE_DATA RANDOM_SEED R0 0
   ADDSP FF
   LW_SP R1 0
