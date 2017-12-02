@@ -9,12 +9,16 @@ R6被使用为临时寄存器，R7被使用为返回地址寄存器
 新增语法特性：
 DEFINE X Y  => 替换X为Y
 DATA X LEN => 定义数据段符号X，长度Len个Word，默认1个word
+INT X A   => 定义数据段符号X，1字，初值为A
+STRING X "S" =>定义数据段符号X，长度为|S|+1(\0结尾字符串)，初值为字符串S
 X:        => 定义符号地址
 GOTO X    =>   JR方法指令跳转
 CALL X    =>    SW_RS
 RET       =>    JR R7, NOP
 LOAD_DATA X R offset(=0) => 从全局地址段读入寄存器
 SAVE_DATA X R offset(=0) => 将寄存器存入全局地址段
+SAVE_REG  =>  缓存所有寄存器到堆栈
+LOAD_REG  =>  从堆栈读取所有寄存器(务必与SAVE_REG成对使用)
 全部的B类指令支持符号地址跳转(慎用立即数)
 """
 
@@ -81,6 +85,28 @@ statement["BTEQZ"]=[
 ]
 statement["BTNEZ"]=[
   "BTNEZ OFFSET8"
+]
+statement["SAVE_REG"]=[
+  "SW_SP R0 0",
+  "SW_SP R1 1",
+  "SW_SP R2 2",
+  "SW_SP R3 3",
+  "SW_SP R4 4",
+  "SW_SP R5 5",
+  "SW_SP R6 6",
+  "SW_SP R7 7",
+  "ADDSP 8"
+]
+statement["LOAD_REG"]=[
+  "ADDSP F8",
+  "LW_SP R0 0",
+  "LW_SP R1 1",
+  "LW_SP R2 2",
+  "LW_SP R3 3",
+  "LW_SP R4 4",
+  "LW_SP R5 5",
+  "LW_SP R6 6",
+  "LW_SP R7 7"
 ]
 
 
