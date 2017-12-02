@@ -74,3 +74,5 @@ isim/
 !*.wcfg
 !*.program
 !Assembler/*
+*_o.s
+Assembler/test.s

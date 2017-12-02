@@ -11,8 +11,15 @@ DATA SNAKE_BODY_QUEUE_SIZE 1  ;蛇身体列表大小
 
 DATA SNAKE_FourConnected_Offset 4  ;16位四连通方向，16位表示坐标可以直接加法做偏移(其中(0,-1)加0会产生行混淆) (1,0)(0,1)(-1,0)(0,-1)
 DATA SNAKE_Direction 1   ;当前蛇的方向(0~3)
+DATA SNAKE_APPLE_POS 1   ;苹果所在的坐标
 
 RetroSnake_Main:
+
+LI R0 0   ;走几步看看
+SAVE_DATA SNAKE_Direction R0 0
+CALL RetroSnake_OneStep
+CALL VGA_COM_PRINT
+RET
   CALL VGA_MEM_INIT
   CALL RetroSnake_INIT
   CALL VGA_COM_PRINT
@@ -53,6 +60,7 @@ RetroSnake_INIT:
   LI R1 SNAKE_MAP_M
   CALL MULTI
   SAVE_DATA SNAKE_BODY_QUEUE_SIZE R0 0
+  CALL RetroSnake_GenerateApple ;产生第一个苹果
   ;计算逻辑参数
   LI R0 0
   SAVE_DATA SNAKE_Direction R0 0
@@ -88,13 +96,32 @@ RetroSnake_OneStep:     ;驱动蛇前进一步，进行一步逻辑结算
   BEQZ R0 RetroSnake_OneStep_Loss  ;如果非法则输
   NOP
   MOVE R0 R2
-  CALL RetroSnake_Push_Queue    ;如果没输则压入队列
+  CALL RetroSnake_Push_Queue    ;如果没输则新增一格压入队列
+  LOAD_DATA SNAKE_APPLE_POS R3 0   ;R3<=苹果坐标  吃苹果逻辑判定
+    CMP R2 R3
+    BTNEZ RetroSnake_OneStep_EatApple_False
+    NOP
+        CALL RetroSnake_GenerateApple
+        B RetroSnake_OneStep_EatApple_End
+        NOP
+      RetroSnake_OneStep_EatApple_False:
+        CALL RetroSnake_Pop_Queue
+    RetroSnake_OneStep_EatApple_End:
   LOAD_REG
   RET
   RetroSnake_OneStep_Loss:    ;一步失败，输掉后的逻辑
     LOAD_REG
     LI R0 FF
     RET
+
+RetroSnake_GenerateApple:      ;产生一个新的苹果(会丢失原有苹果的引用)
+  SAVE_REG
+  CALL RetroSnake_Random_Point
+  SAVE_DATA SNAKE_APPLE_POS R0 0
+  LI R1 4F   ;画什么？画个圆圈O
+  CALL VGA_Draw_Block
+  LOAD_REG
+  RET
 
 RetroSnake_Push_Queue:  ;向队列内压入一个格子R0(16位表示),处理显示和数据维护
   SW_SP R1 0
