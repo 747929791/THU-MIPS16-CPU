@@ -1,31 +1,52 @@
 MAIN:
-  LI R1 80
+  LI R2 2
+  LI R3 3
+  LI R4 4
+  LI R5 5
+  LI R6 6
+  LI R0 ca
+  SLL R0 R0 0
+  ADDIU R0 46
+  LI R1 02
   SLL R1 R1 0
-  LI R2 01
-  SLL R2 R2 0
-  LOOP1:
-    CALL RAND
-    SW R1 R0 0
-    ADDIU R1 1
-    BNEZ R2 LOOP1
-    ADDIU R2 FF
+  ADDIU R1 A1
+  CALL DIVISION  ;CA46 / 01A1  =  007C ... 004A
   RET
 ;通用函数库
 
-  RAND:  ;伪随机数发生器，将15位结果返回至寄存器R0
-  ; x(n+1)=(3*x(n)+0x61B9)>>1
-    DATA RANDOM_SEED 1
-    SW_SP R1 0
-    ADDSP 1
-    LOAD_DATA RANDOM_SEED R0 0
-    LI R1 62
-    SLL R1 R1 0
-    ADDIU R1 B9
-    ADDU R0 R1 R1
-    ADDU R0 R1 R1
-    ADDU R0 R1 R0
-    SRL R0 R0 1
-    SAVE_DATA RANDOM_SEED R0 0
-    ADDSP FF
-    LW_SP R1 0
-    RET
+
+DIVISION:  ;加减交替原码一位除法，R0/R1，商保存于R0，余数存于R1
+  SW_SP R2 0
+  SW_SP R3 1
+  SW_SP R4 2
+  ADDSP 3
+  LI R2 0 ;R2计算除数有多少位
+  MOVE R3 R1
+  SRL R3 R3 1
+  ADDIU R2 1
+  BNEZ R3 FD
+  NOP
+  SUBU R3 R2 R2  ;R2=16-R2
+  ADDIU R2 10
+  MOVE R3 R1     ;R3保存移位的 除数
+  SLLV R2 R3
+  LI R4 1
+  SLLV R2 R4      ;R4为1位
+  MOVE R1 R0
+  LI R0 0
+  DIVISION_LOOP:
+    SLTU R3 R1
+    BTEQZ 3
+    NOP
+    ADDU R0 R4 R0
+    SUBU R1 R3 R1
+    SRL R4 R4 1
+    SRL R3 R3 1
+    ADDIU R2 FF
+    BNEZ R2 DIVISION_LOOP
+    NOP
+  ADDSP FD
+  LW_SP R2 0
+  LW_SP R3 1
+  LW_SP R4 2
+  RET

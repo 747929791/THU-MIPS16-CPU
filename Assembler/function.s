@@ -9,6 +9,11 @@ MULTI:  ;布斯算法计算有符号16位整数乘法R0*R1,将LOW保存于R0，HIGH保存于R1
 ;R4作为布斯算法的附加位
 ;R5作为循环变量
 ;R6保存R1副本
+  SW_SP R2 0
+  SW_SP R3 1
+  SW_SP R4 2
+  SW_SP R5 3
+  ADDSP 4
   MOVE R6 R1
   LI R1 0
   LI R5 0F
@@ -40,8 +45,49 @@ MULTI:  ;布斯算法计算有符号16位整数乘法R0*R1,将LOW保存于R0，HIGH保存于R1
       ADDU R0 R2 R0
     BNEZ R5 MULTI_LOOP
     ADDIU R5 FF
+  ADDSP FC
+  LW_SP R2 0
+  LW_SP R3 1
+  LW_SP R4 2
+  LW_SP R5 3
   RET
   
+DIVISION:  ;加减交替原码一位除法，R0/R1，商保存于R0，余数存于R1
+  SW_SP R2 0
+  SW_SP R3 1
+  SW_SP R4 2
+  ADDSP 3
+  LI R2 0 ;R2计算除数有多少位
+  MOVE R3 R1
+  SRL R3 R3 1
+  ADDIU R2 1
+  BNEZ R3 FD
+  NOP
+  SUBU R3 R2 R2  ;R2=16-R2
+  ADDIU R2 10
+  MOVE R3 R1     ;R3保存移位的 除数
+  SLLV R2 R3
+  LI R4 1
+  SLLV R2 R4      ;R4为1位
+  MOVE R1 R0
+  LI R0 0
+  DIVISION_LOOP:
+    SLTU R3 R1
+    BTEQZ 3
+    NOP
+    ADDU R0 R4 R0
+    SUBU R1 R3 R1
+    SRL R4 R4 1
+    SRL R3 R3 1
+    ADDIU R2 FF
+    BNEZ R2 DIVISION_LOOP
+    NOP
+  ADDSP FD
+  LW_SP R2 0
+  LW_SP R3 1
+  LW_SP R4 2
+  RET
+
 RAND:  ;伪随机数发生器，将15位结果返回至寄存器R0
 ; x(n+1)=(3*x(n)+0x61B9)>>1
   DATA RANDOM_SEED 1

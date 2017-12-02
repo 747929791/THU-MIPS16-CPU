@@ -306,7 +306,7 @@ begin
 							instvalid <= Enable;
 						when "00011" => --SLTU
 							wreg_o <= Enable;
-							aluop_o <= EXE_SLT_OP;
+							aluop_o <= EXE_SLTU_OP;
 							alusel_o <= EXE_RES_LOGIC;
 							reg1_read_e <= Enable;
 							reg2_read_e <= Enable;
