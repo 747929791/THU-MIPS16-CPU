@@ -85,9 +85,15 @@ end inst_rom;
 architecture Behavioral of inst_rom is
 	constant InstNum : integer := 100;
 	constant kernelInstNum : integer := 1000;
-	constant fullInstNum : integer := 5000;
 	type InstArray is array (0 to InstNum) of STD_LOGIC_VECTOR(15 downto 0);
 	signal insts: InstArray := (
+		--BNEQZ测试
+		"0110101000000011", --LI R[2], 3
+		"1110101001001011", --NEG R[2], R[2]
+		"0110100000000100", --LI R[0], 4
+		"1110100000001011", --NEG R[0], R[0]
+		"0100000000000001", --R[0]++
+		"1101100100000011", --SW(R[0])->RAM[R(1)+3] 现在R[0]=2,R[1]=2,R[4]=1,RAM[3]=1,RAM[4]=2
 		others => NopInst);
 	signal clk_2,clk_4,clk_8: STD_LOGIC;
 	signal FlashRead, FlashReset: STD_LOGIC;
@@ -121,7 +127,6 @@ architecture Behavioral of inst_rom is
 begin
 	process(clk)	--二分频
 	begin
-
 	if clk'event and clk='1' then
 		clk_2 <= not clk_2;
 	end if;
@@ -147,7 +152,7 @@ begin
 
 	inst_ready <= LoadComplete;
 	
-	ram_ready_o <= not(re_mem and ram_ctrl);
+	ram_ready_o <= not(ram_ctrl and re_mem);
 	rom_ready_o <= rom_ready;
 	
 	ram_ctrl_state: process(clk,rst,we_mem,re_mem)
@@ -167,21 +172,19 @@ begin
 
 	Rom_ready_state: process(addr_mem,we_mem,re_mem)
 	begin
-		if ((re_mem = Enable) or (we_mem = Enable)) then
+		if ((addr_mem(15) = '0') and (addr_mem(14) = '1') and (we_mem = Enable)) then
 			rom_ready <= '0';
 		else 
 			rom_ready <= '1';
 		end if;
 	end process;
 	
-	Ram1WE_control: process(rst,clk,we_mem,re_mem,addr_mem,LoadComplete,i)
+	Ram1WE_control: process(rst,clk,we_mem,re_mem,addr_mem)
 	begin
-		if ((rst = Enable) or (re_mem = Enable) or (addr_mem = x"bf00") or (addr_mem = x"bf01")) then
+		if ((rst = Enable) or (we_mem = Disable) or (re_mem = Enable) or (addr_mem = x"bf00") or (addr_mem = x"bf01")) then
 			Ram1WE <= '1';
-		elsif (((LoadComplete = '1') and (we_mem = Enable)) or ((LoadComplete = '0') and (i(18 downto 3) < kernelInstNum))) then
-			Ram1WE <= clk;
 		else 
-			Ram1WE <= '1';
+			Ram1WE <= clk;
 		end if;
 	end process;
 	
@@ -207,7 +210,7 @@ begin
 		end if;
 	end process;
 	
-	Ram1_control: process(rst, addr_mem, addr_id, we_mem, re_mem, wdata_mem, data_ready, tbre, tsre, LoadComplete, FlashDataOut, i)
+	Ram1_control: process(rst, addr_mem, we_mem, re_mem, wdata_mem, data_ready, tbre, tsre)
 	begin
 		if (rst = Enable) then
 			Ram1EN <= '0';
@@ -217,119 +220,72 @@ begin
 			read_prep <= Disable;
 			write_prep <= Disable;
 		else
-			if (LoadComplete = '1') then
-				if ((we_mem = Disable) and (re_mem = Disable)) then
-					Ram1Addr <= "00" & addr_id;
-				else
-					Ram1Addr <= "00" & addr_mem;
-				end if;
-				if ((we_mem = Disable) and (re_mem = Disable)) then
-					--读指令
-					read_prep <= Disable;
-					write_prep <= Disable;
-					Ram1EN <= '0';
-					Ram1OE <= '0';
-					Ram1Data <= (others => 'Z');
-				elsif (we_mem = Enable) then
-					if (addr_mem = x"bf00") then
-						--写串口
-						Ram1EN <= '1';
-						Ram1OE <= '1';
-						Ram1Data <= wdata_mem;
-						read_prep <= Disable;
-						write_prep <= Enable;
-					else
-						--写数据
-						Ram1EN <= '0';
-						Ram1OE <= '1';
-						Ram1Data <= wdata_mem;
-						read_prep <= Disable;
-						write_prep <= Disable;
-					end if;
-				elsif (re_mem = Enable) then
-					if (addr_mem = x"bf00") then
-						--读串口
-						Ram1EN <= '1';
-						Ram1OE <= '1';
-						Ram1Data <= (others => 'Z');
-						read_prep <= Enable;
-						write_prep <= Disable;
-					elsif (addr_mem = x"bf01") then	
-						--准备读或写串口
-						Ram1EN <= '0';
-						Ram1OE <= '1';
-						read_prep <= Disable;
-						write_prep <= Disable;
-						
-						if ((data_ready = '1') and (tbre = '1') and (tsre= '1')) then 
-							--串口数据可读写
-							Ram1Data <= x"0003";
-						elsif ((tbre = '1') and (tsre= '1')) then  
-							--串口数据只可写
-							Ram1Data <= x"0001";
-						elsif (data_ready = '1') then  
-							--串口数据只可读
-							Ram1Data <= x"0002";
-						else 
-							--串口数据不可读写
-							Ram1Data <= (others => '0');
-						end if;
-					else 
-						--读数据
-						Ram1EN <= '0';
-						Ram1OE <= '0';
-						Ram1Data <= (others => 'Z');
-						read_prep <= Disable;
-						write_prep <= Disable;
-					end if;
-				else 
-					--不应到达这里
-					Ram1EN <= '0';
-					Ram1OE <= '0';
-					Ram1Data <= (others => 'Z');
-					read_prep <= Disable;
-					write_prep <= Disable;
-				end if;
-			else
-				--读kernel
-				Ram1Addr <= "00" & i(18 downto 3);
-				Ram1Data <= FlashDataOut;
+			Ram1Addr <= "00" & addr_mem;
+			if ((we_mem = Disable) and (re_mem = Disable)) then
 				read_prep <= Disable;
 				write_prep <= Disable;
 				Ram1EN <= '0';
-				Ram1OE <= '1';
-			end if;
-		end if;
-	end process;
-	
-	Ram2EN <= '0';
-	Ram2WE_control: process(rst, clk, LoadComplete, i)
-	begin
-		if (rst = Enable) then
-			Ram2WE <= '1';
-		elsif ((LoadComplete = '0') and (i(18 downto 3) < fullInstNum)) then
-			Ram2WE <= clk;
-		else 
-			Ram2WE <= '1';
-		end if;
-	end process;
-	
-	Ram2_control: process(rst, LoadComplete, FlashDataOut, i)
-	begin
-		if (rst = Enable) then
-			Ram2OE <= '1';
-			Ram2Addr <= (others => '0');
-			Ram2Data <= (others => 'Z');
-		else
-			if (LoadComplete = '1') then
-				Ram2OE <= '1';
-				Ram2Addr <= (others => '0');
-				Ram2Data <= (others => 'Z');
-			else
-				--读kernel
-				Ram2Addr <= "00" & i(18 downto 3);
-				Ram2Data <= FlashDataOut;
-				Ram2OE <= '1';
+				Ram1OE <= '0';
+				Ram1Data <= (others => 'Z');
+			elsif (we_mem = Enable) then
+				if (addr_mem = x"bf00") then
+					--写串口
+					Ram1EN <= '1';
+					Ram1OE <= '1';
+					Ram1Data <= wdata_mem;
+					read_prep <= Disable;
+					write_prep <= Enable;
+				else
+					--写数据
+					Ram1EN <= '0';
+					Ram1OE <= '1';
+					Ram1Data <= wdata_mem;
+					read_prep <= Disable;
+					write_prep <= Disable;
+				end if;
+			elsif (re_mem = Enable) then
+				if (addr_mem = x"bf00") then
+					--读串口
+					Ram1EN <= '1';
+					Ram1OE <= '1';
+					Ram1Data <= (others => 'Z');
+					read_prep <= Enable;
+					write_prep <= Disable;
+				elsif (addr_mem = x"bf01") then	
+					--准备读或写串口
+					Ram1EN <= '0';
+					Ram1OE <= '1';
+					read_prep <= Disable;
+					write_prep <= Disable;
+					
+					if ((data_ready = '1') and (tbre = '1') and (tsre= '1')) then 
+						--串口数据可读写
+						Ram1Data <= x"0003";
+					elsif ((tbre = '1') and (tsre= '1')) then  
+						--串口数据只可写
+						Ram1Data <= x"0001";
+					elsif (data_ready = '1') then  
+						--串口数据只可读
+						Ram1Data <= x"0002";
+					else 
+						--串口数据不可读写
+						Ram1Data <= (others => '0');
+					end if;
+				else 
+					--读数据
+					Ram1EN <= '0';
+					Ram1OE <= '0';
+					Ram1Data <= (others => 'Z');
+					read_prep <= Disable;
+					write_prep <= Disable;
+				end if;
+			else 
+				--不应到达这里
+				Ram1EN <= '0';
+				Ram1OE <= '0';
+				Ram1Data <= (others => 'Z');
+				read_prep <= Disable;
+				write_prep <= Disable;
 			end if;
 		end if;
 	end process;
@@ -340,33 +296,54 @@ begin
 		rdata_mem <= Ram1Data;
 	end process;
 
-	Inst: process(rst,ce_id,rom_ready,Ram1Data,LoadComplete)
+	Inst: process(rst,ce_id,rom_ready,Ram2Data,LoadComplete)
 	begin
 		if((ce_id = Enable) and (rst = Disable) and (LoadComplete = Enable) and (rom_ready = Enable)) then
-			inst_id <= Ram1Data;
+			inst_id <= Ram2Data;
 		else
 			inst_id <= NopInst;
 		end if;
 	end process;
 	
-	Flash_init: process(clk_8,clk,FlashDataOut,rst,i,LoadComplete)
+	Ram2OE <= Ram2OE_tmp;
+	Ram2WE <= clk or rst or not(Ram2OE_tmp);
+	Ram2EN <= '0';
+	
+	Rom: process(addr_id,clk_8,clk,FlashDataOut,rst,i,LoadComplete,we_mem,addr_mem,wdata_mem)
 	begin
 		if (rst = Enable) then
+			Ram2Addr <= (others => '0');
+			Ram2Data <= (others => '0');
 			FlashAddrIn <= (others => '0');
+			Ram2OE_tmp <= '1';
 			LoadComplete <= '0';
 			FlashReset <= '0';
 			i <= (others => '0');			
 		else
 			if (LoadComplete = '1') then 
+				if ((we_mem = Enable) and (addr_mem(15) = '0') and (addr_mem(14) = '1')) then
+					Ram2Addr <= "00" & addr_mem;
+					Ram2Data <= wdata_mem;
+					Ram2OE_tmp <= '1';
+				else
+					Ram2Addr <= "00" & addr_id;
+					Ram2Data <= (others => 'Z');
+					Ram2OE_tmp <= '0';
+				end if;
 				FlashReset <= '0';
 			else
-				if (i(18 downto 3) = fullInstNum) then 
+				if (i(18 downto 3) = kernelInstNum) then 
+					Ram2Addr <= "00" & addr_id;
+					Ram2OE_tmp <= '0';
 					FlashReset <= '0';
 					LoadComplete <= '1';
-					FlashAddrIn <= (others => '0');	
+					Ram2Data <= (others => 'Z');
 				else 
+					Ram2OE_tmp <= '1';
 					FlashReset <= '1';
+					Ram2Addr <= "00" & i(18 downto 3);
 					FlashAddrIn <= "000000" & i(18 downto 3);	
+					Ram2Data <= FlashDataOut;	
 					if (clk_8'event and (clk_8 = '1')) then 		
 						if (i(2 downto 0) = "001") then
 							FlashRead <= not(FlashRead);
@@ -374,7 +351,8 @@ begin
 						i <= i+1;
 					end if;
 				end if;
-			end if;	
+			end if;
+			
 		end if;
 	end process;
 	
