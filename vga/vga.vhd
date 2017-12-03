@@ -106,8 +106,12 @@ begin
 	in_x <= conv_integer(pos_in(15 downto 8));
 	in_y <= conv_integer(pos_in(7 downto 0));
 	
-	-- ram_addr <= start_addr + conv_integer(screen(block_x, block_y)(6 downto 0)) * img_size + inblock_x + inblock_y * 8;
-	ram_addr <= start_addr;
+	screen(10, 10) <= "1111111110000000";
+	screen(10, 11) <= "1111111110000001";
+	screen(10, 12) <= "1111111110000010";
+	
+	ram_addr <= start_addr + conv_integer(screen(block_x, block_y)(6 downto 0)) * img_size + inblock_x + inblock_y * 8;
+	-- ram_addr <= start_addr;
 	display : process(clk, H_count, V_count)
 		begin
 			if(V_count >= 480 or H_count >= 640)then
@@ -116,9 +120,18 @@ begin
 				G <= "000";
 				B <= "000";
 			else
-				R <= ram_data(2 downto 0);
-				G <= ram_data(5 downto 3);
-				B <= ram_data(8 downto 6);
+--				R <= ram_data(2 downto 0);
+--				G <= ram_data(5 downto 3);
+--				B <= ram_data(8 downto 6);
+				if(V_count >= 240)then
+					R <= "111";
+					G <= "000";
+					B <= "000";
+				else
+					R <= "111";
+					G <= "000";
+					B <= "111";
+				end if;
 			end if;
 		end process;
 		
@@ -140,13 +153,14 @@ begin
 	h_update : process(clk)
 		begin
 			if(rising_edge(clk))then
+				
 				if(H_count < 799)then
 					H_count <= H_count + 1;
 				else
 					H_count <= 0;
 				end if;
 				if(WE_i_1 = '1' and WE_i_2 = '1')then
-					screen(in_x, in_y) <= data_in;
+					--screen(in_x, in_y) <= data_in;
 					WE_o_1 <= '0';
 					WE_o_2 <= '0';
 				else
