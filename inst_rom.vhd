@@ -152,7 +152,7 @@ begin
 
 	inst_ready <= LoadComplete;
 	
-	ram_ready_o <= not(ram_ctrl and re_mem);
+	ram_ready_o <= '1';
 	rom_ready_o <= rom_ready;
 	
 	ram_ctrl_state: process(clk,rst,we_mem,re_mem)
@@ -220,19 +220,18 @@ begin
 			read_prep <= Disable;
 			write_prep <= Disable;
 		else
+			Ram1Addr <= "00" & addr_mem;
 			if ((we_mem = Disable) and (re_mem = Disable)) then
 				read_prep <= Disable;
 				write_prep <= Disable;
 				Ram1EN <= '0';
 				Ram1OE <= '0';
-				Ram1Addr <= "00" & addr_mem;
 				Ram1Data <= (others => 'Z');
 			elsif (we_mem = Enable) then
 				if (addr_mem = x"bf00") then
 					--写串口
 					Ram1EN <= '1';
 					Ram1OE <= '1';
-					Ram1Addr <= "00" & x"bf00";
 					Ram1Data <= wdata_mem;
 					read_prep <= Disable;
 					write_prep <= Enable;
@@ -240,7 +239,6 @@ begin
 					--写数据
 					Ram1EN <= '0';
 					Ram1OE <= '1';
-					Ram1Addr <= "00" & addr_mem;
 					Ram1Data <= wdata_mem;
 					read_prep <= Disable;
 					write_prep <= Disable;
@@ -250,7 +248,6 @@ begin
 					--读串口
 					Ram1EN <= '1';
 					Ram1OE <= '1';
-					Ram1Addr <= "00" & x"bf00";
 					Ram1Data <= (others => 'Z');
 					read_prep <= Enable;
 					write_prep <= Disable;
@@ -258,7 +255,6 @@ begin
 					--准备读或写串口
 					Ram1EN <= '0';
 					Ram1OE <= '1';
-					Ram1Addr <= "00" & addr_mem;
 					read_prep <= Disable;
 					write_prep <= Disable;
 					
@@ -279,7 +275,6 @@ begin
 					--读数据
 					Ram1EN <= '0';
 					Ram1OE <= '0';
-					Ram1Addr <= "00" & addr_mem;
 					Ram1Data <= (others => 'Z');
 					read_prep <= Disable;
 					write_prep <= Disable;
@@ -288,7 +283,6 @@ begin
 				--不应到达这里
 				Ram1EN <= '0';
 				Ram1OE <= '0';
-				Ram1Addr <= "00" & addr_mem;
 				Ram1Data <= (others => 'Z');
 				read_prep <= Disable;
 				write_prep <= Disable;
@@ -299,13 +293,7 @@ begin
 	Mem_read : process(rst,addr_id,addr_mem,re_mem,wdata_mem,Ram1Data)
 	variable id : integer;
 	begin
-		if(rst = Enable) then
-			rdata_mem <= ZeroWord;
-		elsif(re_mem = Disable) then
-			rdata_mem <= ZeroWord;
-		else
-			rdata_mem <= Ram1Data;
-		end if;
+		rdata_mem <= Ram1Data;
 	end process;
 
 	Inst: process(rst,ce_id,rom_ready,Ram2Data,LoadComplete)
