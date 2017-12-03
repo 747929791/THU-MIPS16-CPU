@@ -1,3 +1,5 @@
+
+;---------------------------------------------------------------------------通用函数库---------------------------------------------------------------------------;
 ;通用函数库
 
 MULTI:  ;布斯算法计算有符号16位整数乘法R0*R1,将LOW保存于R0，HIGH保存于R1
@@ -79,9 +81,8 @@ DIVISION:  ;加减交替原码一位除法，R0/R1，商保存于R0，余数存于R1
     SUBU R1 R3 R1
     SRL R4 R4 1
     SRL R3 R3 1
-    ADDIU R2 FF
     BNEZ R2 DIVISION_LOOP
-    NOP
+    ADDIU R2 FF
   ADDSP FD
   LW_SP R2 0
   LW_SP R3 1
@@ -89,19 +90,17 @@ DIVISION:  ;加减交替原码一位除法，R0/R1，商保存于R0，余数存于R1
   RET
 
 RAND:  ;伪随机数发生器，将15位结果返回至寄存器R0
-; x(n+1)=(3*x(n)+0x61B9)>>1
+; x(n+1)=(123*x(n)+59)%65536
   DATA RANDOM_SEED 1
   SW_SP R1 0
   ADDSP 1
   LOAD_DATA RANDOM_SEED R0 0
-  LI R1 62
-  SLL R1 R1 0
-  ADDIU R1 B9
-  ADDU R0 R1 R1
-  ADDU R0 R1 R1
+  LI R1 7B
+  CALL MULTI
+  LI R1 3B
   ADDU R0 R1 R0
-  SRL R0 R0 1
   SAVE_DATA RANDOM_SEED R0 0
   ADDSP FF
   LW_SP R1 0
   RET
+  

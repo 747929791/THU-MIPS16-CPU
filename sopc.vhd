@@ -88,6 +88,9 @@ signal ram_ready : STD_LOGIC;
 signal zero : STD_LOGIC;
 signal zeros : std_logic_vector(15 downto 0);
 
+signal vga_addr : std_logic_vector(17 downto 0);
+signal vga_data : std_logic_vector(15 downto 0);
+
 component vga is
 	port(
 		clk: in std_logic;
@@ -97,9 +100,8 @@ component vga is
 		--pos, dataÊ¹ÄÜ
 		WE_i_1, WE_i_2: in std_logic;
 		--control:in std_logic;
-		ram_data: inout std_logic_vector(15 downto 0);
+		ram_data: in std_logic_vector(15 downto 0);
 		ram_addr: out std_logic_vector(17 downto 0);
-		EN, OE, WE: out std_logic;
 		HS, VS: out std_logic;
 		WE_o_1, WE_o_2: out std_logic;
 		R : out std_logic_vector (2 downto 0);
@@ -173,7 +175,10 @@ component inst_rom
 			  FlashWE: out STD_LOGIC;
 			  FlashRP: out STD_LOGIC;
 			  FlashAddr: out STD_LOGIC_VECTOR(22 downto 1);
-			  FlashData: inout STD_LOGIC_VECTOR(15 downto 0));
+			  FlashData: inout STD_LOGIC_VECTOR(15 downto 0);
+			  
+			  VGAAddr: in STD_LOGIC_VECTOR(17 downto 0);
+			  VGAData: out STD_LOGIC_VECTOR(15 downto 0));
 end component;
 
 
@@ -198,7 +203,7 @@ begin
 	--clk <= clk_in;
 	rst_reversed <= not(rst);
 	rst_cpu <= rst_reversed or not(inst_ready);
-	vga_component : vga port map(clk=>clk, pos_in=>zeros, data_in=>zeros, WE_i_1 =>zero, WE_i_2=>zero, R=>R, G=>G, B=>B, HS=>HS, VS=>VS, ram_addr => Ram2Addr, ram_data => Ram2Data, OE=>Ram2OE, WE=>Ram2WE, EN=>Ram2EN);
+	vga_component : vga port map(clk=>clk, pos_in=>zeros, data_in=>zeros, WE_i_1 =>zero, WE_i_2=>zero, R=>R, G=>G, B=>B, HS=>HS, VS=>VS, ram_addr => vga_addr, ram_data => vga_data);
 	dcm_component : my_dcm port map(CLKIN_IN=>clk_in, RST_IN=>zero, CLKFX_OUT=>clk);
 										  
 	cpu_component : cpu port map(rst=>rst_cpu,clk=>clk,rom_data_i=>rom_data, rom_addr_o=>rom_addr, rom_ce_o=>rom_ce,rom_ready_i=>rom_ready,
@@ -210,7 +215,7 @@ begin
 	re_mem=>ram_read, we_mem=>ram_write, addr_mem=>ram_addr,wdata_mem=>ram_wdata,rdata_mem=>ram_rdata, ram_ready_o=>ram_ready,
 	data_ready=>data_ready, tbre=>tbre, tsre=>tsre, Ram1Addr=>Ram1Addr, Ram1Data=>Ram1Data,
 	Ram1OE=>Ram1OE, Ram1WE=>Ram1WE, Ram1EN=>Ram1EN, rdn=>rdn, wrn=>wrn, 
-	--Ram2Addr=>Ram2Addr, Ram2Data=>Ram2Data, Ram2OE=>Ram2OE, Ram2WE=>Ram2WE, Ram2EN=>Ram2EN,
+	Ram2Addr=>Ram2Addr, Ram2Data=>Ram2Data, Ram2OE=>Ram2OE, Ram2WE=>Ram2WE, Ram2EN=>Ram2EN, VGAAddr =>vga_addr, VGAData => vga_data,
 	FlashByte=>FlashByte, FlashVpen=>FlashVpen, FlashCE=>FlashCE, FlashOE=>FlashOE, FlashWE=>FlashWE, FlashRP=>FlashRP, FlashAddr=>FlashAddr, FlashData=>FlashData);
 	
 --	ram_component : ram port map(rst=>rst_reversed,clk=>clk,re=>ram_read,we=>ram_write,addr=>ram_addr,wdata=>ram_wdata,rdata=>ram_rdata,

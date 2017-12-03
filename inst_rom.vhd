@@ -79,7 +79,11 @@ entity inst_rom is
 			  FlashWE: out STD_LOGIC;
 			  FlashRP: out STD_LOGIC;
 			  FlashAddr: out STD_LOGIC_VECTOR(22 downto 1);
-			  FlashData: inout STD_LOGIC_VECTOR(15 downto 0));
+			  FlashData: inout STD_LOGIC_VECTOR(15 downto 0);
+			  
+			  --vga
+			  VGAAddr: in STD_LOGIC_VECTOR(17 downto 0);
+			  VGAData: out STD_LOGIC_VECTOR(15 downto 0));
 end inst_rom;
 
 architecture Behavioral of inst_rom is
@@ -314,7 +318,7 @@ begin
 		end if;
 	end process;
 	
-	Ram2_control: process(rst, LoadComplete, FlashDataOut, i)
+	Ram2_control: process(rst, LoadComplete, FlashDataOut, i, VGAAddr, Ram2Data)
 	begin
 		if (rst = Enable) then
 			Ram2OE <= '1';
@@ -322,9 +326,9 @@ begin
 			Ram2Data <= (others => 'Z');
 		else
 			if (LoadComplete = '1') then
-				Ram2OE <= '1';
-				Ram2Addr <= (others => '0');
-				Ram2Data <= (others => 'Z');
+				Ram2OE <= '0';
+				Ram2Addr <= VGAAddr;
+				VGAData <= Ram2Data;
 			else
 				--¶Ákernel
 				Ram2Addr <= "00" & i(18 downto 3);

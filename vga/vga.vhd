@@ -39,9 +39,8 @@ entity vga is
 		--pos, data使能
 		WE_i_1, WE_i_2: in std_logic;
 		--control:in std_logic;
-		ram_data: inout std_logic_vector(15 downto 0);
+		ram_data: in std_logic_vector(15 downto 0);
 		ram_addr: out std_logic_vector(17 downto 0);
-		EN, OE, WE: out std_logic;
 		HS, VS: out std_logic;
 		WE_o_1, WE_o_2: out std_logic;
 		R : out std_logic_vector (2 downto 0);
@@ -61,7 +60,7 @@ type screen_info is array (79 downto 0, 29 downto 0) of std_logic_vector(15 down
 signal screen : screen_info;
 
 
-constant start_addr: std_logic_vector(17 downto 0) := "000000000000000000";
+constant start_addr: std_logic_vector(17 downto 0) := "100000000000000000";
 constant img_size: integer := 128;
 
 --block计数
@@ -87,13 +86,6 @@ signal block_info : std_logic_vector(6 downto 0);
 
 begin
 	
-
-	
-	EN <= '1';
-	WE <= '1';
-	-- OE <= not(control);
-	OE <= '0';
-	
 	block_x <= H_count / 8;
 	block_y <= V_count / 16;
 	inblock_x <= H_count - 8 * block_x;
@@ -106,13 +98,14 @@ begin
 	in_x <= conv_integer(pos_in(15 downto 8));
 	in_y <= conv_integer(pos_in(7 downto 0));
 	
+	screen(0, 0) <= "0000000000000000";
 	screen(10, 10) <= "1111111110000000";
 	screen(10, 11) <= "1111111110000001";
 	screen(10, 12) <= "1111111110000010";
 	
-	ram_addr <= start_addr + conv_integer(screen(block_x, block_y)(6 downto 0)) * img_size + inblock_x + inblock_y * 8;
-	-- ram_addr <= start_addr;
-	display : process(clk, H_count, V_count)
+	--ram_addr <= start_addr + conv_integer(screen(block_x, block_y)(6 downto 0)) * img_size + inblock_x + inblock_y * 8;
+	ram_addr <= start_addr;
+	display : process(H_count, V_count, ram_data)
 		begin
 			if(V_count >= 480 or H_count >= 640)then
 				
@@ -120,18 +113,32 @@ begin
 				G <= "000";
 				B <= "000";
 			else
---				R <= ram_data(2 downto 0);
---				G <= ram_data(5 downto 3);
---				B <= ram_data(8 downto 6);
-				if(V_count >= 240)then
-					R <= "111";
-					G <= "000";
-					B <= "000";
+				if(ram_data = "0000000000000000") then
+					R <= ram_data(2 downto 0);
+					G <= ram_data(5 downto 3);
+					B <= ram_data(8 downto 6);
 				else
 					R <= "111";
 					G <= "000";
-					B <= "111";
+					B <= "000";
 				end if;
+--				if(H_count <= 160)then
+--					R <= "111";
+--					G <= "000";
+--					B <= "000";
+--				elsif(H_count <= 320)then
+--					R <= "000";
+--					G <= "000";
+--					B <= "111";
+--				elsif(H_count <= 480)then
+--					R <= "000";
+--					G <= "111";
+--					B <= "000";
+--				else
+--					R <= "111";
+--					G <= "111";
+--					B <= "111";
+--				end if;
 			end if;
 		end process;
 		
