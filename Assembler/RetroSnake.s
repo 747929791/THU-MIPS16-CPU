@@ -15,11 +15,11 @@ DATA SNAKE_APPLE_POS 1   ;苹果所在的坐标
 
 RetroSnake_Main:
 
-LI R0 0   ;走几步看看
-SAVE_DATA SNAKE_Direction R0 0
-CALL RetroSnake_OneStep
-CALL VGA_COM_PRINT
-RET
+;LI R0 0   ;走几步看看
+;SAVE_DATA SNAKE_Direction R0 0
+;CALL RetroSnake_OneStep
+;CALL VGA_COM_PRINT
+;RET
   CALL VGA_MEM_INIT
   CALL RetroSnake_INIT
   CALL VGA_COM_PRINT

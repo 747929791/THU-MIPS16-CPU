@@ -3,7 +3,7 @@ import re
 import sys
 """
 Moon汇编器，将扩展MIPS16语言转化为基本MIPS16语言
-调用方式 "python Assembler.py input output"
+调用方式 "python Assembler.py input"，将从input.s中读入，输出汇编到input_o.s，输出二进制文件到input_o.bin
 全部按大写字符处理，";"后的全是注释
 R6被使用为临时寄存器，R7被使用为返回地址寄存器
 新增语法特性：
@@ -228,14 +228,124 @@ def parseFinal(text):
           addr+=1
           ret.append(line)
   return "\n".join(ret)
-  
+
+def Assemble(text):   #由行隔开的标准MIPS16汇编语言汇编为二进制文件格式bytes
+  binFormat=dict()   #产生的二进制代码格式
+  mipsFormat=dict()  #语句对应格式
+  s="ADDIU";binFormat[s]="01001rximm8";mipsFormat[s]=["rx","imm8"]
+  s="ADDIU3";binFormat[s]="01000rxry0imm4";mipsFormat[s]=["rx",'ry',"imm4"]
+  s="ADDSP3";binFormat[s]="00000rximm8";mipsFormat[s]=["rx","imm8"]
+  s="ADDSP";binFormat[s]="01100011imm8";mipsFormat[s]=["imm8"]
+  s="ADDU";binFormat[s]="11100rxryrz01";mipsFormat[s]=["rx","ry","rz"]
+  s="AND";binFormat[s]="11101rxry01100";mipsFormat[s]=["rx","ry"]
+  s="B";binFormat[s]="00010imm11";mipsFormat[s]=["imm11"]
+  s="BEQZ";binFormat[s]="00100rximm8";mipsFormat[s]=["rx","imm8"]
+  s="BNEZ";binFormat[s]="00101rximm8";mipsFormat[s]=["rx","imm8"]
+  s="BTEQZ";binFormat[s]="01100000imm8";mipsFormat[s]=["imm8"]
+  s="BTNEZ";binFormat[s]="01100001imm8";mipsFormat[s]=["imm8"]
+  s="CMP";binFormat[s]="11101rxry01010";mipsFormat[s]=["rx","ry"]
+  s="CMPI";binFormat[s]="01110rximm8";mipsFormat[s]=["rx","imm8"]
+  s="INT";binFormat[s]="111110000000imm4";mipsFormat[s]=["imm4"]
+  s="JR";binFormat[s]="11101rx00000000";mipsFormat[s]=["rx"]
+  s="JRRA";binFormat[s]="1110100000100000";mipsFormat[s]=[]
+  s="LI";binFormat[s]="01101rximm8";mipsFormat[s]=["rx","imm8"]
+  s="LW";binFormat[s]="10011rxryimm5";mipsFormat[s]=["rx","ry","imm5"]
+  s="LW_SP";binFormat[s]="10010rximm8";mipsFormat[s]=["rx","imm8"]
+  s="MFIH";binFormat[s]="11110rx00000000";mipsFormat[s]=["rx"]
+  s="MFPC";binFormat[s]="11101rx01000000";mipsFormat[s]=["rx"]
+  s="MOVE";binFormat[s]="01111rxry00000";mipsFormat[s]=["rx","ry"]
+  s="MTIH";binFormat[s]="11110rx00000001";mipsFormat[s]=["rx"]
+  s="MTSP";binFormat[s]="01100100rx00000";mipsFormat[s]=["rx"]
+  s="NEG";binFormat[s]="11101rxry01011";mipsFormat[s]=["rx","ry"]
+  s="NOT";binFormat[s]="11101rxry01111";mipsFormat[s]=["rx","ry"]
+  s="NOP";binFormat[s]="0000100000000000";mipsFormat[s]=[]
+  s="OR";binFormat[s]="11101rxry01101";mipsFormat[s]=["rx","ry"]
+  s="SLL";binFormat[s]="00110rxryimm300";mipsFormat[s]=["rx","ry","imm3"]
+  s="SLLV";binFormat[s]="11101rxry00100";mipsFormat[s]=["rx","ry"]
+  s="SLT";binFormat[s]="11101rxry00010";mipsFormat[s]=["rx","ry"]
+  s="SLTI";binFormat[s]="01010rximm8";mipsFormat[s]=["rx","imm8"]
+  s="SLTU";binFormat[s]="11101rxry00011";mipsFormat[s]=["rx","ry"]
+  s="SLTUI";binFormat[s]="01011rximm8";mipsFormat[s]=["rx","imm8"]
+  s="SRA";binFormat[s]="00110rxryimm311";mipsFormat[s]=["rx","ry","imm3"]
+  s="SRAV";binFormat[s]="11101rxry00111";mipsFormat[s]=["rx","ry"]
+  s="SRL";binFormat[s]="00110rxryimm310";mipsFormat[s]=["rx","ry","imm3"]
+  s="SRLV";binFormat[s]="11101rxry00110";mipsFormat[s]=["rx","ry"]
+  s="SUBU";binFormat[s]="11100rxryrz11";mipsFormat[s]=["rx","ry","rz"]
+  s="SW";binFormat[s]="11011rxryimm5";mipsFormat[s]=["rx",'ry',"imm5"]
+  s="SW_RS";binFormat[s]="01100010imm8";mipsFormat[s]=["imm8"]
+  s="SW_SP";binFormat[s]="11010rximm8";mipsFormat[s]=["rx","imm8"]
+  s="XOR";binFormat[s]="11101rxry01110";mipsFormat[s]=["rx","ry"]
+  bit_init_array=[]
+  sysError=False
+  for line in text.split('\n'):
+    argv=line.split(' ')
+    if(sysError==False and argv[0] not in binFormat):
+      print("syn error, simbol not found! "+line)
+      sysError=True
+      break
+    if(sysError==False and len(argv)!=len(mipsFormat[argv[0]])+1):
+      print("syn error, arg number is wrong! "+line)
+      sysError=True
+    #转换为16位2进制字符串
+    if(sysError==False):
+      simbol_list=mipsFormat[argv[0]]
+      bit_inst=binFormat[argv[0]]
+      for i in range(len(simbol_list)):
+        simbol=simbol_list[i]
+        arg=argv[i+1]
+        if(simbol.lower()[0]=='r'):    #寄存器操作数
+          if(arg.lower()[0]!='r'):
+            print("syn error, need R arg! "+line)
+            sysError=True
+            break
+          arg=int(arg[1:])
+          if(arg<0 or arg>7):
+            print("syn error, R_addr wrong! "+line)
+            sysError=True
+            break
+          arg=bin(arg)[2:]
+          while(len(arg)<3):
+            arg="0"+arg
+          bit_inst=bit_inst.replace(simbol,arg)
+        elif(simbol.lower()[0:3]=='imm'):
+          bit_n=int(simbol[3:])
+          arg=int(arg,16)
+          if(arg<0 or arg>=2**bit_n):
+            print("warning,imm is too large:",line,"imm="+str(arg))
+          arg=bin(arg)[2:]
+          while(len(arg)<bit_n):
+            arg="0"+arg
+          bit_inst=bit_inst.replace(simbol,arg)
+        else:
+          print("syn error, simbol error! "+line)
+          sysError=True
+          break
+      if(len(bit_inst)!=16):
+        print("syn error, binary lens Error! ",line,bit_inst)
+        sysError=True
+      for i in range(16):
+        if(bit_inst[i]!='0' and bit_inst[i]!='1'):
+          print("syn error, bit_inst Error! ",line,bit_inst)
+          break
+      bit_init_array.append(bit_inst)
+  print(bit_init_array)
+  ret=bytes()
+  for inst in bit_init_array:
+    ret=ret+int(inst[8:]+inst[:8],2).to_bytes(2,byteorder='big')
+  return ret
+
 if __name__ == '__main__':
-    text=open(sys.argv[1]).read()
+    file_name=sys.argv[1]
+    text=open(file_name+".s").read()
     text=pretreatment(text)
     text=parseDefine(text)
     parseSigAddr(text)
     text=parseFinal(text)
-    print("\n\nresult:\nsig_addr:",sig_addr)
-    output=open(sys.argv[2],"w")
+    print("\n\nresult:\nsig_addr:",sig_addr,"\n")
+    binary=Assemble(text)
+    output=open(file_name+"_o.s","w")
     output.write(text)
+    output.close()
+    output=open(file_name+"_o.bin","wb")
+    output.write(binary)
     output.close()
