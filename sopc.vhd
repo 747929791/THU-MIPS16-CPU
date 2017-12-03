@@ -59,7 +59,13 @@ entity sopc is
 			  FlashAddr: out STD_LOGIC_VECTOR(22 downto 1);
 			  FlashData: inout STD_LOGIC_VECTOR(15 downto 0);
 			  
-			  LED: out STD_LOGIC_VECTOR(15 downto 0));
+			  LED: out STD_LOGIC_VECTOR(15 downto 0);
+
+			  HS, VS: out std_logic;
+			  R : out std_logic_vector (2 downto 0);
+			  G : out std_logic_vector (2 downto 0);
+		     B : out std_logic_vector (2 downto 0)
+			  );
 end sopc;
 
 architecture Behavioral of sopc is
@@ -80,6 +86,27 @@ signal inst_ready : STD_LOGIC;
 signal rom_ready : STD_LOGIC;
 signal ram_ready : STD_LOGIC;
 signal zero : STD_LOGIC;
+signal zeros : std_logic_vector(15 downto 0);
+
+component vga is
+	port(
+		clk: in std_logic;
+		--data_in: in std_logic_vector(18 downto 0);
+		pos_in: in std_logic_vector(15 downto 0);
+		data_in: in std_logic_vector(15 downto 0);
+		--pos, dataÊ¹ÄÜ
+		WE_i_1, WE_i_2: in std_logic;
+		--control:in std_logic;
+		ram_data: inout std_logic_vector(15 downto 0);
+		ram_addr: out std_logic_vector(17 downto 0);
+		EN, OE, WE: out std_logic;
+		HS, VS: out std_logic;
+		WE_o_1, WE_o_2: out std_logic;
+		R : out std_logic_vector (2 downto 0);
+		G : out std_logic_vector (2 downto 0);
+		B : out std_logic_vector (2 downto 0)
+	);
+end component; 
 
 component cpu
 	    Port ( rst : in  STD_LOGIC;
@@ -167,9 +194,11 @@ end component;
 begin
 	rst<=rst_in;
 	zero <= '0';
+	zeros <= "0000000000000000";
 	--clk <= clk_in;
 	rst_reversed <= not(rst);
 	rst_cpu <= rst_reversed or not(inst_ready);
+	vga_component : vga port map(clk=>clk, pos_in=>zeros, data_in=>zeros, WE_i_1 =>zero, WE_i_2=>zero, R=>R, G=>G, B=>B, HS=>HS, VS=>VS, ram_data => Ram2Data);
 	dcm_component : my_dcm port map(CLKIN_IN=>clk_in, RST_IN=>zero, CLKFX_OUT=>clk);
 										  
 	cpu_component : cpu port map(rst=>rst_cpu,clk=>clk,rom_data_i=>rom_data, rom_addr_o=>rom_addr, rom_ce_o=>rom_ce,rom_ready_i=>rom_ready,

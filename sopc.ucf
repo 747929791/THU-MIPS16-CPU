@@ -146,3 +146,15 @@ NET "FlashOE" LOC = E1;
 NET "FlashRP" LOC = D1;
 NET "FlashVpen" LOC = C2;
 NET "FlashWE" LOC = D4;
+
+NET "R[2]" LOC = A4;
+NET "R[1]" LOC = C3;
+NET "R[0]" LOC = A7;
+NET "G[2]" LOC = C5;
+NET "G[1]" LOC = C4;
+NET "G[0]" LOC = B4;
+NET "B[2]" LOC = B6;
+NET "B[1]" LOC = A6;
+NET "R[0]" LOC = D5;
+NET "HS" LOC = D6;
+NET "VS" LOC = E6;
