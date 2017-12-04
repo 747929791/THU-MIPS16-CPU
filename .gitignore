@@ -74,3 +74,5 @@ isim/
 !*.wcfg
 !*.program
 !Assembler/*
+!charset/*
+!.gitignore
