@@ -83,7 +83,11 @@ entity inst_rom is
 			  
 			  --vga
 			  VGAAddr: in STD_LOGIC_VECTOR(17 downto 0);
-			  VGAData: out STD_LOGIC_VECTOR(15 downto 0));
+			  VGAData: out STD_LOGIC_VECTOR(15 downto 0);
+			  VGAPos: out std_logic_vector(15 downto 0);
+			  VGAData1: out std_logic_vector(15 downto 0);
+			  VGAWEi1,VGAWEi2: out STD_LOGIC;
+			  VGAWEo1,VGAWEo2: in STD_LOGIC);
 end inst_rom;
 
 architecture Behavioral of inst_rom is
@@ -180,7 +184,7 @@ begin
 	
 	Ram1WE_control: process(rst,clk,we_mem,re_mem,addr_mem,LoadComplete,i)
 	begin
-		if ((rst = Enable) or (re_mem = Enable) or (addr_mem = x"bf00") or (addr_mem = x"bf01")) then
+		if ((rst = Enable) or (re_mem = Enable) or (addr_mem = x"bf00") or (addr_mem = x"bf01") or (addr_mem = x"bf04") or (addr_mem = x"bf05")) then
 			Ram1WE <= '1';
 		elsif (((LoadComplete = '1') and (we_mem = Enable)) or ((LoadComplete = '0') and (i(18 downto 3) < kernelInstNum))) then
 			Ram1WE <= clk;
@@ -211,6 +215,19 @@ begin
 		end if;
 	end process;
 	
+	VGAWE_control: process(VGAWEo1, VGAWEo2, addr_mem)
+	begin
+		if ((VGAWEo1 = '0') and (VGAWEo2 = '0')) then
+			VGAWEi1 <= '0';
+			VGAWEi2 <= '0';
+		elsif (addr_mem = x"bf04") then 
+			VGAWEi1 <= '1';
+			VGAWEi2 <= '0';
+		elsif (addr_mem = x"bf05") then
+			VGAWEi2 <= '1';
+		end if;
+	end process;
+			
 	Ram1_control: process(rst, addr_mem, addr_id, we_mem, re_mem, wdata_mem, data_ready, tbre, tsre, LoadComplete, FlashDataOut, i)
 	begin
 		if (rst = Enable) then
@@ -242,6 +259,20 @@ begin
 						Ram1Data <= wdata_mem;
 						read_prep <= Disable;
 						write_prep <= Enable;
+					elsif (addr_mem = x"bf04") then
+						--写VGA地址
+						Ram1EN <= '0';
+						Ram1OE <= '1';
+						VGAPos <= wdata_mem;
+						read_prep <= Disable;
+						write_prep <= Disable;
+					elsif (addr_mem = x"bf05") then
+						--写VGA数据
+						Ram1EN <= '0';
+						Ram1OE <= '1';
+						VGAData1 <= wdata_mem;
+						read_prep <= Disable;
+						write_prep <= Disable;
 					else
 						--写数据
 						Ram1EN <= '0';

@@ -168,7 +168,7 @@ begin
 					H_count <= 0;
 				end if;
 				if(WE_i_1 = '1' and WE_i_2 = '1')then
-					--screen(in_x, in_y) <= data_in;
+					screen(in_x, in_y) <= data_in;
 					WE_o_1 <= '0';
 					WE_o_2 <= '0';
 				else
