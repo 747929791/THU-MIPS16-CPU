@@ -84,10 +84,9 @@ entity inst_rom is
 			  --vga
 			  VGAAddr: in STD_LOGIC_VECTOR(17 downto 0);
 			  VGAData: out STD_LOGIC_VECTOR(15 downto 0);
-			  VGAPos: out std_logic_vector(15 downto 0);
+			  VGAPos: out std_logic_vector(11 downto 0);
 			  VGAData1: out std_logic_vector(15 downto 0);
-			  VGAWEi1,VGAWEi2: out STD_LOGIC;
-			  VGAWEo1,VGAWEo2: in STD_LOGIC);
+			  VGAMEMWE: out STD_LOGIC);
 end inst_rom;
 
 architecture Behavioral of inst_rom is
@@ -106,6 +105,7 @@ architecture Behavioral of inst_rom is
 	signal read_prep, write_prep: STD_LOGIC;
 	signal Ram2OE_tmp: STD_LOGIC;
 	signal rom_ready,ram_ctrl: STD_LOGIC;
+	signal VGAPos_tmp: std_logic_vector(15 downto 0);
 	
 	component flash_io
     Port ( addr : in  STD_LOGIC_VECTOR (22 downto 1);
@@ -152,6 +152,8 @@ begin
 	flash_io_component: flash_io port map(addr=>FlashAddrIn, data_out=>FlashDataOut, clk=>clk_8, reset=>FlashReset,
 														flash_byte=>FlashByte, flash_vpen=>FlashVpen, flash_ce=>FlashCE, flash_oe=>FlashOE, flash_we=>FlashWE,
 														flash_rp=>FlashRP, flash_addr=>FlashAddr, flash_data=>FlashData, ctl_read=>FlashRead);
+
+	VGAPos <= conv_std_logic_vector(conv_integer(VGAPos_tmp(15 downto 8))*80+conv_integer(VGAPos_tmp(7 downto 0)),12);
 
 	inst_ready <= LoadComplete;
 	
@@ -215,16 +217,12 @@ begin
 		end if;
 	end process;
 	
-	VGAWE_control: process(VGAWEo1, VGAWEo2, addr_mem)
+	VGAWE_control: process(addr_mem,we_mem)
 	begin
-		if ((VGAWEo1 = '0') and (VGAWEo2 = '0')) then
-			VGAWEi1 <= '0';
-			VGAWEi2 <= '0';
-		elsif (addr_mem = x"bf04") then 
-			VGAWEi1 <= '1';
-			VGAWEi2 <= '0';
-		elsif (addr_mem = x"bf05") then
-			VGAWEi2 <= '1';
+		if ((addr_mem = x"bf05") and (we_mem = Enable)) then
+			VGAMEMWE <= '1';
+		else
+			VGAMEMWE <= '0';
 		end if;
 	end process;
 			
@@ -263,7 +261,7 @@ begin
 						--Ð´VGAµØÖ·
 						Ram1EN <= '0';
 						Ram1OE <= '1';
-						VGAPos <= wdata_mem;
+						VGAPos_tmp <= wdata_mem;
 						read_prep <= Disable;
 						write_prep <= Disable;
 					elsif (addr_mem = x"bf05") then
