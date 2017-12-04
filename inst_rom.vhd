@@ -318,6 +318,11 @@ begin
 		end if;
 	end process;
 	
+	VGA_data: process(Ram2data)
+	begin
+		VGAData <= Ram2Data;
+	end process;
+	
 	Ram2_control: process(rst, LoadComplete, FlashDataOut, i, VGAAddr, Ram2Data)
 	begin
 		if (rst = Enable) then
@@ -328,7 +333,7 @@ begin
 			if (LoadComplete = '1') then
 				Ram2OE <= '0';
 				Ram2Addr <= VGAAddr;
-				VGAData <= Ram2Data;
+				Ram2Data <= (others => 'Z');
 			else
 				--¶Ákernel
 				Ram2Addr <= "00" & i(18 downto 3);

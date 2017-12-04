@@ -60,7 +60,7 @@ type screen_info is array (79 downto 0, 29 downto 0) of std_logic_vector(15 down
 signal screen : screen_info;
 
 
-constant start_addr: std_logic_vector(17 downto 0) := "100000000000000000";
+constant start_addr: std_logic_vector(17 downto 0) := "001000000000000000";
 constant img_size: integer := 128;
 
 --block¼ÆÊý
@@ -98,13 +98,14 @@ begin
 	in_x <= conv_integer(pos_in(15 downto 8));
 	in_y <= conv_integer(pos_in(7 downto 0));
 	
-	screen(0, 0) <= "0000000000000000";
-	screen(10, 10) <= "1111111110000000";
-	screen(10, 11) <= "1111111110000001";
-	screen(10, 12) <= "1111111110000010";
+--	screen(0, 0) <= "0000000000000000";
+--	screen(10, 10) <= "1111111110000000";
+--	screen(10, 11) <= "1111111110000001";
+--	screen(10, 12) <= "1111111110000010";
 	
 	--ram_addr <= start_addr + conv_integer(screen(block_x, block_y)(6 downto 0)) * img_size + inblock_x + inblock_y * 8;
-	ram_addr <= start_addr;
+	ram_addr <= start_addr + (conv_integer(block_x) + conv_integer(block_y)) * img_size + inblock_x + inblock_y * 8;
+	--ram_addr <= start_addr;
 	display : process(H_count, V_count, ram_data)
 		begin
 			if(V_count >= 480 or H_count >= 640)then
@@ -113,15 +114,15 @@ begin
 				G <= "000";
 				B <= "000";
 			else
-				if(ram_data = "0000000000000000") then
-					R <= ram_data(2 downto 0);
-					G <= ram_data(5 downto 3);
-					B <= ram_data(8 downto 6);
-				else
-					R <= "111";
-					G <= "000";
-					B <= "000";
-				end if;
+--				if(ram_data = "0000000000000000") then
+				R <= ram_data(2 downto 0);
+				G <= ram_data(5 downto 3);
+				B <= ram_data(8 downto 6);
+--				else
+--					R <= "111";
+--					G <= "000";
+--					B <= "000";
+--				end if;
 --				if(H_count <= 160)then
 --					R <= "111";
 --					G <= "000";
