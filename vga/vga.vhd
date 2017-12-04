@@ -95,8 +95,8 @@ begin
 	G_block <= conv_integer(current_block(12 downto 10));
 	B_block <= conv_integer(current_block(9 downto 7));
 	
-	in_x <= conv_integer(pos_in(15 downto 8));
-	in_y <= conv_integer(pos_in(7 downto 0));
+	in_x <= conv_integer(pos_in(7 downto 0));
+	in_y <= conv_integer(pos_in(15 downto 8));
 	
 --	screen(0, 0) <= "0000000000000000";
 --	screen(10, 10) <= "1111111110000000";

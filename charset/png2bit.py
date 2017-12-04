@@ -1,8 +1,5 @@
-import numpy as np
-import cv2
 import os
-import struct
-import time
+from PIL import Image
 
 print(os.listdir(os.getcwd() + "\charset"))
 
@@ -11,14 +8,17 @@ bit_file = open("charset.bit", "wb")
 f_num = len(os.listdir(os.getcwd() + "/charset"))
 print(f_num)
 
+binary=dict() #每个数字对应一个bytes
+
 for file in os.listdir(os.getcwd() + "/charset"):
-    img = cv2.imread("charset/" + file)
-    img = cv2.resize(img, (8, 16), interpolation=cv2.INTER_CUBIC)
-    cv2.imwrite("temp/" + file , img)
-    shape = np.shape(img)
-    print(shape)
-    for i in range(shape[0]):
-        for j in range(shape[1]):
+    im = Image.open("charset/" + file)
+    numId=int(file.split('.')[0])
+    if(im.size!=(8,16)):
+      print("Error! img.size!=(8,16) ",file)
+      continue
+    for i in range(im.size[0]):
+        for j in range(im.size[1]):
+            r,g,b = im.getpixel((i,j))
             if(img[i][j][0] > 200):
                 bit_file.write(struct.pack("H", 0x0000))
             else:

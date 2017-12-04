@@ -1,26 +1,13 @@
-import numpy as np
-import cv2
+from PIL import Image
 
-img = cv2.imread("charset.png")
-
-nX = 19
-nY = 6
-W = np.shape(img)[1] / nX
-H = np.shape(img)[0] / nY
-num = 0
-
-for i in range(nX):
-    for j in range(nY):
-        temp = img[int(j * H) : int((j + 1) * H), int(i * W) : int((i + 1) * W), :]
-        print(np.shape(temp))
-        '''
-        if((temp == 255 * np.ones([94, 69, 3])).all()):
-            break;
-        while((temp[:,0,:] == 255 * np.ones([94, 3])).all()):
-            temp = temp[:, 1:, :]
-        while((temp[:,-1,:] == 255 * np.ones([94, 3])).all()):
-            temp = temp[:, : -1, :]    
-        print(num , np.shape(temp))
-        '''
-        cv2.imwrite("charset/" + str(num) + ".jpg", temp[15:75, 20:50, :])
-        num += 1
+im = Image.open("ascii.png")
+for i in range(im.size[0]):
+  for j in range(im.size[1]):
+    r,g,b=im.getpixel((i,j))
+    im.putpixel((i,j),(255-r,255-g,255-b))
+for i in range(128):
+  box = (i*22, 5, (i+1)*22, 49)
+  region = im.crop(box)
+  region=region.resize((8,16),Image.ANTIALIAS)
+  region=region.convert("L")
+  region.save("charset/"+str(i)+".png")
