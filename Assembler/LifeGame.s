@@ -1,5 +1,5 @@
 ; 这是一个生命游戏
-GOTO LifeGame_Main
+GOTO LifeGame_UnitTest
 
 
 ;DEFINE LifeGame_MAP_N 1E  ;30行
@@ -578,6 +578,16 @@ VGA_Multi80:    ;快速的*80，加速计算
 
 VGA_Draw_Block:   ;绘图一个格子，R0用16位表示坐标，R1表示颜色等参数(约定后7位描述类型，前RGB各三位)
   SAVE_REG
+  ;显示
+  LI R6 BF
+  SLL R6 R6 0
+  ADDIU R6 4
+  SW R6 R0 0
+  ADDIU R6 1
+  SW R6 R1 0
+  LOAD_REG
+  RET
+  ;串口显示
   MOVE R2 R0  ;R2=R0
   MOVE R3 R1  ;R3=R1
   SRL R0 R0 0 ;R0=R0>>8
