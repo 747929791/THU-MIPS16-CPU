@@ -47,6 +47,7 @@ package defines is
 	constant EXE_AND_OP : std_logic_vector(7 downto 0) := "00000111"; --7
 	constant EXE_CMP_OP : std_logic_vector(7 downto 0) := "00001101"; --13
 	constant EXE_CMPI_OP : std_logic_vector(7 downto 0) := "00001110"; --14
+	constant EXE_INT_OP : std_logic_vector(7 downto 0) := "00001111"; --15
 	constant EXE_JALR_OP : std_logic_vector(7 downto 0) := "00010000"; -- 16
 	constant EXE_LI_OP : std_logic_vector(7 downto 0) := "00010011"; --19
 	constant EXE_LW : std_logic_vector(7 downto 0) := "00010100"; --20
@@ -87,6 +88,7 @@ package defines is
 	constant T_REGISTER : std_logic_vector(3 downto 0) := "1001"; --9ºÅT¼Ä´æÆ÷
 	constant RA_REGISTER : std_logic_vector(3 downto 0) := "1010"; --10ºÅRA¼Ä´æÆ÷
 	constant IH_REGISTER : std_logic_vector(3 downto 0) := "1011"; --11ºÅIH¼Ä´æÆ÷
+	constant INT_REGISTER : std_logic_vector(3 downto 0) := "1100"; --12ºÅINT¼Ä´æÆ÷
 	
 end defines;
 

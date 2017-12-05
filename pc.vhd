@@ -44,6 +44,7 @@ entity pc is
 end pc;
 
 architecture Behavioral of pc is
+
 signal ce : STD_LOGIC;
 signal pc : STD_LOGIC_VECTOR (15 downto 0); --要读取的指令地址
 begin

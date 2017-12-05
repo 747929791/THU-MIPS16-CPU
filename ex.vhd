@@ -175,6 +175,8 @@ begin
 					else
 						logicout <= ZeroWord;
 					end if;
+				when EXE_INT_OP =>
+					logicout <= reg1_i;
 				when others =>
 					logicout <= ZeroWord;
 			end case;

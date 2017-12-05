@@ -193,9 +193,6 @@ component my_dcm is
           LOCKED_OUT      : out   std_logic);
 end component;
 
-
-
-
 begin
 	rst<=rst_in;
 	zero <= '0';

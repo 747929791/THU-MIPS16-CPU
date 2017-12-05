@@ -565,6 +565,30 @@ begin
 							instvalid <= Enable;
 						when others =>
 					end case;
+				when "11111" =>
+					case imm4 is
+						when "1111" => --ERET
+							--jump to reg INT
+							wreg_o <= Disable;
+							reg1_read_e <= Enable;
+							reg1_addr <= INT_REGISTER;
+							branch_flag_o <= Enable;
+							branch_target_address_o <= reg1_data;
+						when others => --INT
+							--write the interrupted pc to INT_REG
+							wreg_o <= Enable;
+							aluop_o <= EXE_INT_OP;
+							alusel_o <= EXE_RES_LOGIC;
+							reg1_read_e <= Disable;
+							wd_o <= INT_REGISTER;
+							imm <= pc_i;
+							instvalid <= Enable;
+							--jump to reg IH
+							reg2_read_e <= Enable;
+							reg2_addr <= IH_REGISTER;
+							branch_flag_o <= Enable;
+							branch_target_address_o <= reg2_data;
+					end case;
 				when others =>
 			end case;
 		end if;
