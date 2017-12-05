@@ -86,7 +86,12 @@ entity inst_rom is
 			  VGAData: out STD_LOGIC_VECTOR(15 downto 0);
 			  VGAPos: out std_logic_vector(11 downto 0);
 			  VGAData1: out std_logic_vector(15 downto 0);
-			  VGAMEMWE: out STD_LOGIC);
+			  VGAMEMWE: out STD_LOGIC;
+			  
+			  --PS2
+			  LED: out STD_LOGIC_VECTOR(15 downto 0);
+			  keyboardASCII: in STD_LOGIC_VECTOR(15 downto 0);
+			  keyboardOE : in STD_LOGIC);
 end inst_rom;
 
 architecture Behavioral of inst_rom is
@@ -106,6 +111,8 @@ architecture Behavioral of inst_rom is
 	signal Ram2OE_tmp: STD_LOGIC;
 	signal rom_ready,ram_ctrl: STD_LOGIC;
 	signal VGAPos_tmp: std_logic_vector(15 downto 0);
+	signal hasReadASCII : std_logic;
+	signal ASCIIout: std_logic_vector(15 downto 0);
 	
 	component flash_io
     Port ( addr : in  STD_LOGIC_VECTOR (22 downto 1);
@@ -152,6 +159,31 @@ begin
 	flash_io_component: flash_io port map(addr=>FlashAddrIn, data_out=>FlashDataOut, clk=>clk_8, reset=>FlashReset,
 														flash_byte=>FlashByte, flash_vpen=>FlashVpen, flash_ce=>FlashCE, flash_oe=>FlashOE, flash_we=>FlashWE,
 														flash_rp=>FlashRP, flash_addr=>FlashAddr, flash_data=>FlashData, ctl_read=>FlashRead);
+
+	hasRead_control: process(clk, re_mem, addr_mem, ASCIIout)
+	begin
+		if (clk'event and clk = '1') then
+			if ((re_mem = Enable) and (addr_mem = x"bf06") and (ASCIIout /= x"0000")) then
+				hasReadASCII <= Enable;
+			else
+				hasReadASCII <= Disable;
+			end if;
+		end if;
+	end process;
+
+	display: process(keyboardASCII, keyboardOE, hasReadASCII)
+	begin
+--		if (keyboardOE = Enable) then
+--			ASCIIout <= keyboardASCII;
+--			LED <= keyboardASCII;
+--		elsif (hasReadASCII = Enable) then
+--			ASCIIout <= (others => '0');
+--		end if;
+		if (keyboardOE = Enable) then
+			ASCIIout <= keyboardASCII;
+			LED <= keyboardASCII;
+		end if;
+	end process;
 
 	VGAPos_control: process(clk, VGAPos_tmp, we_mem)
 	begin
@@ -292,6 +324,13 @@ begin
 						Ram1Data <= (others => 'Z');
 						read_prep <= Enable;
 						write_prep <= Disable;
+					elsif (addr_mem = x"bf06") then
+						--读键盘
+						Ram1EN <= '0';
+						Ram1OE <= '1';
+						Ram1Data <= ASCIIout;
+						read_prep <= Disable;
+						write_prep <= Disable;
 					elsif (addr_mem = x"bf01") then	
 						--准备读或写串口
 						Ram1EN <= '0';
@@ -311,7 +350,7 @@ begin
 						else 
 							--串口数据不可读写
 							Ram1Data <= (others => '0');
-						end if;
+						end if; 
 					else 
 						--读数据
 						Ram1EN <= '0';

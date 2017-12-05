@@ -5,7 +5,7 @@ use ieee.std_logic_arith.all;
 
 entity keyboard is
 port (
-	CLK_MAIN, CLK_11, CLK_25, CLK_100, RST: in std_logic;
+	CLK_MAIN, RST: in std_logic;
 	PS2_CODE: in std_logic_vector(7 downto 0);
 	PS2_OE: in std_logic;
 	ASCII: out STD_LOGIC_VECTOR(15 downto 0);
@@ -22,27 +22,19 @@ signal shiftModifier: STD_LOGIC;
 
 begin
 	ASCII <= ASCIIBuffer;
-	
-	OE_control: process(ASCIIBuffer)
-	begin
-		if (ASCIIBuffer = x"0000") then
-			KeyboardOE <= '0';
-		else
-			KeyboardOE <= '1';
-		end if;
-	end process;
 
 	ASCII_translate: process(RST,PS2_OE,CLK_MAIN,PS2_CODE, shiftModifier, prevCode, CodeBuffer)
 	begin
 		if (RST = '0') then
-			prevCode <= x"0000";
-			CodeBuffer <= x"0000";
+			prevCode <= x"00";
+			CodeBuffer <= x"00";
 			shiftModifier <= '0';
 			ASCIIBuffer <= x"0000";
 			state <= delay;
 		elsif rising_edge(CLK_MAIN) then
 			case state is 
 				when delay =>
+					KeyboardOE <= '0';
 					if PS2_OE = '1' then
 						case PS2_CODE is
 								
@@ -61,6 +53,7 @@ begin
 						end case;
 					end if;
 				when arrow =>
+					KeyboardOE <= '0';
 					if PS2_OE = '1' then
 						case PS2_CODE is
 							--U arrow
@@ -86,7 +79,7 @@ begin
 						end case;
 					end if;
 				when done =>
-					if (CodeBuffer \= prevCode) then
+					if (CodeBuffer /= prevCode) then
 						prevCode <= CodeBuffer;
 						case CodeBuffer is
 							--a-z
@@ -432,6 +425,10 @@ begin
 								ASCIIBuffer <= x"007f";
 								state <= delay;										--backspace
 								
+							when x"5a" => 
+								ASCIIBuffer <= x"000a";
+								state <= delay;										--enter
+								
 							--shift
 							when x"12" => 
 								shiftModifier <= '1';
@@ -458,19 +455,22 @@ begin
 								ASCIIBuffer <= x"0000";
 								state <= delay;
 						end case;
+						KeyboardOE <= '1';
 					else
 						ASCIIBuffer <= x"0000";
+						KeyboardOE <= '0';
 						state <= delay;
 					end if;
 				when breakCheck =>
 					if PS2_OE = '1' then
-						if (PS2_CODE <= 12) then
+						if (PS2_CODE = x"12") then
 							shiftModifier <= '0';
 						end if;
 						if (PS2_CODE = prevCode) then
 							prevCode <= (others => '0');
 						end if;
 						ASCIIBuffer <= x"0000";
+						KeyboardOE <= '1';
 						state <= delay;
 					end if;
 				when others =>

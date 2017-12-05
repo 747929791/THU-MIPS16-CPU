@@ -5,10 +5,10 @@ use ieee.std_logic_arith.all;
 
 entity PS2 is
 port (
-	CLK_MAIN, CLK_11, CLK_25, CLK_100, RST: in std_logic;
+	CLK_MAIN, RST: in std_logic;
 	PS2_DATA, PS2_CLK: in std_logic; -- PS2 clk and data
-	SCANCODE: out std_logic_vector(7 downto 0); -- scan code signal output, 每接收到一组数据即输出
-	OE: out std_logic -- 输出使能，每次输出的时候置1，无输出时置0
+	SCANCODE: out std_logic_vector(7 downto 0); -- scan code signal output
+	OE: out std_logic
 	) ;
 end PS2 ;
 
