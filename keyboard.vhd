@@ -18,17 +18,19 @@ type state_type is (delay,arrow,breakCheck,done);
 signal state:state_type;
 signal CodeBuffer, prevCode: STD_LOGIC_VECTOR(7 downto 0);
 signal ASCIIBuffer: STD_LOGIC_VECTOR(15 downto 0);
-signal shiftModifier: STD_LOGIC;
+signal shiftModifier,LshiftModifier,RshiftModifier: STD_LOGIC;
 
 begin
 	ASCII <= ASCIIBuffer;
+	shiftModifier <= LshiftModifier or RshiftModifier;
 
 	ASCII_translate: process(RST,PS2_OE,CLK_MAIN,PS2_CODE, shiftModifier, prevCode, CodeBuffer)
 	begin
 		if (RST = '0') then
 			prevCode <= x"00";
 			CodeBuffer <= x"00";
-			shiftModifier <= '0';
+			LshiftModifier <= '0';
+			RshiftModifier <= '0';
 			ASCIIBuffer <= x"0000";
 			state <= delay;
 		elsif rising_edge(CLK_MAIN) then
@@ -431,8 +433,17 @@ begin
 								
 							--shift
 							when x"12" => 
-								shiftModifier <= '1';
+								LshiftModifier <= '1';
 								state <= delay;										--L shift
+								
+							when x"59" => 
+								RshiftModifier <= '1';
+								state <= delay;										--R shift
+								
+							--control keys
+							when x"58" => 
+								ASCIIBuffer <= x"8020";
+								state <= delay;										--caps lock
 								
 							--U arrow
 							when x"75" => 
@@ -464,7 +475,9 @@ begin
 				when breakCheck =>
 					if PS2_OE = '1' then
 						if (PS2_CODE = x"12") then
-							shiftModifier <= '0';
+							LshiftModifier <= '0';
+						elsif (PS2_CODE = x"59") then
+							RshiftModifier <= '0';
 						end if;
 						if (PS2_CODE = prevCode) then
 							prevCode <= (others => '0');
