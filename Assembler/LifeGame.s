@@ -1,8 +1,11 @@
 ; ÕâÊÇÒ»¸öÉúÃüÓÎÏ·
 GOTO LifeGame_Main
 
-DEFINE LifeGame_MAP_N 1E  ;30ÐÐ
-DEFINE LifeGame_MAP_M 28  ;40ÁÐ(Á½ÁÐÎª1¸ñ)
+
+;DEFINE LifeGame_MAP_N 1E  ;30ÐÐ
+;DEFINE LifeGame_MAP_M 28  ;40ÁÐ(Á½ÁÐÎª1¸ñ)
+DEFINE LifeGame_MAP_N 10  ;30ÐÐ
+DEFINE LifeGame_MAP_M 10  ;40ÁÐ(Á½ÁÐÎª1¸ñ)
 DEFINE LifeGame_Alive_PictureL 28   ;»î×ÅµÄ×´Ì¬Í¼Æ¬ID Left
 DEFINE LifeGame_Alive_PictureR 29   ;»î×ÅµÄ×´Ì¬Í¼Æ¬ID Left
 DEFINE LifeGame_Dead_PictureL 20   ;ËÀ×ÅµÄ×´Ì¬Í¼Æ¬ID Left
@@ -15,10 +18,27 @@ LifeGame_Main:
   CALL VGA_MEM_INIT
   CALL LifeGame_INIT
   CALL VGA_COM_PRINT
-  ;CALL LifeGame_OneStep
-  ;CALL VGA_COM_PRINT
+  CALL LifeGame_OneStep
+  CALL VGA_COM_PRINT
+  CALL LifeGame_OneStep
+  CALL VGA_COM_PRINT
+  LI R0 F0 ;±ê¼Ç³ÌÐòÔËÐÐ½áÊø
   RET
 
+LifeGame_UnitTest:    ;µ¥Ôª²âÊÔÂß¼­£¬Ã¿´ÎÖÕ¶ËGµÄÊ±ºòÖ´ÐÐÒ»²½
+  DATA LifeGame_isInit 1;ÊÇ·ñ³õÊ¼»¯£¬ÎªÌØÊâÖµ±íÊ¾ÒÑ¾­³õÊ¼»¯¹ý
+  SAVE_REG
+  LOAD_DATA LifeGame_isInit R0 0
+  ADDIU R0 FF;ÌØÊâÖµ
+  BEQZ R0 LifeGame_UnitTest_OneStep
+  NOP
+  CALL VGA_MEM_INIT
+  CALL LifeGame_INIT
+  LifeGame_UnitTest_OneStep:
+  CALL LifeGame_OneStep
+  CALL VGA_COM_PRINT
+  LOAD_REG
+  RET
 
 LifeGame_INIT:
   SAVE_REG
@@ -122,55 +142,221 @@ LifeGame_OneStep:   ;½øÐÐÒ»²½¼ÆËã£¬²¢ÏÔÊ¾½á¹û£¬Ô¼¶¨¸ß8Î»¼ÇÂ¼ÏÂÒ»»ØºÏµÄ½á¹û£¬µÍ8Î
   ;µÚÒ»´ÎÑ­»·Ë¢ÐÂ×´Ì¬
   LI R4 LifeGame_MAP_N ;R4ÊÇÐÐÑ­»·±äÁ¿
   ADDIU R4 FF
-  LifeGame_RandomMapAndPring_L1:
+  LifeGame_OneStep_L1:
     LI R5 LifeGame_MAP_M  ;R5ÊÇÁÐÑ­»·±äÁ¿
     ADDIU R5 FF
-    LifeGame_RandomMapAndPring_L2:
+    LifeGame_OneStep_L2:
       ;Ö÷Ñ­»·Ìå
       SLL R3 R4 0
-      ADDU R3 R5 R3 ;ÏÖÔÚR3ÊÇ16Î»×ø±ê
-      ;Ã¶¾Ù8¸ö·½Ïò¼ÆËãºÍÖÃÓÚR1
+      ADDU R3 R5 R3 ;ÏÖÔÚR3ÊÇÖÐÐÄµã16Î»×ø±ê
+      LI R1 0   ;Ã¶¾Ù8¸ö·½Ïò¼ÆËãºÍÖÃÓÚR1
       ;R0ÊÇµ±Ç°Ã¶¾ÙµÄAddr
-      ;--Ã¶¾Ù0
-      LOAD_DATA LifeGame_Offset R0 0
-      ADDU R0 R3 R0
-      CALL LifeGame_MapAddr
-      LW R0 R2 0
-      SLL R2 R2 0
-      SRL R2 R2 0 ;ÏÖÔÚR2ÊÇÄ¿±ê¸ñ×ÓµÄËÀ»î×´Ì¬
+      
+      LifeGame_OneStep_CASE0:    ;--Ã¶¾Ù0·½Ïò
+          MOVE R2 R1
+          LOAD_DATA LifeGame_Offset R0 0 ;ÏÈ¼ì²âÊÇ·ñÓÐÔ½½ç
+          ADDU R0 R3 R0
+          SLL R1 R0 0
+          SRL R1 R1 0
+          SRL R0 R0 0
+          CALL LifeGame_Check_Point
+          BEQZ R0 LifeGame_OneStep_CASE1
+          MOVE R1 R2
+          LOAD_DATA LifeGame_Offset R0 0
+          ADDU R0 R3 R0
+          CALL LifeGame_MapAddr
+          LW R0 R2 0
+          SLL R2 R2 0
+          SRL R2 R2 0 ;ÏÖÔÚR2ÊÇÄ¿±ê¸ñ×ÓµÄËÀ»î×´Ì¬
+          ADDU R1 R2 R1
+      
+      LifeGame_OneStep_CASE1:    ;--Ã¶¾Ù1·½Ïò
+          MOVE R2 R1
+          LOAD_DATA LifeGame_Offset R0 1 ;ÏÈ¼ì²âÊÇ·ñÓÐÔ½½ç
+          ADDU R0 R3 R0
+          SLL R1 R0 0
+          SRL R1 R1 0
+          SRL R0 R0 0
+          CALL LifeGame_Check_Point
+          BEQZ R0 LifeGame_OneStep_CASE2
+          MOVE R1 R2
+          LOAD_DATA LifeGame_Offset R0 1
+          ADDU R0 R3 R0
+          CALL LifeGame_MapAddr
+          LW R0 R2 0
+          SLL R2 R2 0
+          SRL R2 R2 0 ;ÏÖÔÚR2ÊÇÄ¿±ê¸ñ×ÓµÄËÀ»î×´Ì¬
+          ADDU R1 R2 R1
+      
+      LifeGame_OneStep_CASE2:    ;--Ã¶¾Ù2·½Ïò
+          MOVE R2 R1
+          LOAD_DATA LifeGame_Offset R0 2 ;ÏÈ¼ì²âÊÇ·ñÓÐÔ½½ç
+          ADDU R0 R3 R0
+          SLL R1 R0 0
+          SRL R1 R1 0
+          SRL R0 R0 0
+          CALL LifeGame_Check_Point
+          BEQZ R0 LifeGame_OneStep_CASE3
+          MOVE R1 R2
+          LOAD_DATA LifeGame_Offset R0 2
+          ADDU R0 R3 R0
+          CALL LifeGame_MapAddr
+          LW R0 R2 0
+          SLL R2 R2 0
+          SRL R2 R2 0 ;ÏÖÔÚR2ÊÇÄ¿±ê¸ñ×ÓµÄËÀ»î×´Ì¬
+          ADDU R1 R2 R1
+      
+      LifeGame_OneStep_CASE3:    ;--Ã¶¾Ù3·½Ïò
+          MOVE R2 R1
+          LOAD_DATA LifeGame_Offset R0 3 ;ÏÈ¼ì²âÊÇ·ñÓÐÔ½½ç
+          ADDU R0 R3 R0
+          SLL R1 R0 0
+          SRL R1 R1 0
+          SRL R0 R0 0
+          CALL LifeGame_Check_Point
+          BEQZ R0 LifeGame_OneStep_CASE4
+          MOVE R1 R2
+          LOAD_DATA LifeGame_Offset R0 3
+          ADDU R0 R3 R0
+          CALL LifeGame_MapAddr
+          LW R0 R2 0
+          SLL R2 R2 0
+          SRL R2 R2 0 ;ÏÖÔÚR2ÊÇÄ¿±ê¸ñ×ÓµÄËÀ»î×´Ì¬
+          ADDU R1 R2 R1
+      
+      LifeGame_OneStep_CASE4:    ;--Ã¶¾Ù4·½Ïò
+          MOVE R2 R1
+          LOAD_DATA LifeGame_Offset R0 4 ;ÏÈ¼ì²âÊÇ·ñÓÐÔ½½ç
+          ADDU R0 R3 R0
+          SLL R1 R0 0
+          SRL R1 R1 0
+          SRL R0 R0 0
+          CALL LifeGame_Check_Point
+          BEQZ R0 LifeGame_OneStep_CASE5
+          MOVE R1 R2
+          LOAD_DATA LifeGame_Offset R0 4
+          ADDU R0 R3 R0
+          CALL LifeGame_MapAddr
+          LW R0 R2 0
+          SLL R2 R2 0
+          SRL R2 R2 0 ;ÏÖÔÚR2ÊÇÄ¿±ê¸ñ×ÓµÄËÀ»î×´Ì¬
+          ADDU R1 R2 R1
+      
+      LifeGame_OneStep_CASE5:    ;--Ã¶¾Ù5·½Ïò
+          MOVE R2 R1
+          LOAD_DATA LifeGame_Offset R0 5 ;ÏÈ¼ì²âÊÇ·ñÓÐÔ½½ç
+          ADDU R0 R3 R0
+          SLL R1 R0 0
+          SRL R1 R1 0
+          SRL R0 R0 0
+          CALL LifeGame_Check_Point
+          BEQZ R0 LifeGame_OneStep_CASE6
+          MOVE R1 R2
+          LOAD_DATA LifeGame_Offset R0 5
+          ADDU R0 R3 R0
+          CALL LifeGame_MapAddr
+          LW R0 R2 0
+          SLL R2 R2 0
+          SRL R2 R2 0 ;ÏÖÔÚR2ÊÇÄ¿±ê¸ñ×ÓµÄËÀ»î×´Ì¬
+          ADDU R1 R2 R1
+      
+      LifeGame_OneStep_CASE6:    ;--Ã¶¾Ù6·½Ïò
+          MOVE R2 R1
+          LOAD_DATA LifeGame_Offset R0 6 ;ÏÈ¼ì²âÊÇ·ñÓÐÔ½½ç
+          ADDU R0 R3 R0
+          SLL R1 R0 0
+          SRL R1 R1 0
+          SRL R0 R0 0
+          CALL LifeGame_Check_Point
+          BEQZ R0 LifeGame_OneStep_CASE7
+          MOVE R1 R2
+          LOAD_DATA LifeGame_Offset R0 6
+          ADDU R0 R3 R0
+          CALL LifeGame_MapAddr
+          LW R0 R2 0
+          SLL R2 R2 0
+          SRL R2 R2 0 ;ÏÖÔÚR2ÊÇÄ¿±ê¸ñ×ÓµÄËÀ»î×´Ì¬
+          ADDU R1 R2 R1
+      
+      LifeGame_OneStep_CASE7:    ;--Ã¶¾Ù7·½Ïò
+          MOVE R2 R1
+          LOAD_DATA LifeGame_Offset R0 7 ;ÏÈ¼ì²âÊÇ·ñÓÐÔ½½ç
+          ADDU R0 R3 R0
+          SLL R1 R0 0
+          SRL R1 R1 0
+          SRL R0 R0 0
+          CALL LifeGame_Check_Point
+          BEQZ R0 LifeGame_OneStep_CASE8
+          MOVE R1 R2
+          LOAD_DATA LifeGame_Offset R0 7
+          ADDU R0 R3 R0
+          CALL LifeGame_MapAddr
+          LW R0 R2 0
+          SLL R2 R2 0
+          SRL R2 R2 0 ;ÏÖÔÚR2ÊÇÄ¿±ê¸ñ×ÓµÄËÀ»î×´Ì¬
+          ADDU R1 R2 R1
+          
+      LifeGame_OneStep_CASE8:
       
       ;³õ²½°æ±¾½«×Ô¼ºµÄËÀ»îÌ¬±äÎªÏÂ·½µÄËÀ»îÌ¬
       MOVE R0 R3
       CALL LifeGame_MapAddr
-      LW R0 R3 0  ;R0ÏÖÔÚÊÇÄ¿µÄAddr
-      SLL R2 R2 0
-      ADDU R2 R3 R2
-      SW R0 R2 0      
+      LW R0 R3 0  ;R3ÏÖÔÚÊÇÖÐÐÄµãÊý¾Ý
+      SLL R1 R1 0
+      ADDU R1 R3 R1
+      SW R0 R1 0
       
-      BNEZ R5 LifeGame_RandomMapAndPring_L2
+      BEQZ R5 LifeGame_OneStep_NoJumpL2
       ADDIU R5 FF
-    BNEZ R4 LifeGame_RandomMapAndPring_L1
+      GOTO LifeGame_OneStep_L2
+      LifeGame_OneStep_NoJumpL2:
+    BEQZ R4 LifeGame_OneStep_NoJumpL1
     ADDIU R4 FF
-
+    GOTO LifeGame_OneStep_L1
+    LifeGame_OneStep_NoJumpL1:
+    
   ;µÚ¶þ´ÎÑ­»·Ð´»Ø
   LI R4 LifeGame_MAP_N ;R4ÊÇÐÐÑ­»·±äÁ¿
   ADDIU R4 FF
-  LifeGame_RandomMapAndPring_L1:
+  LifeGame_OneStep_L3:
     LI R5 LifeGame_MAP_M  ;R5ÊÇÁÐÑ­»·±äÁ¿
     ADDIU R5 FF
-    LifeGame_RandomMapAndPring_L2:
+    LifeGame_OneStep_L4:
       ;Ö÷Ñ­»·Ìå
       SLL R3 R4 0
       ADDU R3 R5 R3 ;ÏÖÔÚR3ÊÇ16Î»×ø±ê
       MOVE R0 R3
-      CALL LifeGame_MapAddr
+      CALL LifeGame_MapAddr ;R0ÏÖÔÚÊÇÖÐÐÄµãÄÚ´æµØÖ·
       LW R0 R1 0
-      SRL R1 R1 0 ;ÏÖÔÚR2ÊÇÄ¿±ê¸ñ×ÓÏÂÒ»»ØºÏµÄËÀ»î×´Ì¬
-      MOVE R0 R3
-      CALL LifeGame_Change      
-      BNEZ R5 LifeGame_RandomMapAndPring_L2
+      SLL R2 R1 0
+      SRL R2 R2 0  ;R2ÏÖÔÚÊÇÔ­À´µÄËÀ»î×´Ì¬
+      SRL R1 R1 0 ;ÏÖÔÚR1ÊÇÖÐÐÄ¸ñ×ÓµÄÁÚ¾ÓÊýÁ¿
+      ;¼ÆËãÏÂÒ»»ØºÏµÄ×´Ì¬
+      LI R6 2
+      CMP R1 R6
+      BTEQZ LifeGame_OneStep_Keep  ;ÈôÎª2Ôò±£³Ö
+      LI R6 3
+      CMP R1 R6
+      BTEQZ LifeGame_OneStep_Appear  ;ÈôÎª3ÔòÐÂÉú
+      NOP
+      LifeGame_OneStep_Dead:
+          LI R1 0 ;ÆäÓàÇé¿öÎªÏûÍö
+          B LifeGame_OneStep_Change
+          NOP
+      LifeGame_OneStep_Keep:
+          MOVE R1 R2 ;±£³ÖÖ®Ç°×´Ì¬
+          B LifeGame_OneStep_Change
+          NOP
+      LifeGame_OneStep_Appear:
+          LI R1 1 ;ÐÂÉú
+          B LifeGame_OneStep_Change
+          NOP
+      LifeGame_OneStep_Change:
+          MOVE R0 R3
+          CALL LifeGame_Change
+      BNEZ R5 LifeGame_OneStep_L4
       ADDIU R5 FF
-    BNEZ R4 LifeGame_RandomMapAndPring_L1
+    BNEZ R4 LifeGame_OneStep_L3
     ADDIU R4 FF
   LOAD_REG
   RET

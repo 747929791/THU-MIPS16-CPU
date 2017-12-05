@@ -278,6 +278,7 @@ def Assemble(text):   #由行隔开的标准MIPS16汇编语言汇编为二进制
   bit_init_array=[]
   sysError=False
   for line in text.split('\n'):
+    #print(line)
     argv=line.split(' ')
     if(sysError==False and argv[0] not in binFormat):
       print("syn error, simbol not found! "+line)
@@ -342,10 +343,10 @@ if __name__ == '__main__':
     parseSigAddr(text)
     text=parseFinal(text)
     print("\n\nresult:\nsig_addr:",sig_addr,"\n")
-    binary=Assemble(text)
     output=open(file_name+"_o.s","w")
     output.write(text)
     output.close()
+    binary=Assemble(text)
     output=open(file_name+"_o.bin","wb")
     output.write(binary)
     output.close()
