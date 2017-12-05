@@ -153,8 +153,13 @@ begin
 														flash_byte=>FlashByte, flash_vpen=>FlashVpen, flash_ce=>FlashCE, flash_oe=>FlashOE, flash_we=>FlashWE,
 														flash_rp=>FlashRP, flash_addr=>FlashAddr, flash_data=>FlashData, ctl_read=>FlashRead);
 
-	VGAPos <= conv_std_logic_vector(conv_integer(VGAPos_tmp(15 downto 8))*80+conv_integer(VGAPos_tmp(7 downto 0)),12);
-
+	VGAPos_control: process(clk, VGAPos_tmp, we_mem)
+	begin
+		if (clk'event and clk = '1' and we_mem = Enable) then
+			VGAPos <= conv_std_logic_vector(conv_integer(VGAPos_tmp(15 downto 8))*80+conv_integer(VGAPos_tmp(7 downto 0)),12);
+		end if;
+	end process;
+	
 	inst_ready <= LoadComplete;
 	
 	ram_ready_o <= not(re_mem and ram_ctrl);

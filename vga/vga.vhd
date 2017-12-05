@@ -59,6 +59,10 @@ constant img_size: integer := 128;
 signal H_count : integer := 0;
 signal V_count : integer := 0;
 
+--提前一个周期准备下一个像素的读取地址
+signal rel_H_count, rel_V_count: integer := 0;
+signal rel_block_x, rel_block_y: integer := 0;
+
 --当前输出的块的x, y及颜色信息
 signal block_x : integer := 0;
 signal block_y : integer := 0;
@@ -72,12 +76,36 @@ signal inblock_x : integer := 0;
 signal inblock_y : integer := 0;
 
 begin
+	rel_H: process(H_count)
+	begin
+		if (H_count = 799) then
+			rel_H_count <= 0;
+		else
+			rel_H_count <= H_count+1;
+		end if;
+	end process;
+	
+	rel_V: process(H_count, V_count)
+	begin
+		if (H_count = 799) then
+			if (V_count = 599) then
+				rel_V_count <= 0;
+			else
+				rel_V_count <= V_count+1;
+			end if;
+		else
+			rel_V_count <= V_count;
+		end if;
+	end process;
+
+	rel_block_x <= rel_H_count / 8;
+	rel_block_y <= rel_V_count / 16;
 	block_x <= H_count / 8;
 	block_y <= V_count / 16;
 	inblock_x <= H_count - 8 * block_x;
 	inblock_y <= V_count - 16 * block_y;
 		
-	pos_in <= conv_std_logic_vector(block_x*80+block_y,12);
+	pos_in <= conv_std_logic_vector(rel_block_x+rel_block_y*80,12);
 	
 	current_block <= data_in;
 	R_block <= conv_integer(current_block(15 downto 13));
