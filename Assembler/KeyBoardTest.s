@@ -1,15 +1,14 @@
 GOTO MAIN
 
 MAIN:
-  LI R0 BF
-  SLL R0 R0 0
   LI R5 BF
   SLL R5 R5 0
-  ADDIU R5 6 ;R5ÊÇ¼üÅÌµØÖ·
   Loop:
-    LW R5 R1 0
-    BEQZ R1 Loop
+    CALL KeyBoard_Get
+    BEQZ R0 Loop
     NOP
+    MOVE R1 R0
+    MOVE R0 R5
     CALL COM_WRITE
     B Loop
     NOP
@@ -55,4 +54,27 @@ COM_READ:  ;´Ó´®¿ÚR0¶ÁÊý¾Ý£¬ÎÞÊý¾Ý·µ»Ø0£¬·ñÔò·µ»ØÊý¾Ý
   LW_SP R0 0
   LW R0 R0 0
   COM_READ_RET:
+  RET
+  
+  
+  
+  
+;¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¼üÅÌ×´Ì¬»ú¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª
+
+KeyBoard_Get:   ;´Ó¼üÅÌ¶ÁÈ¡µ±Ç°ÄÚÈÝµ½R0
+  DATA KeyBoard_Last 1
+  LI R0 BF
+  SLL R0 R0 0
+  ADDIU R0 6
+  LW R0 R0 0
+  SW_SP R1 0
+  ADDSP 1
+  LOAD_DATA KeyBoard_Last R1 0
+  SAVE_DATA KeyBoard_Last R0 0
+  CMP R0 R1
+  BTNEZ 2 
+  NOP
+  LI R0 0
+  ADDSP FF
+  LW_SP R1 0
   RET
