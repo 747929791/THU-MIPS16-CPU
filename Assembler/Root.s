@@ -1,8 +1,10 @@
 GOTO Root_Main
 
+DATA KeyBoard_Cache 100 ;»º´æµ±Ç°Î´Íê³ÉµÄÊäÈëµÄÄÚÈÝ
+DATA KeyBoard_Cache_P 1 ;¼ÇÂ¼»º´æÇøÏÂÒ»¸ö×Ö·ûµÄµØÖ·
+
+KeyBoard_Get
 Root_Main:
-  DATA Command_Cache 100 ;»º´æµ±Ç°ÊäÈëµÄÖ¸ÁîÄÚÈÝ,
-  DATA Command_Cache_P 1 ;»º´æÇøÏÂÒ»¸ö×Ö·ûµÄµØÖ·
   CALL VGA_MEM_INIT
   CALL Root_INIT
   CALL VGA_COM_PRINT
@@ -10,6 +12,39 @@ Root_Main:
   LOAD_ADDR sys_root_path R0
   CALL printf
   RET
+
+Root_Main_KeyBoard_Enter:   ;µ±°´ÏÂ¼üÅÌ»Ø³µÊ±Ó¦µ±´¦ÀíµÄÂß¼­
+  ;Èç¹ûÊäÈëL£¬½øÈëÉúÃüÓÎÏ·
+  Load_Data KeyBoard_Cache R0 0
+  ADDIU R0 BF   ;R0-=ord(L)
+  BEQZ R0 GOTO_LifeGame
+  NOP
+  ;¾ù²»ÎªÒÔÉÏÖ¸Áî
+  CALL next_cursor_line
+  Load_Data KeyBoard_Cache_P R0 0
+  LI R1 0
+  SW R0 R1 0
+  Load_Addr KeyBoard_Cache R0
+  CALL printf
+  Load_Addr sys_command_not_found R0
+  CALL printf
+  ;»»ÐÐÁ½ÐÐ£¬Êä³ö"command not found.",²¢Êä³öÒ»¸ö"A:\>"
+  CALL next_cursor_line
+  CALL next_cursor_line
+  Load_Addr sys_root_path R0
+  CALL printf
+  RET
+
+GOTO_NotePad:
+  ;CALL NotePad
+  GOTO Root_Main
+GOTO_LifeGame:
+  ;GOTO LifeGame_Main
+  GOTO Root_Main
+GOTO_RetroSnake:
+  ;GOTO RetroSnake_Main
+  GOTO Root_Main
+
 
 set_cursor:     ;ÉèÖÃÊäÈë¹â±ê×ø±êÎªR0(16)Î»£¬ÓÃÓÚÏµÍ³ÎÄ×ÖÊä³ö
   DATA CURSOR_X 1
@@ -94,6 +129,7 @@ STRING sys_s8 "       Drive H: = Driver MSCD001 unit 0"
 STRING sys_s9 " "
 STRING sys_s10 "To get help, type HELP and press ENTER."
 STRING sys_root_path "A:\> "
+STRING sys_command_not_found " command not found."
 
 Root_INIT:     ;³õÊ¼»¯µÄÆÁÄ»×Ö·ûÏÔÊ¾
   LI R0 0
@@ -194,6 +230,14 @@ VGA_Draw_Block:   ;»æÍ¼Ò»¸ö¸ñ×Ó£¬R0ÓÃ16Î»±íÊ¾×ø±ê£¬R1±íÊ¾ÑÕÉ«µÈ²ÎÊý(Ô¼¶¨Ç°7Î»ÃèÊ
   SAVE_REG
   MOVE R2 R0  ;R2=R0
   MOVE R3 R1  ;R3=R1
+  ;Êä³öµ½ÕæÕýµÄVGAÏÔÊ¾µØÖ·
+  LI R6 BF
+  SLL R6 R6 0
+  ADDUI R6 4
+  SW R6 R0 0
+  ADDIU R6 1
+  SW R6 R1 0
+  ;Êä³öµ½±¾µØÐéÄâÏÔ´æ
   SRL R0 R0 0 ;R0=R0>>8
   LI R1 VGA_M
   CALL MULTI
@@ -361,6 +405,25 @@ RAND:  ;Î±Ëæ»úÊý·¢ÉúÆ÷£¬½«15Î»½á¹û·µ»ØÖÁ¼Ä´æÆ÷R0
   LI R1 3B
   ADDU R0 R1 R0
   SAVE_DATA RANDOM_SEED R0 0
+  ADDSP FF
+  LW_SP R1 0
+  RET
+  
+;--------------------------------------------¼üÅÌ¿ØÖÆ³ÌÐò--------------------------------------------
+KeyBoard_Get:   ;´Ó¼üÅÌ¶ÁÈ¡µ±Ç°ÄÚÈÝµ½R0
+  DATA KeyBoard_Last 1
+  LI R0 BF
+  SLL R0 R0 0
+  ADDIU R0 6
+  LW R0 R0 0
+  SW_SP R1 0
+  ADDSP 1
+  LOAD_DATA KeyBoard_Last R1 0
+  SAVE_DATA KeyBoard_Last R0 0
+  CMP R0 R1
+  BTNEZ 2 
+  NOP
+  LI R0 0
   ADDSP FF
   LW_SP R1 0
   RET
