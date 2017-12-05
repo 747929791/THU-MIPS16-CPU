@@ -15,6 +15,8 @@ LifeGame_Main:
   CALL VGA_MEM_INIT
   CALL LifeGame_INIT
   CALL VGA_COM_PRINT
+  ;CALL LifeGame_OneStep
+  ;CALL VGA_COM_PRINT
   RET
 
 
@@ -55,7 +57,6 @@ LifeGame_RandomMapAndPring:   ;随机产生初始地图并显示
     ADDIU R5 FF
     LifeGame_RandomMapAndPring_L2:
       ;主循环体
-;待实现！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！
       CALL FastRAND
       SRL R1 R0 0
       SRL R1 R1 7  ;R1记录1/2概率死活
@@ -97,6 +98,81 @@ LifeGame_Multi40: ;将R0的数字快速*40，因为地图大小硬编码列宽40
   SLL R0 R0 5
   SLL R6 R6 3
   ADDU R0 R6 R0
+  RET
+
+LifeGame_MapAddr:  ;将R0的16位表示坐标转换为MAP下标
+  SW_SP R1 0
+  ADDSP 1
+  SLL R1 R0 0
+  SRL R1 R1 0
+  SRL R0 R0 0
+  MOVE R6 R0
+  SLL R0 R0 5
+  SLL R6 R6 3
+  ADDU R0 R6 R0 ;R0=x*40,R1=y
+  ADDU R0 R1 R1
+  LOAD_ADDR LifeGame_Map R0
+  ADDU R0 R1 R0
+  ADDSP FF
+  LW_SP R1 0
+  RET
+
+LifeGame_OneStep:   ;进行一步计算，并显示结果，约定高8位记录下一回合的结果，低8位为这一回合的结果
+  SAVE_REG
+  ;第一次循环刷新状态
+  LI R4 LifeGame_MAP_N ;R4是行循环变量
+  ADDIU R4 FF
+  LifeGame_RandomMapAndPring_L1:
+    LI R5 LifeGame_MAP_M  ;R5是列循环变量
+    ADDIU R5 FF
+    LifeGame_RandomMapAndPring_L2:
+      ;主循环体
+      SLL R3 R4 0
+      ADDU R3 R5 R3 ;现在R3是16位坐标
+      ;枚举8个方向计算和置于R1
+      ;R0是当前枚举的Addr
+      ;--枚举0
+      LOAD_DATA LifeGame_Offset R0 0
+      ADDU R0 R3 R0
+      CALL LifeGame_MapAddr
+      LW R0 R2 0
+      SLL R2 R2 0
+      SRL R2 R2 0 ;现在R2是目标格子的死活状态
+      
+      ;初步版本将自己的死活态变为下方的死活态
+      MOVE R0 R3
+      CALL LifeGame_MapAddr
+      LW R0 R3 0  ;R0现在是目的Addr
+      SLL R2 R2 0
+      ADDU R2 R3 R2
+      SW R0 R2 0      
+      
+      BNEZ R5 LifeGame_RandomMapAndPring_L2
+      ADDIU R5 FF
+    BNEZ R4 LifeGame_RandomMapAndPring_L1
+    ADDIU R4 FF
+
+  ;第二次循环写回
+  LI R4 LifeGame_MAP_N ;R4是行循环变量
+  ADDIU R4 FF
+  LifeGame_RandomMapAndPring_L1:
+    LI R5 LifeGame_MAP_M  ;R5是列循环变量
+    ADDIU R5 FF
+    LifeGame_RandomMapAndPring_L2:
+      ;主循环体
+      SLL R3 R4 0
+      ADDU R3 R5 R3 ;现在R3是16位坐标
+      MOVE R0 R3
+      CALL LifeGame_MapAddr
+      LW R0 R1 0
+      SRL R1 R1 0 ;现在R2是目标格子下一回合的死活状态
+      MOVE R0 R3
+      CALL LifeGame_Change      
+      BNEZ R5 LifeGame_RandomMapAndPring_L2
+      ADDIU R5 FF
+    BNEZ R4 LifeGame_RandomMapAndPring_L1
+    ADDIU R4 FF
+  LOAD_REG
   RET
 
 LifeGame_Change:  ;将R0(16位地址)的死活更改为R1,并维护显示
