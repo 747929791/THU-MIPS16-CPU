@@ -1,6 +1,6 @@
 GOTO Root_Main
 
-DATA KeyBoard_Cache 100 ;缓存当前未完成的输入的内容
+DATA KeyBoard_Cache 500 ;缓存当前未完成的输入的内容
 DATA KeyBoard_Cache_P 1 ;记录缓存区下一个字符的地址
 
 Root_Main:
@@ -52,7 +52,7 @@ Root_Main_KeyBoard_Enter:   ;当按下键盘回车时应当处理的逻辑
   SAVE_DATA KeyBoard_Cache_P R0 0
   ;如果输入L，进入生命游戏
   Load_Data KeyBoard_Cache R0 0
-  ADDIU R0 BF   ;R0-=ord(L)
+  ADDIU R0 B4   ;R0-=ord(L)
   BEQZ R0 GOTO_LifeGame
   NOP
   ;均不为以上指令
@@ -177,6 +177,7 @@ STRING sys_root_path "A:\> "
 STRING sys_command_not_found " command not found."
 
 Root_INIT:     ;初始化的屏幕字符显示
+  SAVE_REG
   LOAD_ADDR KeyBoard_Cache R0
   SAVE_DATA KeyBoard_Cache_P R0 0
   LI R0 0
@@ -213,6 +214,7 @@ Root_INIT:     ;初始化的屏幕字符显示
   CALL printf
   CALL next_cursor_line
   CALL next_cursor_line
+  LOAD_REG
   RET
 
 
@@ -223,6 +225,7 @@ DEFINE VGA_M 50  ;80列
 DATA VGA_MEM 2400
 
 VGA_COM_PRINT:   ;将VGA_MEM通过串口打印到终端，用于测试
+RET ;在连接真机的时候不输出串口
   SAVE_REG
   LI R0 BF ;R0记录串口地址
   SLL R0 R0 0
@@ -254,16 +257,21 @@ VGA_MEM_INIT:
   LOAD_ADDR VGA_MEM R5 ;R5扫描VGA_MEM地址
   LI R2 0
   LI R3 VGA_N ;R3是行循环变量
+  ADDIU R3 FF
   VGA_MEM_INIT_L1:
     LI R4 VGA_M  ;R4是列循环变量
+    ADDIU R4 FF
     VGA_MEM_INIT_L2:
-      SW R5 R2 0
-      ADDIU R4 FF
-      BNEZ R4 VGA_MEM_INIT_L2
+      ;SW R5 R2 0
+      SLL R0 R3 0
+      ADDU R0 R4 R0
+      LI R1 20 ;打印空格
+      CALL VGA_Draw_Block
       ADDIU R5 1
-    ADDIU R3 FF
+      BNEZ R4 VGA_MEM_INIT_L2
+      ADDIU R4 FF
     BNEZ R3 VGA_MEM_INIT_L1
-    NOP
+    ADDIU R3 FF
   LOAD_REG
   RET
 

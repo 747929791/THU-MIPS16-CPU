@@ -1,13 +1,13 @@
 ; 这是一个生命游戏
-GOTO LifeGame_UnitTest
+GOTO LifeGame_Main
 
 
-;DEFINE LifeGame_MAP_N 1E  ;30行
-;DEFINE LifeGame_MAP_M 28  ;40列(两列为1格)
-DEFINE LifeGame_MAP_N 10  ;30行
-DEFINE LifeGame_MAP_M 10  ;40列(两列为1格)
-DEFINE LifeGame_Alive_PictureL 28   ;活着的状态图片ID Left
-DEFINE LifeGame_Alive_PictureR 29   ;活着的状态图片ID Left
+DEFINE LifeGame_MAP_N 1E  ;30行
+DEFINE LifeGame_MAP_M 28  ;40列(两列为1格)
+;DEFINE LifeGame_MAP_N 10  ;16行
+;DEFINE LifeGame_MAP_M 10  ;16列(两列为1格)
+DEFINE LifeGame_Alive_PictureL 1C   ;活着的状态图片ID Left
+DEFINE LifeGame_Alive_PictureR 1D   ;活着的状态图片ID Left
 DEFINE LifeGame_Dead_PictureL 20   ;死着的状态图片ID Left
 DEFINE LifeGame_Dead_PictureR 20   ;死着的状态图片ID Right
 DATA LifeGame_Map 1200  ;生命游戏的地图0/1表示生死
@@ -18,10 +18,40 @@ LifeGame_Main:
   CALL VGA_MEM_INIT
   CALL LifeGame_INIT
   CALL VGA_COM_PRINT
-  CALL LifeGame_OneStep
-  CALL VGA_COM_PRINT
-  CALL LifeGame_OneStep
-  CALL VGA_COM_PRINT
+  LI R5 0  ;R5记录是否Auto进行
+  LifeGame_Main_Loop:
+    CALL KeyBoard_Get
+    BNEZ R5 2
+    NOP
+    BEQZ R0 LifeGame_Main_Loop
+    NOP
+    CALL LifeGame_OneStep
+    CALL VGA_COM_PRINT
+    MOVE R1 R0
+    ADDIU R1 8F
+    BEQZ R1 LifeGame_Main_RET ;如果按下Q则游戏结束
+    NOP
+    MOVE R1 R0
+    ADDIU R1 8E
+    BEQZ R1 LifeGame_Main ;如果按下R则重新开始
+    NOP
+    MOVE R1 R0
+    ADDIU R1 9F
+    BEQZ R1 LifeGame_Main_BeginAuto ;如果按下A则自动进行游戏
+    NOP
+    MOVE R1 R0
+    ADDIU R1 8D
+    BEQZ R1 LifeGame_Main_StopAuto ;如果按下S则停止自动进行
+    NOP
+    B LifeGame_Main_Loop
+    NOP
+    LifeGame_Main_BeginAuto:
+      LI R5 1
+      GOTO LifeGame_Main_Loop
+    LifeGame_Main_StopAuto:
+      LI R5 0
+      GOTO LifeGame_Main_Loop
+  LifeGame_Main_RET:
   LI R0 F0 ;标记程序运行结束
   RET
 
@@ -518,14 +548,14 @@ RAND:  ;伪随机数发生器，将15位结果返回至寄存器R0
   LW_SP R1 0
   RET
   
-;---------------------------------------------------------------------------VGA控制模块---------------------------------------------------------------------------;
-
+;——————————————————————————————————————————————————————————————VGA模块——————————————————————————————————————————————————————————
 ;VGA显示控制器，内置显存 
 DEFINE VGA_N 1E  ;30行
 DEFINE VGA_M 50  ;80列
 DATA VGA_MEM 2400
 
 VGA_COM_PRINT:   ;将VGA_MEM通过串口打印到终端，用于测试
+RET ;在连接真机的时候不输出串口
   SAVE_REG
   LI R0 BF ;R0记录串口地址
   SLL R0 R0 0
@@ -557,16 +587,21 @@ VGA_MEM_INIT:
   LOAD_ADDR VGA_MEM R5 ;R5扫描VGA_MEM地址
   LI R2 0
   LI R3 VGA_N ;R3是行循环变量
+  ADDIU R3 FF
   VGA_MEM_INIT_L1:
     LI R4 VGA_M  ;R4是列循环变量
+    ADDIU R4 FF
     VGA_MEM_INIT_L2:
-      SW R5 R2 0
-      ADDIU R4 FF
-      BNEZ R4 VGA_MEM_INIT_L2
+      ;SW R5 R2 0
+      SLL R0 R3 0
+      ADDU R0 R4 R0
+      LI R1 20 ;打印空格
+      CALL VGA_Draw_Block
       ADDIU R5 1
-    ADDIU R3 FF
+      BNEZ R4 VGA_MEM_INIT_L2
+      ADDIU R4 FF
     BNEZ R3 VGA_MEM_INIT_L1
-    NOP
+    ADDIU R3 FF
   LOAD_REG
   RET
 
@@ -575,23 +610,22 @@ VGA_Multi80:    ;快速的*80，加速计算
   SLL R0 R0 4
   ADDU R0 R6 R0
   RET
-
-VGA_Draw_Block:   ;绘图一个格子，R0用16位表示坐标，R1表示颜色等参数(约定后7位描述类型，前RGB各三位)
+  
+VGA_Draw_Block:   ;绘图一个格子，R0用16位表示坐标，R1表示颜色等参数(约定前7位描述类型，后RGB各三位)
   SAVE_REG
-  ;显示
+  MOVE R2 R0  ;R2=R0
+  MOVE R3 R1  ;R3=R1
+  ;输出到真正的VGA显示地址
   LI R6 BF
   SLL R6 R6 0
   ADDIU R6 4
   SW R6 R0 0
   ADDIU R6 1
   SW R6 R1 0
-  LOAD_REG
-  RET
-  ;串口显示
-  MOVE R2 R0  ;R2=R0
-  MOVE R3 R1  ;R3=R1
+  ;输出到本地虚拟显存
   SRL R0 R0 0 ;R0=R0>>8
-  CALL VGA_Multi80
+  LI R1 VGA_M
+  CALL MULTI
   SLL R1 R2 0
   SRL R1 R1 0
   ADDU R0 R1 R0
@@ -643,4 +677,23 @@ COM_READ:  ;从串口R0读数据，无数据返回0，否则返回数据
   LW_SP R0 0
   LW R0 R0 0
   COM_READ_RET:
+  RET
+  
+;--------------------------------------------键盘控制程序--------------------------------------------
+KeyBoard_Get:   ;从键盘读取当前内容到R0
+  DATA KeyBoard_Last 1
+  LI R0 BF
+  SLL R0 R0 0
+  ADDIU R0 6
+  LW R0 R0 0
+  SW_SP R1 0
+  ADDSP 1
+  LOAD_DATA KeyBoard_Last R1 0
+  SAVE_DATA KeyBoard_Last R0 0
+  CMP R0 R1
+  BTNEZ 2 
+  NOP
+  LI R0 0
+  ADDSP FF
+  LW_SP R1 0
   RET
