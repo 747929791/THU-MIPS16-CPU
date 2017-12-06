@@ -213,8 +213,6 @@ component my_dcm is
           LOCKED_OUT      : out   std_logic);
 end component;
 
-<<<<<<< HEAD
-=======
 COMPONENT screen_mem is
   PORT (
     clka : IN STD_LOGIC;
@@ -246,7 +244,6 @@ port (
 	) ;
 end component ;
 
->>>>>>> vga
 begin
 	rst<=rst_in;
 	zero <= '0';
@@ -267,7 +264,7 @@ begin
 
 	cpu_component : cpu port map(rst=>rst_cpu,clk=>clk,rom_data_i=>rom_data, rom_addr_o=>rom_addr, rom_ce_o=>rom_ce,rom_ready_i=>rom_ready,LED=>LED,
 										  ram_rdata_i=>ram_rdata,ram_read_o=>ram_read,ram_write_o=>ram_write,ram_addr_o=>ram_addr,
-										  ram_wdata_o=>ram_wdata,ram_ce_o=>ram_ce,ram_ready_i=>ram_ready, interrupt_in => zero);
+										  ram_wdata_o=>ram_wdata,ram_ce_o=>ram_ce,ram_ready_i=>ram_ready, interrupt_in => kbdOE);
 
 	--cpu_component : cpu port map(rst=>rst_cpu,clk=>clk,rom_data_i=>rom_data, rom_addr_o=>rom_addr, rom_ce_o=>rom_ce,rom_ready_i=>rom_ready,
 	--										--LED=>LED,
@@ -281,7 +278,7 @@ begin
 		Ram1OE=>Ram1OE, Ram1WE=>Ram1WE, Ram1EN=>Ram1EN, rdn=>rdn, wrn=>wrn, 
 		Ram2Addr=>Ram2Addr, Ram2Data=>Ram2Data, Ram2OE=>Ram2OE, Ram2WE=>Ram2WE, Ram2EN=>Ram2EN, 
 		VGAAddr =>vga_addr, VGAData => vga_data, VGAMEMWE => vga_mem_we(0), VGAPos => vga_pos_out, VGAData1 => vga_data_out,
-		keyboardASCII => kbdASCII, keyboardOE => kbdOE, LED=>LED,
+		keyboardASCII => kbdASCII, keyboardOE => kbdOE, --LED=>LED,
 		FlashByte=>FlashByte, FlashVpen=>FlashVpen, FlashCE=>FlashCE, FlashOE=>FlashOE, FlashWE=>FlashWE, FlashRP=>FlashRP, FlashAddr=>FlashAddr, FlashData=>FlashData);
 	
 --	ram_component : ram port map(rst=>rst_reversed,clk=>clk,re=>ram_read,we=>ram_write,addr=>ram_addr,wdata=>ram_wdata,rdata=>ram_rdata,
