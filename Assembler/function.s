@@ -88,6 +88,24 @@ DIVISION:  ;加减交替原码一位除法，R0/R1，商保存于R0，余数存于R1
   LW_SP R4 2
   RET
 
+POWER:   ;计算R0^R1,返回R0(16位)
+  SAVE_REG
+  MOVE R3 R1
+  MOVE R2 R0
+  LI R0 1
+  BEQZ R1 POWER_LOOP_RET
+  NOP
+  POWER_LOOP:
+    MOVE R1 R2
+    CALL MULTI
+    ADDIU R3 FF
+    BNEZ R3 POWER_LOOP
+    NOP
+  POWER_LOOP_RET:
+  SW_SP R0 F8
+  LOAD_REG
+  RET
+
 FastRAND:  ;快速的伪随机数发生器，将15位结果返回至寄存器R0
 ; x(n+1)=(3*x(n)+59)%65536
   DATA RANDOM_SEED 1
