@@ -30,8 +30,8 @@ LOAD_REG  =>  从堆栈读取所有寄存器(务必与SAVE_REG成对使用)
 3、展开语句
 """
 
-statement_addr="4000"
-bss_addr="8000" #DATA段起始地址
+statement_addr_start="4000"
+bss_addr_start="8000" #DATA段起始地址
 define=dict()
 sig_addr=dict() #符号地址，0起始
 string_map=dict() #静态符号->字符串内容映射(用于支持STRING指令)
@@ -145,8 +145,8 @@ def parseDefine(text):
 #计算符号地址，生成System_init程序(用于填充初始化数据，在全部程序段的最后)
 def parseSigAddr(text):
   ret=[]
-  addr=0
-  bss_addr=0
+  addr=int(statement_addr_start,16)
+  bss_addr=int(bss_addr_start,16)
   for line in text.split('\n'):
     b=line.split("\"")[0].split(':')
     if(len(b)>1):
@@ -194,7 +194,7 @@ def ToHex(x,n):
 #最终代码生成
 def parseFinal(text):
   ret=[]
-  addr=0
+  addr=int(statement_addr_start,16)
   #在程序末尾附加产生boot程序段
   ret.append("SAVE_REG")
   for sig,s in string_map.items():
@@ -234,9 +234,9 @@ def parseFinal(text):
           OFFSET8=""
           if(b[0]=="GOTO" or b[0]=="CALL" or b[0]=="LOAD_DATA" or b[0]=="SAVE_DATA" or b[0]=="LOAD_ADDR"):
             if(b[0]=="GOTO" or b[0]=="CALL"):
-              X=int(str(sig_addr[b[1]]),10)+int(statement_addr,16)
+              X=int(str(sig_addr[b[1]]),10)
             elif(b[0]=="LOAD_DATA" or b[0]=="SAVE_DATA" or b[0]=="LOAD_ADDR"):
-              X=int(str(sig_addr[b[1]]),10)+int(bss_addr,16)
+              X=int(str(sig_addr[b[1]]),10)
             if((X//(2**7))%2==1):#对符号加法的扩展
               X+=2**8
             X=hex(X)[2:][-4:]
