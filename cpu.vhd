@@ -73,6 +73,7 @@ signal ex_reg2_i : STD_LOGIC_VECTOR(15 downto 0);
 signal ex_wreg_i : STD_LOGIC;
 signal ex_wd_i : STD_LOGIC_VECTOR(3 downto 0);
 signal ex_inst_i : STD_LOGIC_VECTOR(15 downto 0);
+signal ex_inst_o : STD_LOGIC_VECTOR(15 downto 0); --EX段拉回ID段的上一条指令信号，用于中断 
 --EX到EX/MEM的变量
 signal ex_wreg_o :STD_LOGIC;
 signal ex_wd_o : STD_LOGIC_VECTOR(3 downto 0);
@@ -143,6 +144,7 @@ component id
     Port ( rst : in  STD_LOGIC;
            pc_i : in  STD_LOGIC_VECTOR (15 downto 0);
            inst_i : in  STD_LOGIC_VECTOR (15 downto 0);
+			  previous_inst_i : in STD_LOGIC_VECTOR (15 downto 0);
            reg1_data_i : in  STD_LOGIC_VECTOR (15 downto 0);
            reg2_data_i : in  STD_LOGIC_VECTOR (15 downto 0);
            reg1_read_o : out  STD_LOGIC;
@@ -230,6 +232,7 @@ component ex
 			  --指令(用于获取访存立即数)
 			  inst_i : in STD_LOGIC_VECTOR(15 downto 0);
 			  --供id阶段检测Load相关
+			  inst_o : out STD_LOGIC_VECTOR(15 downto 0);
 			  aluop_o : out STD_LOGIC_VECTOR(7 downto 0)
 			  );
 end component;
@@ -312,7 +315,7 @@ begin
 	rom_addr_o <= pc_pc;
 	pc_component : pc port map(rst=>rst,clk=>clk,pc_o=>pc_pc,ce_o=>rom_ce_o, stall=>stall, branch_flag_i=>branch_flag, branch_target_address_i=>branch_target_address);
 	if_id_component : if_id port map(rst=>rst,clk=>clk,if_pc=>pc_pc,if_inst=>if_inst_i,id_pc=>id_pc_i,id_inst=>id_inst_i, stall=>stall);
-	id_component : id port map(rst=>rst, pc_i=>id_pc_i, inst_i=>id_inst_i, reg1_data_i=>reg1_data, reg2_data_i=>reg2_data, 
+	id_component : id port map(rst=>rst, pc_i=>id_pc_i, inst_i=>id_inst_i, previous_inst_i => ex_inst_o, reg1_data_i=>reg1_data, reg2_data_i=>reg2_data, 
 										reg1_read_o=>reg1_read, reg2_read_o=>reg2_read, reg1_addr_o=>reg1_addr, reg2_addr_o=>reg2_addr, 
 										aluop_o=>id_aluop_o, alusel_o=>id_alusel_o, reg1_o=>id_reg1_o, reg2_o=>id_reg2_o, wd_o=>id_wd_o, wreg_o=>id_wreg_o,
 										ex_wreg_i=>ex_wreg_o, ex_wd_i=>ex_wd_o, ex_wdata_i=>ex_wdata_o, mem_wreg_i=>mem_wreg_o, mem_wd_i=>mem_wd_o, mem_wdata_i=>mem_wdata_o,
@@ -324,7 +327,7 @@ begin
 												ex_alusel=>ex_alusel_i, ex_aluop=>ex_aluop_i, ex_reg1=>ex_reg1_i, ex_reg2=>ex_reg2_i, ex_wd=>ex_wd_i, ex_wreg=>ex_wreg_i, stall=>stall,
 												id_inst=>id_inst_o, ex_inst=>ex_inst_i);
 	ex_component : ex port map(rst=>rst,alusel_i=>ex_alusel_i, aluop_i=>ex_aluop_i, reg1_i=>ex_reg1_i, reg2_i=>ex_reg2_i, wd_i=>ex_wd_i, wreg_i=>ex_wreg_i, 
-										wd_o=>ex_wd_o, wreg_o=>ex_wreg_o, wdata_o=>ex_wdata_o, stallreq=>stallreq_ex, inst_i=>ex_inst_i,
+										wd_o=>ex_wd_o, wreg_o=>ex_wreg_o, wdata_o=>ex_wdata_o, stallreq=>stallreq_ex, inst_i=>ex_inst_i, inst_o => ex_inst_o,
 										mem_read_o=>ex_mem_read_o, mem_write_o=>ex_mem_write_o, mem_addr_o=>ex_mem_addr_o, mem_wdata_o=>ex_mem_wdata_o, aluop_o=>ex_aluop_o);
 	ex_mem_component : ex_mem port map(rst=>rst, clk=>clk, ex_wd=>ex_wd_o, ex_wreg=>ex_wreg_o, ex_wdata=>ex_wdata_o, mem_wd=>mem_wd_i, mem_wreg=>mem_wreg_i, mem_wdata=>mem_wdata_i, stall=>stall,
 												  ex_mem_read=>ex_mem_read_o, ex_mem_write=>ex_mem_write_o, ex_mem_addr=>ex_mem_addr_o, ex_mem_wdata=>ex_mem_wdata_o,

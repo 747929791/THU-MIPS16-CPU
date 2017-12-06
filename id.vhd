@@ -36,6 +36,7 @@ entity id is
     Port ( rst : in  STD_LOGIC;
            pc_i : in  STD_LOGIC_VECTOR (15 downto 0);
            inst_i : in  STD_LOGIC_VECTOR (15 downto 0);
+			  previous_inst_i : in STD_LOGIC_VECTOR (15 downto 0);
            reg1_data_i : in  STD_LOGIC_VECTOR (15 downto 0);
            reg2_data_i : in  STD_LOGIC_VECTOR (15 downto 0);
            reg1_read_o : out  STD_LOGIC;
@@ -581,7 +582,20 @@ begin
 							alusel_o <= EXE_RES_LOGIC;
 							reg1_read_e <= Disable;
 							wd_o <= INT_REGISTER;
-							imm <= pc_i;
+							if(previous_inst_i(15 downto 11) = "00010" or --B
+								previous_inst_i(15 downto 11) = "00100" or --BEQZ
+								previous_inst_i(15 downto 11) = "00101" or --BNEZ
+								previous_inst_i(15 downto 8) = "01100000" or --BTEQZ
+								previous_inst_i(15 downto 8) = "01100001" or --BTNEZ
+								(previous_inst_i(15 downto 11) = "11101"  and
+								previous_inst_i(7 downto 0) = "11000000") or --JALR
+								(previous_inst_i(15 downto 11) = "11101"  and
+								previous_inst_i(7 downto 0) = "00000000") or --JR
+								previous_inst_i = "1110100000100000")then --JRRA
+								imm <= pc_i - 1;
+							else
+								imm <= pc_i;
+							end if;
 							instvalid <= Enable;
 							--jump to reg IH
 							reg2_read_e <= Enable;

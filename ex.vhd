@@ -53,6 +53,7 @@ entity ex is
 			  --指令(用于获取访存立即数)
 			  inst_i : in STD_LOGIC_VECTOR(15 downto 0);
 			  --供id阶段检测Load相关
+			  inst_o : out STD_LOGIC_VECTOR(15 downto 0);
 			  aluop_o : out STD_LOGIC_VECTOR(7 downto 0)
 			  );
 end ex;
