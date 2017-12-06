@@ -41,6 +41,22 @@ Root_Main:
     NOP
   RET
 
+GOTO_LS:
+  STRING Applications "LifeGame RetroSnake"
+  CALL next_cursor_line
+  LOAD_ADDR Applications R0
+  CALL printf
+  GOTO Root_Main_KeyBoard_Enter_RET
+GOTO_NotePad:
+  ;CALL NotePad
+  GOTO Root_Main
+GOTO_LifeGame:
+  CALL LifeGame_Main
+  GOTO Root_Main
+GOTO_RetroSnake:
+  CALL RetroSnake_Main
+  GOTO Root_Main
+  
 Root_Main_KeyBoard_Enter:   ;当按下键盘回车时应当处理的逻辑
   SAVE_REG
   ;清空缓存区，补\0
@@ -84,21 +100,6 @@ Root_Main_KeyBoard_Enter:   ;当按下键盘回车时应当处理的逻辑
   LOAD_REG
   RET
 
-GOTO_LS:
-  STRING Applications "LifeGame RetroSnake"
-  CALL next_cursor_line
-  LOAD_ADDR Applications R0
-  CALL printf
-  GOTO Root_Main_KeyBoard_Enter_RET
-GOTO_NotePad:
-  ;CALL NotePad
-  GOTO Root_Main
-GOTO_LifeGame:
-  CALL LifeGame_Main
-  GOTO Root_Main
-GOTO_RetroSnake:
-  ;GOTO RetroSnake_Main
-  GOTO Root_Main
 
 
 set_cursor:     ;设置输入光标坐标为R0(16)位，用于系统文字输出
