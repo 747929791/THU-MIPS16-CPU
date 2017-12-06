@@ -3,7 +3,6 @@ GOTO Root_Main
 DATA KeyBoard_Cache 100 ;»º´æµ±Ç°Î´Íê³ÉµÄÊäÈëµÄÄÚÈÝ
 DATA KeyBoard_Cache_P 1 ;¼ÇÂ¼»º´æÇøÏÂÒ»¸ö×Ö·ûµÄµØÖ·
 
-KeyBoard_Get
 Root_Main:
   CALL VGA_MEM_INIT
   CALL Root_INIT
@@ -11,19 +10,52 @@ Root_Main:
   Root_Main_Command_Input:
   LOAD_ADDR sys_root_path R0
   CALL printf
+;LI R5 BF
+;SLL R5 R5 0
+;ADDIU R5 6
+;LI R4 32
+;SW R5 R4 0
+  Root_Main_KeyBoard_Get_Loop:
+    CALL KeyBoard_Get
+    BEQZ R0 Root_Main_KeyBoard_Get_Loop
+    NOP
+    LI R6 0A
+    CMP R0 R6   ;ÅÐ¶ÏÊÇ·ñÎª»Ø³µ
+    BTEQZ Root_Main_KeyBoard_Get_Enter ;ÊÇ»Ø³µ
+    NOP
+    CALL print_char  ;·ñÔòÊä³ö¸Ã×Ö·û
+    LOAD_DATA KeyBoard_Cache_P R1 0
+    SW R1 R0 0
+    ADDIU R1 1
+    SAVE_DATA KeyBoard_Cache_P R1 0
+;LI R3 0A
+;SW R5 R3 0
+    B Root_Main_KeyBoard_Get_Loop
+    NOP
+    Root_Main_KeyBoard_Get_Enter:
+        CALL Root_Main_KeyBoard_Enter
+;ADDIU R4 1
+;SW R5 R4 0
+    CALL VGA_COM_PRINT
+    B Root_Main_KeyBoard_Get_Loop
+    NOP
   RET
 
 Root_Main_KeyBoard_Enter:   ;µ±°´ÏÂ¼üÅÌ»Ø³µÊ±Ó¦µ±´¦ÀíµÄÂß¼­
+  SAVE_REG
+  ;Çå¿Õ»º´æÇø£¬²¹\0
+  CALL next_cursor_line
+  Load_Data KeyBoard_Cache_P R0 0
+  LI R1 0
+  SW R0 R1 0
+  LOAD_ADDR KeyBoard_Cache R0
+  SAVE_DATA KeyBoard_Cache_P R0 0
   ;Èç¹ûÊäÈëL£¬½øÈëÉúÃüÓÎÏ·
   Load_Data KeyBoard_Cache R0 0
   ADDIU R0 BF   ;R0-=ord(L)
   BEQZ R0 GOTO_LifeGame
   NOP
   ;¾ù²»ÎªÒÔÉÏÖ¸Áî
-  CALL next_cursor_line
-  Load_Data KeyBoard_Cache_P R0 0
-  LI R1 0
-  SW R0 R1 0
   Load_Addr KeyBoard_Cache R0
   CALL printf
   Load_Addr sys_command_not_found R0
@@ -33,6 +65,7 @@ Root_Main_KeyBoard_Enter:   ;µ±°´ÏÂ¼üÅÌ»Ø³µÊ±Ó¦µ±´¦ÀíµÄÂß¼­
   CALL next_cursor_line
   Load_Addr sys_root_path R0
   CALL printf
+  LOAD_REG
   RET
 
 GOTO_NotePad:
@@ -75,6 +108,18 @@ printf:       ;´ÓR0Ö¸¶¨µÄµØÖ·¿ªÊ¼ÑØcursorÊä³ö×Ö·û£¬Ö±µ½\0ÎªÖ¹
     LW R5 R4 0
     BNEZ R4 printf_loop1
     NOP
+  RET
+  
+print_char:       ;ÏòcursorÊä³öR0£¬²¢ÓÒÒÆcursor
+  SAVE_REG
+  MOVE R1 R0
+  LOAD_DATA CURSOR_X R2 0
+  LOAD_DATA CURSOR_Y R3 0
+  SLL R2 R2 0
+  ADDU R2 R3 R0
+  CALL VGA_Draw_Block
+  CALL next_cursor
+  LOAD_REG
   RET
 
 next_cursor:    ;¹â±êÓÒÒÆÒ»¸ñ£¬Ô½½çºóµ½´ïÏÂÒ»ÐÐÐÐÊ×
@@ -132,6 +177,8 @@ STRING sys_root_path "A:\> "
 STRING sys_command_not_found " command not found."
 
 Root_INIT:     ;³õÊ¼»¯µÄÆÁÄ»×Ö·ûÏÔÊ¾
+  LOAD_ADDR KeyBoard_Cache R0
+  SAVE_DATA KeyBoard_Cache_P R0 0
   LI R0 0
   SAVE_DATA CURSOR_X R0 0
   SAVE_DATA CURSOR_Y R0 0
@@ -233,7 +280,7 @@ VGA_Draw_Block:   ;»æÍ¼Ò»¸ö¸ñ×Ó£¬R0ÓÃ16Î»±íÊ¾×ø±ê£¬R1±íÊ¾ÑÕÉ«µÈ²ÎÊý(Ô¼¶¨Ç°7Î»ÃèÊ
   ;Êä³öµ½ÕæÕýµÄVGAÏÔÊ¾µØÖ·
   LI R6 BF
   SLL R6 R6 0
-  ADDUI R6 4
+  ADDIU R6 4
   SW R6 R0 0
   ADDIU R6 1
   SW R6 R1 0
