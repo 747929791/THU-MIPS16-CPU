@@ -3,7 +3,7 @@ import re
 import sys
 """
 Moon汇编器，将扩展MIPS16语言转化为基本MIPS16语言
-调用方式 "python Assembler.py input"，将从input.s中读入，输出汇编到input_o.s，输出二进制文件到input_o.bin
+调用方式 "python Assembler.py input1.s input2.s -o build"，将从input1.s/input2.s中读入，联合编译输出汇编到build_o.s，输出二进制文件到build_o.bin
 全部按大写字符处理，";"后的全是注释
 R6被使用为临时寄存器，R7被使用为返回地址寄存器
 新增语法特性：
@@ -372,8 +372,16 @@ def Assemble(text):   #由行隔开的标准MIPS16汇编语言汇编为二进制
   return ret
 
 if __name__ == '__main__':
-    file_name=sys.argv[1]
-    text=open(file_name+".s").read()
+    file_name="build"
+    text=""
+    i=1
+    while(i<len(sys.argv)):
+      if(sys.argv[i]=='-o'):
+        file_name=sys.argv[i+1]
+        i+=1
+      else:
+        text=text+"\n"+open(sys.argv[i]).read()
+      i+=1
     text="CALL SYSTEM_INIT\n"+text
     text=pretreatment(text)
     text=parseDefine(text)

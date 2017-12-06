@@ -5,7 +5,19 @@ DEFINE VGA_M 50  ;80列
 DATA VGA_MEM 2400
 
 VGA_COM_PRINT:   ;将VGA_MEM通过串口打印到终端，用于测试
+NOP
+NOP
+NOP
+NOP
+NOP
+NOP
 RET ;在连接真机的时候不输出串口
+NOP
+NOP
+NOP
+NOP
+NOP
+NOP
   SAVE_REG
   LI R0 BF ;R0记录串口地址
   SLL R0 R0 0
