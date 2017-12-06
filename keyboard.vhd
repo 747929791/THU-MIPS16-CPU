@@ -449,19 +449,19 @@ begin
 								
 							--U arrow
 							when x"75" => 
-								ASCIIBuffer <= x"8011";
+								ASCIIBuffer <= x"0011";
 								state <= delay;
 							--L arrow
 							when x"6b" => 
-								ASCIIBuffer <= x"8012";
+								ASCIIBuffer <= x"0012";
 								state <= delay;
 							--D arrow
 							when x"72" => 
-								ASCIIBuffer <= x"8013";
+								ASCIIBuffer <= x"0013";
 								state <= delay;
 							--R arrow
 							when x"74" => 
-								ASCIIBuffer <= x"8014";
+								ASCIIBuffer <= x"0014";
 								state <= delay;
 								
 							when others => 
