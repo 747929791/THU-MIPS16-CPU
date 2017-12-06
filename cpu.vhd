@@ -337,6 +337,6 @@ begin
 	stallreq_mem <= not ram_ready_i;
 	ctrl_component : ctrl port map(rst=>rst, stallreq_from_id=>stallreq_id, stallreq_from_ex=>stallreq_ex, stall=>stall, stallreq_from_if=>stallreq_if, stallreq_from_mem=>stallreq_mem);
 
-	int_ctrl_component : interrupt_controller port map(clk=>clk, rst=>rst, interrupt => interrupt_in, inst_in => rom_data_i, inst_out => if_inst_i);
+	int_ctrl_component : interrupt_controller port map(clk=>clk, rst=>rst, interrupt => interrupt_in, inst_in => rom_data_i, inst_out => if_inst_i, int_code_in => "0000");
 end Behavioral;
 

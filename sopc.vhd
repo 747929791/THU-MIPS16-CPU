@@ -125,7 +125,8 @@ component cpu
            ram_write_o : out STD_LOGIC;
            ram_addr_o : out STD_LOGIC_VECTOR(15 downto 0);
            ram_wdata_o : out STD_LOGIC_VECTOR(15 downto 0);
-           ram_ce_o : out STD_LOGIC --数据存储器使能
+           ram_ce_o : out STD_LOGIC; --数据存储器使能
+			  interrupt_in : in STD_LOGIC
 			  );
 end component;
 
@@ -203,9 +204,9 @@ begin
 	vga_component : vga port map(clk=>clk, pos_in=>zeros, data_in=>zeros, WE_i_1 =>zero, WE_i_2=>zero, R=>R, G=>G, B=>B, HS=>HS, VS=>VS, ram_addr => vga_addr, ram_data => vga_data);
 	dcm_component : my_dcm port map(CLKIN_IN=>clk_in, RST_IN=>zero, CLKFX_OUT=>clk);
 										  
-	cpu_component : cpu port map(rst=>rst_cpu,clk=>clk,rom_data_i=>rom_data, rom_addr_o=>rom_addr, rom_ce_o=>rom_ce,rom_ready_i=>rom_ready,
-											LED=>LED,
-										  ram_rdata_i=>ram_rdata,ram_read_o=>ram_read,ram_write_o=>ram_write,ram_addr_o=>ram_addr,ram_wdata_o=>ram_wdata,ram_ce_o=>ram_ce,ram_ready_i=>ram_ready);
+	cpu_component : cpu port map(rst=>rst_cpu,clk=>clk,rom_data_i=>rom_data, rom_addr_o=>rom_addr, rom_ce_o=>rom_ce,rom_ready_i=>rom_ready,LED=>LED,
+										  ram_rdata_i=>ram_rdata,ram_read_o=>ram_read,ram_write_o=>ram_write,ram_addr_o=>ram_addr,
+										  ram_wdata_o=>ram_wdata,ram_ce_o=>ram_ce,ram_ready_i=>ram_ready, interrupt_in => zero);
 	
 	inst_rom_component : inst_rom port map(rst=>rst_reversed, clk=>clk, 
 	ce_id=>rom_ce, addr_id=>rom_addr, inst_id=>rom_data, inst_ready=>inst_ready, rom_ready_o=>rom_ready,

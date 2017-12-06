@@ -46,17 +46,14 @@ signal current_state : state := state0;
 signal int_signal : std_logic := '0';
 signal int_code : std_logic_vector(3 downto 0) := "0000";
 begin
+
+	int_code <= int_code_in;
 	
-	KEEP_STATE: process(interrupt)
+	INT_STATE : process(clk, interrupt)
 	begin
 		if(interrupt = '1')then
 			int_signal <= '1';
-		end if;
-	end process;
-	
-	INT_STATE : process(clk)
-	begin
-		if(rising_edge(clk))then
+		elsif(rising_edge(clk))then
 			case current_state is
 				when state0 =>
 					if(int_signal = '1')then
