@@ -10,4 +10,5 @@ for i in range(128):
   region = im.crop(box)
   region=region.resize((8,16),Image.ANTIALIAS)
   region=region.convert("L")
+  region=region.convert("RGB")
   region.save("charset/"+str(i)+".png")

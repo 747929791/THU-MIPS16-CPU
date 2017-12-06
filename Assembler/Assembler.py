@@ -3,7 +3,7 @@ import re
 import sys
 """
 Moon汇编器，将扩展MIPS16语言转化为基本MIPS16语言
-调用方式 "python Assembler.py input"，将从input.s中读入，输出汇编到input_o.s，输出二进制文件到input_o.bin
+调用方式 "python Assembler.py input1.s input2.s -o build"，将从input1.s/input2.s中读入，联合编译输出汇编到build_o.s，输出二进制文件到build_o.bin
 全部按大写字符处理，";"后的全是注释
 R6被使用为临时寄存器，R7被使用为返回地址寄存器
 新增语法特性：
@@ -34,6 +34,7 @@ statement_addr="4000"
 bss_addr="8000" #DATA段起始地址
 define=dict()
 sig_addr=dict() #符号地址，0起始
+string_map=dict() #静态符号->字符串内容映射(用于支持STRING指令)
 
 #对于所有的HI LOW操作，由于LOW是符号扩展加法，故HI在计算时有时要加一
 statement=dict()
@@ -141,13 +142,13 @@ def parseDefine(text):
   text="\n".join([i for i in text.split('\n') if i.split(' ')[0]!="DEFINE"])
   return text
 
-#计算符号地址
+#计算符号地址，生成System_init程序(用于填充初始化数据，在全部程序段的最后)
 def parseSigAddr(text):
   ret=[]
   addr=0
   bss_addr=0
   for line in text.split('\n'):
-    b=line.split(':')
+    b=line.split("\"")[0].split(':')
     if(len(b)>1):
       if(b[0] in sig_addr):
         print("ERROR! SIG_ADDR:"+b[0]+" already exist!")
@@ -158,6 +159,17 @@ def parseSigAddr(text):
         l=int(b[2])
         sig_addr[b[1]]=bss_addr
         bss_addr+=l
+      elif(b[0]=="STRING"):
+        sig=b[1]
+        s=line.split("\"")[-2]+"\0"
+        if(len(line.split("\""))!=3):
+            print("ERROR! STRING is illegal : ",line)
+        l=len(s)
+        if(l==1):
+            print("ERROR! STRING is empty : ",line)
+        sig_addr[sig]=bss_addr
+        bss_addr+=l
+        string_map[sig]=s
       else:
         if(b[0] in statement):
           addr+=len(statement[b[0]])
@@ -165,6 +177,10 @@ def parseSigAddr(text):
         else:
           addr+=1
           ret.append(line)
+  #生成system_init程序地址
+  if("SYSTEM_INIT" in sig_addr):
+    print("ERROR! SYSTEM_INIT already exist!")
+  sig_addr["SYSTEM_INIT"]=addr
 
 #16进制补码，产生n个二进制位，符号扩展
 def ToHex(x,n):
@@ -179,14 +195,34 @@ def ToHex(x,n):
 def parseFinal(text):
   ret=[]
   addr=0
+  #在程序末尾附加产生boot程序段
+  ret.append("SAVE_REG")
+  for sig,s in string_map.items():
+    ret.append("LOAD_ADDR "+sig+" R0")
+    for c in s:
+        hex_c=hex(ord(c))[2:].upper()
+        if(len(hex_c)>2):
+            print("ERROR! String mapping :",sig,s,c)
+        while(len(hex_c)<2):
+            hex_c="0"+hex_c
+        ret.append("LI R1 "+hex_c)
+        ret.append("SW R0 R1 0")
+        ret.append("ADDIU R0 1")
+  ret.append("LOAD_REG")
+  ret.append("RET")
+  text=text+"\n"+"\n".join(ret)
+  ret=[]
   for line in text.split('\n'):
     #print(line)
+    line=line.upper()
     b=line.split(':')
     if(len(b)>1):
       pass
     else:
       b=line.split(' ')
       if(b[0]=="DATA"):
+        pass
+      elif(b[0]=="STRING"):
         pass
       else:
         if(b[0] in statement):
@@ -278,6 +314,7 @@ def Assemble(text):   #由行隔开的标准MIPS16汇编语言汇编为二进制
   bit_init_array=[]
   sysError=False
   for line in text.split('\n'):
+    #print(line)
     argv=line.split(' ')
     if(sysError==False and argv[0] not in binFormat):
       print("syn error, simbol not found! "+line)
@@ -328,24 +365,33 @@ def Assemble(text):   #由行隔开的标准MIPS16汇编语言汇编为二进制
           print("syn error, bit_inst Error! ",line,bit_inst)
           break
       bit_init_array.append(bit_inst)
-  print(bit_init_array)
+  #print(bit_init_array)
   ret=bytes()
   for inst in bit_init_array:
     ret=ret+int(inst[8:]+inst[:8],2).to_bytes(2,byteorder='big')
   return ret
 
 if __name__ == '__main__':
-    file_name=sys.argv[1]
-    text=open(file_name+".s").read()
+    file_name="build"
+    text=""
+    i=1
+    while(i<len(sys.argv)):
+      if(sys.argv[i]=='-o'):
+        file_name=sys.argv[i+1]
+        i+=1
+      else:
+        text=text+"\n"+open(sys.argv[i]).read()
+      i+=1
+    text="CALL SYSTEM_INIT\n"+text
     text=pretreatment(text)
     text=parseDefine(text)
     parseSigAddr(text)
     text=parseFinal(text)
     print("\n\nresult:\nsig_addr:",sig_addr,"\n")
-    binary=Assemble(text)
     output=open(file_name+"_o.s","w")
     output.write(text)
     output.close()
+    binary=Assemble(text)
     output=open(file_name+"_o.bin","wb")
     output.write(binary)
     output.close()

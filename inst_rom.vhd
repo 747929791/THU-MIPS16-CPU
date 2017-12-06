@@ -83,7 +83,15 @@ entity inst_rom is
 			  
 			  --vga
 			  VGAAddr: in STD_LOGIC_VECTOR(17 downto 0);
-			  VGAData: out STD_LOGIC_VECTOR(15 downto 0));
+			  VGAData: out STD_LOGIC_VECTOR(15 downto 0);
+			  VGAPos: out std_logic_vector(11 downto 0);
+			  VGAData1: out std_logic_vector(15 downto 0);
+			  VGAMEMWE: out STD_LOGIC;
+			  
+			  --PS2
+			  LED: out STD_LOGIC_VECTOR(15 downto 0);
+			  keyboardASCII: in STD_LOGIC_VECTOR(15 downto 0);
+			  keyboardOE : in STD_LOGIC);
 end inst_rom;
 
 architecture Behavioral of inst_rom is
@@ -102,6 +110,9 @@ architecture Behavioral of inst_rom is
 	signal read_prep, write_prep: STD_LOGIC;
 	signal Ram2OE_tmp: STD_LOGIC;
 	signal rom_ready,ram_ctrl: STD_LOGIC;
+	signal VGAPos_tmp: std_logic_vector(15 downto 0);
+	signal hasReadASCII : std_logic;
+	signal ASCIIout: std_logic_vector(15 downto 0);
 	
 	component flash_io
     Port ( addr : in  STD_LOGIC_VECTOR (22 downto 1);
@@ -149,6 +160,38 @@ begin
 														flash_byte=>FlashByte, flash_vpen=>FlashVpen, flash_ce=>FlashCE, flash_oe=>FlashOE, flash_we=>FlashWE,
 														flash_rp=>FlashRP, flash_addr=>FlashAddr, flash_data=>FlashData, ctl_read=>FlashRead);
 
+	hasRead_control: process(clk, re_mem, addr_mem, ASCIIout)
+	begin
+		if (clk'event and clk = '1') then
+			if ((re_mem = Enable) and (addr_mem = x"bf06") and (ASCIIout /= x"0000")) then
+				hasReadASCII <= Enable;
+			else
+				hasReadASCII <= Disable;
+			end if;
+		end if;
+	end process;
+
+	display: process(keyboardASCII, keyboardOE, hasReadASCII)
+	begin
+--		if (keyboardOE = Enable) then
+--			ASCIIout <= keyboardASCII;
+--			LED <= keyboardASCII;
+--		elsif (hasReadASCII = Enable) then
+--			ASCIIout <= (others => '0');
+--		end if;
+		if (keyboardOE = Enable) then
+			ASCIIout <= keyboardASCII;
+			LED <= keyboardASCII;
+		end if;
+	end process;
+
+	VGAPos_control: process(clk, VGAPos_tmp, we_mem)
+	begin
+		if (clk'event and clk = '1' and we_mem = Enable) then
+			VGAPos <= conv_std_logic_vector(conv_integer(VGAPos_tmp(15 downto 8))*80+conv_integer(VGAPos_tmp(7 downto 0)),12);
+		end if;
+	end process;
+	
 	inst_ready <= LoadComplete;
 	
 	ram_ready_o <= not(re_mem and ram_ctrl);
@@ -180,7 +223,7 @@ begin
 	
 	Ram1WE_control: process(rst,clk,we_mem,re_mem,addr_mem,LoadComplete,i)
 	begin
-		if ((rst = Enable) or (re_mem = Enable) or (addr_mem = x"bf00") or (addr_mem = x"bf01")) then
+		if ((rst = Enable) or (re_mem = Enable) or (addr_mem = x"bf00") or (addr_mem = x"bf01") or (addr_mem = x"bf04") or (addr_mem = x"bf05")) then
 			Ram1WE <= '1';
 		elsif (((LoadComplete = '1') and (we_mem = Enable)) or ((LoadComplete = '0') and (i(18 downto 3) < kernelInstNum))) then
 			Ram1WE <= clk;
@@ -211,6 +254,15 @@ begin
 		end if;
 	end process;
 	
+	VGAWE_control: process(addr_mem,we_mem)
+	begin
+		if ((addr_mem = x"bf05") and (we_mem = Enable)) then
+			VGAMEMWE <= '1';
+		else
+			VGAMEMWE <= '0';
+		end if;
+	end process;
+			
 	Ram1_control: process(rst, addr_mem, addr_id, we_mem, re_mem, wdata_mem, data_ready, tbre, tsre, LoadComplete, FlashDataOut, i)
 	begin
 		if (rst = Enable) then
@@ -242,6 +294,20 @@ begin
 						Ram1Data <= wdata_mem;
 						read_prep <= Disable;
 						write_prep <= Enable;
+					elsif (addr_mem = x"bf04") then
+						--写VGA地址
+						Ram1EN <= '0';
+						Ram1OE <= '1';
+						VGAPos_tmp <= wdata_mem;
+						read_prep <= Disable;
+						write_prep <= Disable;
+					elsif (addr_mem = x"bf05") then
+						--写VGA数据
+						Ram1EN <= '0';
+						Ram1OE <= '1';
+						VGAData1 <= wdata_mem;
+						read_prep <= Disable;
+						write_prep <= Disable;
 					else
 						--写数据
 						Ram1EN <= '0';
@@ -257,6 +323,13 @@ begin
 						Ram1OE <= '1';
 						Ram1Data <= (others => 'Z');
 						read_prep <= Enable;
+						write_prep <= Disable;
+					elsif (addr_mem = x"bf06") then
+						--读键盘
+						Ram1EN <= '0';
+						Ram1OE <= '1';
+						Ram1Data <= ASCIIout;
+						read_prep <= Disable;
 						write_prep <= Disable;
 					elsif (addr_mem = x"bf01") then	
 						--准备读或写串口
@@ -277,7 +350,7 @@ begin
 						else 
 							--串口数据不可读写
 							Ram1Data <= (others => '0');
-						end if;
+						end if; 
 					else 
 						--读数据
 						Ram1EN <= '0';

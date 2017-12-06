@@ -1,9 +1,23 @@
+;¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ªVGAÄ£¿é¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª
 ;VGAÏÔÊ¾¿ØÖÆÆ÷£¬ÄÚÖÃÏÔ´æ 
 DEFINE VGA_N 1E  ;30ÐÐ
 DEFINE VGA_M 50  ;80ÁÐ
 DATA VGA_MEM 2400
 
 VGA_COM_PRINT:   ;½«VGA_MEMÍ¨¹ý´®¿Ú´òÓ¡µ½ÖÕ¶Ë£¬ÓÃÓÚ²âÊÔ
+NOP
+NOP
+NOP
+NOP
+NOP
+NOP
+RET ;ÔÚÁ¬½ÓÕæ»úµÄÊ±ºò²»Êä³ö´®¿Ú
+NOP
+NOP
+NOP
+NOP
+NOP
+NOP
   SAVE_REG
   LI R0 BF ;R0¼ÇÂ¼´®¿ÚµØÖ·
   SLL R0 R0 0
@@ -35,23 +49,42 @@ VGA_MEM_INIT:
   LOAD_ADDR VGA_MEM R5 ;R5É¨ÃèVGA_MEMµØÖ·
   LI R2 0
   LI R3 VGA_N ;R3ÊÇÐÐÑ­»·±äÁ¿
+  ADDIU R3 FF
   VGA_MEM_INIT_L1:
     LI R4 VGA_M  ;R4ÊÇÁÐÑ­»·±äÁ¿
+    ADDIU R4 FF
     VGA_MEM_INIT_L2:
-      SW R5 R2 0
-      ADDIU R4 FF
-      BNEZ R4 VGA_MEM_INIT_L2
+      ;SW R5 R2 0
+      SLL R0 R3 0
+      ADDU R0 R4 R0
+      LI R1 20 ;´òÓ¡¿Õ¸ñ
+      CALL VGA_Draw_Block
       ADDIU R5 1
-    ADDIU R3 FF
+      BNEZ R4 VGA_MEM_INIT_L2
+      ADDIU R4 FF
     BNEZ R3 VGA_MEM_INIT_L1
-    NOP
+    ADDIU R3 FF
   LOAD_REG
+  RET
+
+VGA_Multi80:    ;¿ìËÙµÄ*80£¬¼ÓËÙ¼ÆËã
+  SLL R6 R0 6
+  SLL R0 R0 4
+  ADDU R0 R6 R0
   RET
   
 VGA_Draw_Block:   ;»æÍ¼Ò»¸ö¸ñ×Ó£¬R0ÓÃ16Î»±íÊ¾×ø±ê£¬R1±íÊ¾ÑÕÉ«µÈ²ÎÊý(Ô¼¶¨Ç°7Î»ÃèÊöÀàÐÍ£¬ºóRGB¸÷ÈýÎ»)
   SAVE_REG
   MOVE R2 R0  ;R2=R0
   MOVE R3 R1  ;R3=R1
+  ;Êä³öµ½ÕæÕýµÄVGAÏÔÊ¾µØÖ·
+  LI R6 BF
+  SLL R6 R6 0
+  ADDIU R6 4
+  SW R6 R0 0
+  ADDIU R6 1
+  SW R6 R1 0
+  ;Êä³öµ½±¾µØÐéÄâÏÔ´æ
   SRL R0 R0 0 ;R0=R0>>8
   LI R1 VGA_M
   CALL MULTI
@@ -63,4 +96,3 @@ VGA_Draw_Block:   ;»æÍ¼Ò»¸ö¸ñ×Ó£¬R0ÓÃ16Î»±íÊ¾×ø±ê£¬R1±íÊ¾ÑÕÉ«µÈ²ÎÊý(Ô¼¶¨Ç°7Î»ÃèÊ
   SW R0 R3 0   ;Ð´ÈëVGAÏÔ´æ
   LOAD_REG
   RET
-  

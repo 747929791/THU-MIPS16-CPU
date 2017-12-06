@@ -19,6 +19,9 @@
 ----------------------------------------------------------------------------------
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
+use IEEE.STD_LOGIC_ARITH.ALL;
+use WORK.DEFINES.ALL;
 
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
@@ -64,7 +67,9 @@ entity sopc is
 			  HS, VS: out std_logic;
 			  R : out std_logic_vector (2 downto 0);
 			  G : out std_logic_vector (2 downto 0);
-		     B : out std_logic_vector (2 downto 0)
+		     B : out std_logic_vector (2 downto 0);
+			  PS2_CLK : in std_logic;
+			  PS2_DATA : in std_logic
 			  );
 end sopc;
 
@@ -90,20 +95,25 @@ signal zeros : std_logic_vector(15 downto 0);
 
 signal vga_addr : std_logic_vector(17 downto 0);
 signal vga_data : std_logic_vector(15 downto 0);
+signal vga_pos_in, vga_pos_out :std_logic_vector(11 downto 0);
+signal vga_data_in, vga_data_out :std_logic_vector(15 downto 0);
+signal vga_mem_we: std_logic_vector(0 downto 0);
+
+signal PS2Code: std_logic_vector(7 downto 0);
+signal PS2OE: std_logic;
+signal kbdASCII: std_logic_vector(15 downto 0);
+signal kbdOE: std_logic;
 
 component vga is
 	port(
 		clk: in std_logic;
 		--data_in: in std_logic_vector(18 downto 0);
-		pos_in: in std_logic_vector(15 downto 0);
+		pos_in: out std_logic_vector(11 downto 0);
 		data_in: in std_logic_vector(15 downto 0);
-		--pos, dataÊ¹ÄÜ
-		WE_i_1, WE_i_2: in std_logic;
 		--control:in std_logic;
 		ram_data: in std_logic_vector(15 downto 0);
 		ram_addr: out std_logic_vector(17 downto 0);
 		HS, VS: out std_logic;
-		WE_o_1, WE_o_2: out std_logic;
 		R : out std_logic_vector (2 downto 0);
 		G : out std_logic_vector (2 downto 0);
 		B : out std_logic_vector (2 downto 0)
@@ -178,8 +188,17 @@ component inst_rom
 			  FlashAddr: out STD_LOGIC_VECTOR(22 downto 1);
 			  FlashData: inout STD_LOGIC_VECTOR(15 downto 0);
 			  
+			  --vga
 			  VGAAddr: in STD_LOGIC_VECTOR(17 downto 0);
-			  VGAData: out STD_LOGIC_VECTOR(15 downto 0));
+			  VGAData: out STD_LOGIC_VECTOR(15 downto 0);
+			  VGAPos: out std_logic_vector(11 downto 0);
+			  VGAData1: out std_logic_vector(15 downto 0);
+			  VGAMEMWE: out STD_LOGIC;
+			  
+			  --PS2
+			  LED: out STD_LOGIC_VECTOR(15 downto 0);
+			  keyboardASCII: in STD_LOGIC_VECTOR(15 downto 0);
+			  keyboardOE : in STD_LOGIC);
 end component;
 
 
@@ -194,6 +213,40 @@ component my_dcm is
           LOCKED_OUT      : out   std_logic);
 end component;
 
+<<<<<<< HEAD
+=======
+COMPONENT screen_mem is
+  PORT (
+    clka : IN STD_LOGIC;
+    wea : IN STD_LOGIC_VECTOR(0 DOWNTO 0);
+    addra : IN STD_LOGIC_VECTOR(11 DOWNTO 0);
+    dina : IN STD_LOGIC_VECTOR(15 DOWNTO 0);
+    clkb : IN STD_LOGIC;
+    addrb : IN STD_LOGIC_VECTOR(11 DOWNTO 0);
+    doutb : OUT STD_LOGIC_VECTOR(15 DOWNTO 0)
+  );
+END COMPONENT;
+
+component PS2 is
+port (
+	CLK_MAIN, RST: in std_logic;
+	PS2_DATA, PS2_CLK: in std_logic; -- PS2 clk and data
+	SCANCODE: out std_logic_vector(7 downto 0); -- scan code signal output
+	OE: out std_logic
+	) ;
+end component ;
+
+component keyboard is
+port (
+	CLK_MAIN, RST: in std_logic;
+	PS2_CODE: in std_logic_vector(7 downto 0);
+	PS2_OE: in std_logic;
+	ASCII: out STD_LOGIC_VECTOR(15 downto 0);
+	KeyboardOE: out STD_LOGIC
+	) ;
+end component ;
+
+>>>>>>> vga
 begin
 	rst<=rst_in;
 	zero <= '0';
@@ -201,23 +254,40 @@ begin
 	--clk <= clk_in;
 	rst_reversed <= not(rst);
 	rst_cpu <= rst_reversed or not(inst_ready);
-	vga_component : vga port map(clk=>clk, pos_in=>zeros, data_in=>zeros, WE_i_1 =>zero, WE_i_2=>zero, R=>R, G=>G, B=>B, HS=>HS, VS=>VS, ram_addr => vga_addr, ram_data => vga_data);
+	vga_component : vga port map(clk=>clk, pos_in=>vga_pos_in, data_in=>vga_data_in, 
+											R=>R, G=>G, B=>B, HS=>HS, VS=>VS, 
+											ram_addr => vga_addr, ram_data => vga_data);
+											
+	PS2_component : PS2 port map(CLK_MAIN=>clk, RST=>rst, PS2_DATA=>PS2_DATA, PS2_CLK=>PS2_CLK, SCANCODE=>PS2Code, OE=>PS2OE);
+	
+	Keyboard_component : keyboard port map(CLK_MAIN=>clk, RST=>rst, PS2_CODE=>PS2Code, PS2_OE=>PS2OE, ASCII=>kbdASCII, KeyboardOE=>kbdOE);
+											
 	dcm_component : my_dcm port map(CLKIN_IN=>clk_in, RST_IN=>zero, CLKFX_OUT=>clk);
 										  
+
 	cpu_component : cpu port map(rst=>rst_cpu,clk=>clk,rom_data_i=>rom_data, rom_addr_o=>rom_addr, rom_ce_o=>rom_ce,rom_ready_i=>rom_ready,LED=>LED,
 										  ram_rdata_i=>ram_rdata,ram_read_o=>ram_read,ram_write_o=>ram_write,ram_addr_o=>ram_addr,
 										  ram_wdata_o=>ram_wdata,ram_ce_o=>ram_ce,ram_ready_i=>ram_ready, interrupt_in => zero);
-	
+
+	--cpu_component : cpu port map(rst=>rst_cpu,clk=>clk,rom_data_i=>rom_data, rom_addr_o=>rom_addr, rom_ce_o=>rom_ce,rom_ready_i=>rom_ready,
+	--										--LED=>LED,
+	--									  ram_rdata_i=>ram_rdata,ram_read_o=>ram_read,ram_write_o=>ram_write,ram_addr_o=>ram_addr,ram_wdata_o=>ram_wdata,ram_ce_o=>ram_ce,ram_ready_i=>ram_ready);
+
+		
 	inst_rom_component : inst_rom port map(rst=>rst_reversed, clk=>clk, 
-	ce_id=>rom_ce, addr_id=>rom_addr, inst_id=>rom_data, inst_ready=>inst_ready, rom_ready_o=>rom_ready,
-	re_mem=>ram_read, we_mem=>ram_write, addr_mem=>ram_addr,wdata_mem=>ram_wdata,rdata_mem=>ram_rdata, ram_ready_o=>ram_ready,
-	data_ready=>data_ready, tbre=>tbre, tsre=>tsre, Ram1Addr=>Ram1Addr, Ram1Data=>Ram1Data,
-	Ram1OE=>Ram1OE, Ram1WE=>Ram1WE, Ram1EN=>Ram1EN, rdn=>rdn, wrn=>wrn, 
-	Ram2Addr=>Ram2Addr, Ram2Data=>Ram2Data, Ram2OE=>Ram2OE, Ram2WE=>Ram2WE, Ram2EN=>Ram2EN, VGAAddr =>vga_addr, VGAData => vga_data,
-	FlashByte=>FlashByte, FlashVpen=>FlashVpen, FlashCE=>FlashCE, FlashOE=>FlashOE, FlashWE=>FlashWE, FlashRP=>FlashRP, FlashAddr=>FlashAddr, FlashData=>FlashData);
+		ce_id=>rom_ce, addr_id=>rom_addr, inst_id=>rom_data, inst_ready=>inst_ready, rom_ready_o=>rom_ready,
+		re_mem=>ram_read, we_mem=>ram_write, addr_mem=>ram_addr,wdata_mem=>ram_wdata,rdata_mem=>ram_rdata, ram_ready_o=>ram_ready,
+		data_ready=>data_ready, tbre=>tbre, tsre=>tsre, Ram1Addr=>Ram1Addr, Ram1Data=>Ram1Data,
+		Ram1OE=>Ram1OE, Ram1WE=>Ram1WE, Ram1EN=>Ram1EN, rdn=>rdn, wrn=>wrn, 
+		Ram2Addr=>Ram2Addr, Ram2Data=>Ram2Data, Ram2OE=>Ram2OE, Ram2WE=>Ram2WE, Ram2EN=>Ram2EN, 
+		VGAAddr =>vga_addr, VGAData => vga_data, VGAMEMWE => vga_mem_we(0), VGAPos => vga_pos_out, VGAData1 => vga_data_out,
+		keyboardASCII => kbdASCII, keyboardOE => kbdOE, LED=>LED,
+		FlashByte=>FlashByte, FlashVpen=>FlashVpen, FlashCE=>FlashCE, FlashOE=>FlashOE, FlashWE=>FlashWE, FlashRP=>FlashRP, FlashAddr=>FlashAddr, FlashData=>FlashData);
 	
 --	ram_component : ram port map(rst=>rst_reversed,clk=>clk,re=>ram_read,we=>ram_write,addr=>ram_addr,wdata=>ram_wdata,rdata=>ram_rdata,
 --	Ram2Addr=>Ram2Addr, Ram2Data=>Ram2Data, Ram2OE=>Ram2OE, Ram2WE=>Ram2WE, Ram2EN=>Ram2EN);
+
+	screen_mem_component : screen_mem port map(clka=>clk, clkb=>clk, addra=>vga_pos_out, dina=>vga_data_out, wea=>vga_mem_we, addrb=>vga_pos_in, doutb=>vga_data_in);
 
 
 end Behavioral;

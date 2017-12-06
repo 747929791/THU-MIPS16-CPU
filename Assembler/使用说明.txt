@@ -1,0 +1,1 @@
+python .\Assembler.py .\Root.s .\LifeGame.s .\RetroSnake.s  .\VGA.s .\COM_interface.s .\function.s .\KeyBoard.s .\Delay.s -o build\Root
