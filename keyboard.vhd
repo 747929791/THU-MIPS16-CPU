@@ -428,7 +428,7 @@ begin
 								state <= delay;										--space
 								
 							when x"66" => 
-								ASCIIBuffer <= x"007f";
+								ASCIIBuffer <= x"0008";
 								state <= delay;										--backspace
 								
 							when x"5a" => 

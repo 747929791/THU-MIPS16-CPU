@@ -107,10 +107,11 @@ POWER:   ;计算R0^R1,返回R0(16位)
   SW_SP R0 F8
   LOAD_REG
   RET
+  
+DATA RANDOM_SEED 1
 
 FastRAND:  ;快速的伪随机数发生器，将15位结果返回至寄存器R0
 ; x(n+1)=(3*x(n)+59)%65536
-  DATA RANDOM_SEED 1
   LOAD_DATA RANDOM_SEED R0 0
   ADDU R0 R0 R6
   ADDU R0 R6 R0
@@ -121,7 +122,6 @@ FastRAND:  ;快速的伪随机数发生器，将15位结果返回至寄存器R0
 
 RAND:  ;伪随机数发生器，将15位结果返回至寄存器R0
 ; x(n+1)=(123*x(n)+59)%65536
-  DATA RANDOM_SEED 1
   SW_SP R1 0
   ADDSP 1
   LOAD_DATA RANDOM_SEED R0 0

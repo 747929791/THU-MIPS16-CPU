@@ -173,6 +173,8 @@ def parseSigAddr(text):
       b=line.split(' ')
       if(b[0]=="DATA"):
         l=int(b[2])
+        if(b[1] in sig_addr):
+          print("WARNING! DATA_ADDR:"+b[1]+" already exist!")
         sig_addr[b[1]]=bss_addr
         bss_addr+=l
       elif(b[0]=="STRING"):
@@ -183,6 +185,8 @@ def parseSigAddr(text):
         l=len(s)
         if(l==1):
             print("ERROR! STRING is empty : ",line)
+        if(sig in sig_addr):
+          print("WARNING! STRING_ADDR:"+sig+" already exist!")
         sig_addr[sig]=bss_addr
         bss_addr+=l
         string_map[sig]=s

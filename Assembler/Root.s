@@ -24,6 +24,10 @@ Root_Main:
     CMP R0 R6   ;判断是否为回车
     BTEQZ Root_Main_KeyBoard_Get_Enter ;是回车
     NOP
+    LI R6 08
+    CMP R0 R6   ;判断是否为退格
+    BTEQZ Root_Main_KeyBoard_Get_BackSpace ;是回车
+    NOP
     CALL print_char  ;否则输出该字符
     LOAD_DATA KeyBoard_Cache_P R1 0
     SW R1 R0 0
@@ -34,13 +38,39 @@ Root_Main:
     B Root_Main_KeyBoard_Get_Loop
     NOP
     Root_Main_KeyBoard_Get_Enter:
-        CALL Root_Main_KeyBoard_Enter
-        CALL VGA_COM_PRINT
+      CALL Root_Main_KeyBoard_Enter
+      CALL VGA_COM_PRINT
 ;ADDIU R4 1
 ;SW R5 R4 0
-    B Root_Main_KeyBoard_Get_Loop
-    NOP
+      B Root_Main_KeyBoard_Get_Loop
+      NOP
+    Root_Main_KeyBoard_Get_BackSpace:
+      CALL Root_Main_KeyBoard_BackSpace
+      CALL VGA_COM_PRINT
+      B Root_Main_KeyBoard_Get_Loop
+      NOP
   RET
+  
+Root_Main_KeyBoard_BackSpace:    ;按下退格应处理的逻辑
+  SAVE_REG
+  LOAD_DATA KeyBoard_Cache_P R0 0
+  LOAD_ADDR KeyBoard_Cache R1
+  CMP R0 R1
+  BTEQZ Root_Main_KeyBoard_BackSpace_RET;若已经到达最左侧则无视这一操作
+  NOP
+  CALL last_cursor ;回退一格
+  LOAD_DATA CURSOR_X R6 0
+  SLL R0 R6 0
+  LOAD_DATA CURSOR_Y R6 0
+  ADDU R0 R6 R0
+  LI R1 20
+  CALL VGA_Draw_Block ;清除显示
+  LOAD_DATA KeyBoard_Cache_P R0 0
+  ADDIU R0 FF
+  SAVE_DATA KeyBoard_Cache_P R0 0
+  Root_Main_KeyBoard_BackSpace_RET:
+    LOAD_REG
+    RET
 
 GOTO_LS:
   STRING Applications "LifeGame RetroSnake"
