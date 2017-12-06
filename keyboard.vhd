@@ -20,6 +20,8 @@ signal CodeBuffer, prevCode: STD_LOGIC_VECTOR(7 downto 0);
 signal ASCIIBuffer: STD_LOGIC_VECTOR(15 downto 0);
 signal shiftModifier,LshiftModifier,RshiftModifier,capsModifier,upperModifier: STD_LOGIC;
 
+--控制键编码： ALT:000f,  ESC:001b,  TAB:0009
+
 begin
 	ASCII <= ASCIIBuffer;
 	shiftModifier <= LshiftModifier or RshiftModifier;
@@ -446,6 +448,18 @@ begin
 							when x"58" => 
 								capsModifier <= not(capsModifier);
 								state <= delay;										--caps lock
+								
+							when x"11" => 
+								ASCIIBuffer <= x"000f";
+								state <= delay;										--L ALT		
+								
+							when x"76" => 
+								ASCIIBuffer <= x"001b";
+								state <= delay;										--ESC		
+
+							when x"0d" => 
+								ASCIIBuffer <= x"0009";
+								state <= delay;										--TAB								
 								
 							--U arrow
 							when x"75" => 
