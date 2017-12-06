@@ -5,19 +5,7 @@ DEFINE VGA_M 50  ;80ап
 DATA VGA_MEM 2400
 
 VGA_COM_PRINT:   ;╫╚VGA_MEMм╗╧Щ╢╝©з╢Рс║╣╫жу╤кё╛сцсз╡Бйт
-NOP
-NOP
-NOP
-NOP
-NOP
-NOP
-RET ;тза╛╫суФ╩З╣дй╠╨Р╡╩йДЁЖ╢╝©з
-NOP
-NOP
-NOP
-NOP
-NOP
-NOP
+;RET ;тза╛╫суФ╩З╣дй╠╨Р╡╩йДЁЖ╢╝©з
   SAVE_REG
   LI R0 BF ;R0╪гб╪╢╝©з╣ьж╥
   SLL R0 R0 0
@@ -94,5 +82,45 @@ VGA_Draw_Block:   ;╩Фм╪р╩╦Ж╦Явсё╛R0сц16н╩╠Мй╬вЬ╠Йё╛R1╠Мй╬яуи╚╣х╡нйЩ(т╪╤╗г╟7н╩цХй
   LOAD_ADDR VGA_MEM R1
   ADDU R0 R1 R0
   SW R0 R3 0   ;п╢хКVGAот╢Ф
+  LOAD_REG
+  RET
+  
+VGA_Scroll:    ;╫╚VGAотй╬жп╣дг╟R0ппоРио╧Жр╩╦Яё╛©уЁЖю╢╣др╩пплНЁД©у╦Я
+  SAVE_REG
+  ADDIU R0 FF
+  MOVE R5 R0
+  LI R3 0 ;R3йгппя╜╩╥╠Да©
+  VGA_Scroll_L1:
+    LI R4 VGA_M  ;R4йгапя╜╩╥╠Да©
+    ADDIU R4 FF
+    VGA_Scroll_L2:
+      MOVE R0 R3
+      CALL VGA_Multi80
+      ADDU R0 R4 R0
+      LI R1 VGA_M
+      ADDU R0 R1 R0
+      LOAD_ADDR  VGA_MEM R1
+      ADDU R0 R1 R0
+      LW R0 R1 0 ;ожтзr1йгобр╩пп╣ддзхщ
+      SLL R0 R3 0
+      ADDU R0 R4 R0
+      CALL VGA_Draw_Block
+      BNEZ R4 VGA_Scroll_L2
+      ADDIU R4 FF
+    ADDIU R3 1
+    CMP R3 R5
+    BTNEZ VGA_Scroll_L1
+    NOP
+  ;╫╚вН╨Ср╩пплНЁД©у╦Я
+  LI R4 VGA_M  ;R4йгапя╜╩╥╠Да©
+  ADDIU R4 FF
+  VGA_Scroll_L3:
+    MOVE R0 R5
+    SLL R0 R0 0
+    ADDU R0 R4 R0
+    LI R1 20;©у╦Я
+    CALL VGA_Draw_Block
+    BNEZ R4 VGA_Scroll_L3
+    ADDIU R4 FF
   LOAD_REG
   RET

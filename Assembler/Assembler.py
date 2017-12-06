@@ -125,7 +125,7 @@ def pretreatment(text):
   for line in text.split('\n'):   #保护引号内的内容不被改变
     s1=line #引号前的内容
     s2="" #引号内的内容
-    """f(line.replace(" ","")[:6].upper()=="STRING"):
+    if(line.replace(" ","")[:6].upper()=="STRING"):
       b=line.split('\"')
       if(len(b)==1):
         #无引号
@@ -135,7 +135,6 @@ def pretreatment(text):
       else:
         s1=b[0]
         s2="\""+"\"".join(b[1:-1])+"\""
-    """
     s1=s1.split(";")[0]
     p = re.compile(r' +');s1=p.sub(" ",s1)
     ret.append(s1.upper()+s2)
