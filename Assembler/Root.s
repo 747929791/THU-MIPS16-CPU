@@ -1,3 +1,4 @@
+;这是一个DOS命令行管理主程序
 GOTO Root_Main
 
 DATA KeyBoard_Cache 500 ;缓存当前未完成的输入的内容
