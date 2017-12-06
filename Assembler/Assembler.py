@@ -120,9 +120,26 @@ statement["LOAD_REG"]=[
 
 #去除冗余字符，注释
 def pretreatment(text):
-  text="\n".join([i.split(';')[0] for i in text.split('\n')])
-  text=text.replace("\t"," ")
-  p = re.compile(r' +');text=p.sub(" ",text)
+  text=text.replace("\t","    ")
+  ret=[]
+  for line in text.split('\n'):   #保护引号内的内容不被改变
+    s1=line #引号前的内容
+    s2="" #引号内的内容
+    """f(line.replace(" ","")[:6].upper()=="STRING"):
+      b=line.split('\"')
+      if(len(b)==1):
+        #无引号
+        s1=b[0]
+      elif(len(b)==2):
+        print("Error in pretreatment! Syntax Error.",line)
+      else:
+        s1=b[0]
+        s2="\""+"\"".join(b[1:-1])+"\""
+    """
+    s1=s1.split(";")[0]
+    p = re.compile(r' +');s1=p.sub(" ",s1)
+    ret.append(s1.upper()+s2)
+  text="\n".join(ret)
   p = re.compile(r'\n ');text=p.sub("\n",text)
   p = re.compile(r' \n');text=p.sub("\n",text)
   p = re.compile(r'\n+');text=p.sub("\n",text)
@@ -130,7 +147,7 @@ def pretreatment(text):
     text=text[1:]
   if(text[-1]=="\n"):
     text=text[:-1]
-  return text.upper()
+  return text
 
 #处理宏定义
 def parseDefine(text):
@@ -214,7 +231,6 @@ def parseFinal(text):
   ret=[]
   for line in text.split('\n'):
     #print(line)
-    line=line.upper()
     b=line.split(':')
     if(len(b)>1):
       pass

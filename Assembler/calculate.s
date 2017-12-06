@@ -20,17 +20,17 @@ Calculate_Main:
   CALL VGA_COM_PRINT
   LOAD_ADDR Calculate_Input_SIG R0   ;先输出">>> "
   CALL printf
-LOAD_ADDR CALC_TEST_S R2
+;LOAD_ADDR CALC_TEST_S R2
   Calculate_Main_KeyBoard_Get_Loop:
     CALL KeyBoard_Get
 ;LW R2 R0 0
 ;ADDIU R2 1
+;BEQZ R0 Calculate_Main_KeyBoard_Get_Enter
+;NOP
     BEQZ R0 Calculate_Main_KeyBoard_Get_Loop
     NOP
     LI R6 0A
     CMP R0 R6   ;判断是否为回车
-;LI R6 0
-;CMP R0 R6
     BTEQZ Calculate_Main_KeyBoard_Get_Enter ;是回车
     NOP
     CALL print_char  ;否则输出该字符
@@ -43,7 +43,6 @@ LOAD_ADDR CALC_TEST_S R2
     Calculate_Main_KeyBoard_Get_Enter:
         CALL Calculate_Main_KeyBoard_Enter
     CALL VGA_COM_PRINT
-;RET
     B Calculate_Main_KeyBoard_Get_Loop
     NOP
   RET
