@@ -20,7 +20,7 @@ signal CodeBuffer, prevCode: STD_LOGIC_VECTOR(7 downto 0);
 signal ASCIIBuffer: STD_LOGIC_VECTOR(15 downto 0);
 signal shiftModifier,LshiftModifier,RshiftModifier,capsModifier,upperModifier: STD_LOGIC;
 
---控制键编码： ALT:000f,  ESC:001b,  TAB:0009
+-- ALT:000f,  ESC:001b,  TAB:0009
 
 begin
 	ASCII <= ASCIIBuffer;
