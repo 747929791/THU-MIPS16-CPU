@@ -73,7 +73,9 @@ DIVISION:  ;加减交替原码一位除法，R0/R1，商保存于R0，余数存于R1
   MOVE R1 R0
   LI R0 0
   DIVISION_LOOP:
+    ADDIU R3 FF
     SLTU R3 R1
+    ADDIU R3 1
     BTEQZ 3
     NOP
     ADDU R0 R4 R0
