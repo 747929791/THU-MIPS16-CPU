@@ -125,10 +125,12 @@ Root_Main_KeyBoard_Enter:   ;当按下键盘回车时应当处理的逻辑
   CALL STRING_CMP
   BNEZ R0 GOTO_Chat
   NOP
-  ;如果输入l，输出已有的应用程序(ls)
-  MOVE R0 R1
-  ADDIU R0 94   ;R0-=ord(l)
-  BEQZ R0 GOTO_LS
+  ;进入ls过程判定
+  STRING Root_ls_command "ls"
+  LOAD_ADDR KeyBoard_Cache R0
+  LOAD_ADDR Root_ls_command R1
+  CALL STRING_CMP
+  BNEZ R0 GOTO_LS
   NOP
   ;如果是空指令""，跳转至结束
   MOVE R0 R1

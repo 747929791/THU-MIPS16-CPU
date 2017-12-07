@@ -5,8 +5,6 @@ GOTO Calculate_Main
 STRING CALC_TEST_S "10/3E" ;测试表达式
 DATA CALC_RESULT 10  ;存放计算结果
 DATA CALC_RESULT_END 1 ;结果缓冲区的结尾
-DATA KeyBoard_Cache 100 ;缓存当前未完成的输入的内容
-DATA KeyBoard_Cache_P 1 ;记录缓存区下一个字符的地址
 STRING Calculate_Input_SIG ">>> "
 
 Calculate_Test:
@@ -29,9 +27,9 @@ Calculate_Main:
 ;NOP
     BEQZ R0 Calculate_Main_KeyBoard_Get_Loop
     NOP
-    LI R6 08
+    LI R6 1B
     CMP R0 R6   ;判断是否为ESC
-    BTEQZ Calculate_Main_RET ;是回车
+    BTEQZ Calculate_Main_RET ;是ESC
     NOP
     LI R6 0A
     CMP R0 R6   ;判断是否为回车

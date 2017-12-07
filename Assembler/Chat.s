@@ -1,9 +1,6 @@
 ;这是一个聊天程序
 GOTO Chat_Main
 
-DATA KeyBoard_Cache 500 ;缓存当前未完成的输入的内容
-DATA KeyBoard_Cache_P 1 ;记录缓存区下一个字符的地址
-
 DATA CHAT_INPUT_START_X 1
 ;当前输入框坐标位置
 DATA CHAT_INPUT_X 1
@@ -31,6 +28,12 @@ Chat_Main:
     CALL KeyBoard_Get
     BEQZ R0 Chat_Main_KeyBoard_Get_Loop
     NOP
+    LI R6 1B
+    CMP R0 R6   ;判断是否为ESC
+    BTNEZ Chat_Main_NoRET ;是ESC
+    NOP
+      RET
+    Chat_Main_NoRET:
     LI R6 0A
     CMP R0 R6   ;判断是否为回车
     BTEQZ Chat_Main_KeyBoard_Get_Enter ;是回车
@@ -42,8 +45,8 @@ Chat_Main:
 	LOAD_DATA KeyBoard_Cache_P R1 0
     LOAD_ADDR KeyBoard_Cache R2 
 	SUBU R1 R2 R3
-	LI R6 1D
-	CMP R3 R6		;最多25个字符
+	LI R6 4E
+	CMP R3 R6		;最多78个字符
 	BTNEZ Chat_Main_KeyBoard_Get_Print
 	NOP
 	B Chat_Main_KeyBoard_Get_Loop
@@ -100,8 +103,9 @@ Chat_Main_KeyBoard_Enter:   ;当按下键盘回车时应当处理的逻辑
   Load_Data KeyBoard_Cache_P R0 0
   LOAD_ADDR KeyBoard_Cache R1
   CMP R0 R1
-  BTEQZ Chat_Main_KeyBoard_Enter_Process
+  BTNEZ Chat_Main_KeyBoard_Enter_Process
   NOP
+  LOAD_REG
   RET
   
   ;补\0
