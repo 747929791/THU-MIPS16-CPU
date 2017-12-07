@@ -90,7 +90,10 @@ GOTO_RetroSnake:
 GOTO_Calculate:
   CALL Calculate_Main
   GOTO Root_Main
-  
+GOTO_CHAT:
+  CALL Chat_Main
+  GOTO Root_Main
+
 Root_Main_KeyBoard_Enter:   ;当按下键盘回车时应当处理的逻辑
   SAVE_REG
   ;清空缓存区，补\0
@@ -100,21 +103,33 @@ Root_Main_KeyBoard_Enter:   ;当按下键盘回车时应当处理的逻辑
   SW R0 R1 0
   LOAD_ADDR KeyBoard_Cache R0
   SAVE_DATA KeyBoard_Cache_P R0 0
-  Load_Data KeyBoard_Cache R1 0 ;现在R1存储的是消息首字符
-  ;如果输入L，进入LifeGame
-  MOVE R0 R1
-  ADDIU R0 B4   ;R0-=ord(L)
-  BEQZ R0 GOTO_LifeGame
+  ;进入LifeGame过程判定
+  STRING Root_LifGame_AppName "LifeGame"
+  LOAD_ADDR KeyBoard_Cache R0
+  LOAD_ADDR Root_LifGame_AppName R1
+  CALL STRING_CMP
+  BNEZ R0 GOTO_LifeGame
   NOP
-  ;如果输入R，进入RetroSnake
-  MOVE R0 R1
-  ADDIU R0 AE   ;R0-=ord(R)
-  BEQZ R0 GOTO_RetroSnake
+  ;进入RetroSnake过程判定
+  STRING Root_RetroSnake_AppName "RetroSnake"
+  LOAD_ADDR KeyBoard_Cache R0
+  LOAD_ADDR Root_RetroSnake_AppName R1
+  CALL STRING_CMP
+  BNEZ R0 GOTO_RetroSnake
   NOP
-  ;如果输入C，进入Calculate
-  MOVE R0 R1
-  ADDIU R0 BD   ;R0-=ord(C)
-  BEQZ R0 GOTO_Calculate
+  ;进入Calculate过程判定
+  STRING Root_Calculate_AppName "Calculate"
+  LOAD_ADDR KeyBoard_Cache R0
+  LOAD_ADDR Root_Calculate_AppName R1
+  CALL STRING_CMP
+  BNEZ R0 GOTO_Calculate
+  NOP
+  ;进入Chat过程判定
+  STRING Root_Chat_AppName "Chat"
+  LOAD_ADDR KeyBoard_Cache R0
+  LOAD_ADDR Root_Chat_AppName R1
+  CALL STRING_CMP
+  BNEZ R0 GOTO_Chat
   NOP
   ;如果输入l，输出已有的应用程序(ls)
   MOVE R0 R1
