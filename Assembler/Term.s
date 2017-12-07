@@ -98,72 +98,6 @@ Term_Main_KeyBoard_Enter:   ;当按下键盘回车时应当处理的逻辑
   LOAD_REG
   RET
 
-Term_CharToHex:  ;将R0转化为16进制字符ASCII码
-  SAVE_REG
-  LI R6 0F
-  AND R0 R6  ;只保留后4位
-  LI R6 0A
-  SLT R0 R6
-  BTNEZ Term_CharToHex_0_9
-  NOP
-  Term_CharToHex_A_F:
-    ADDIU R0 37
-    SW_SP R0 F8
-    LOAD_REG
-    RET
-  Term_CharToHex_0_9:
-    ADDIU R0 30
-    SW_SP R0 F8
-    LOAD_REG
-    RET
-    
-Term_HexCharToInt:  ;将字符R0(0-9,A-F)转化为整数R0返回
-  SAVE_REG
-  LI R6 30
-  SUBU R0 R6 R0
-  LI R6 0A
-  SLT R0 R6
-  BTNEZ Term_HexCharToInt_0_9
-  NOP
-  Term_HexCharToInt_A_F:
-    ADDIU R0 F0
-    ADDIU R0 09
-    SW_SP R0 F8
-    LOAD_REG
-    RET
-  Term_HexCharToInt_0_9:
-    SW_SP R0 F8
-    LOAD_REG
-    RET
-
-Term_IntToHex:   ;将R0转换为4bit16进制字符串，将字符串首地址通过R0返回
-  DATA Term_IntToHex_result 5
-  SAVE_REG
-  LI R5 0
-  SAVE_DATA Term_IntToHex_result R5 4 ;末尾\0
-  MOVE R5 R0
-  ;计算第0位
-  SRL R0 R5 0
-  SRL R0 R0 4
-  CALL Term_CharToHex
-  SAVE_DATA Term_IntToHex_result R0 0
-  ;计算第1位
-  SRL R0 R5 0
-  CALL Term_CharToHex
-  SAVE_DATA Term_IntToHex_result R0 1
-  ;计算第2位
-  SRL R0 R5 4
-  CALL Term_CharToHex
-  SAVE_DATA Term_IntToHex_result R0 2
-  ;计算第3位
-  MOVE R0 R5
-  CALL Term_CharToHex
-  SAVE_DATA Term_IntToHex_result R0 3
-  LOAD_ADDR Term_IntToHex_result R0
-  SW_SP R0 F8
-  LOAD_REG
-  RET
-
 Term_R_Command:   ;查看寄存器堆
   SAVE_REG
   
@@ -171,21 +105,21 @@ Term_R_Command:   ;查看寄存器堆
   LOAD_ADDR Term_R_Command_0 R0
   CALL printf
   LOAD_DATA Term_RegSave R0 0
-  CALL Term_IntToHex
+  CALL String_IntToHex
   CALL printf
   
   STRING Term_R_Command_1 " R1="
   LOAD_ADDR Term_R_Command_1 R0
   CALL printf
   LOAD_DATA Term_RegSave R0 1
-  CALL Term_IntToHex
+  CALL String_IntToHex
   CALL printf
   
   STRING Term_R_Command_2 " R2="
   LOAD_ADDR Term_R_Command_2 R0
   CALL printf
   LOAD_DATA Term_RegSave R0 2
-  CALL Term_IntToHex
+  CALL String_IntToHex
   CALL printf
   
   CALL next_cursor_line
@@ -194,21 +128,21 @@ Term_R_Command:   ;查看寄存器堆
   LOAD_ADDR Term_R_Command_3 R0
   CALL printf
   LOAD_DATA Term_RegSave R0 3
-  CALL Term_IntToHex
+  CALL String_IntToHex
   CALL printf
   
   STRING Term_R_Command_4 " R4="
   LOAD_ADDR Term_R_Command_4 R0
   CALL printf
   LOAD_DATA Term_RegSave R0 4
-  CALL Term_IntToHex
+  CALL String_IntToHex
   CALL printf
   
   STRING Term_R_Command_5 " R5="
   LOAD_ADDR Term_R_Command_5 R0
   CALL printf
   LOAD_DATA Term_RegSave R0 5
-  CALL Term_IntToHex
+  CALL String_IntToHex
   CALL printf
   
   LOAD_REG
@@ -235,7 +169,7 @@ Term_INIT:     ;初始化的屏幕字符显示
 Term_A_Command_Insert_Get1Bit:   ;从R0指向的字符串中取出R1下标的字符(0-9,A-Z)，并转换为整数返回R0
   ADDU R0 R1 R0
   LW R0 R0 0 ;现在R0是字符
-  CALL Term_HexCharToInt
+  CALL String_HexCharToInt
   RET
 
 Term_A_Command_Insert:   ;向指令表末尾插入一条指令，指令字符串首地址为R0
@@ -333,7 +267,7 @@ Term_A_Command_Insert:   ;向指令表末尾插入一条指令，指令字符串首地址为R0
   Term_A_Command_Insert_Correct:  ;接受正确的指令
     ;现在R4是正确的指令格式
 MOVE R0 R4
-CALL Term_IntToHex
+CALL String_IntToHex
 CALL printf
 CALL next_cursor_line
     LOAD_DATA Term_Program_End R5 0 ;R5现在是下一个写指令的地址
@@ -361,7 +295,7 @@ Term_A_Command:    ;汇编程序
   LOAD_ADDR Term_Program R0
   LOAD_DATA Term_Program_End R1 0
   SUBU R1 R0 R0
-  CALL Term_IntToHex
+  CALL String_IntToHex
   CALL printf
   LI R0 5D;']'
   CALL print_char

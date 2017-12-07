@@ -8,7 +8,7 @@ DATA CHAT_INPUT_Y 1
 ;当前文本框下次打印行位置
 DATA CHAT_TEXT_X 1
 
-DATA CHAT_COM_BUFFER 50
+DATA CHAT_COM_BUFFER 80
 DATA CHAT_COM_BUFFER_P 1
 
 Chat_Main:
@@ -154,6 +154,7 @@ Chat_Main_KeyBoard_Enter:   ;当按下键盘回车时应当处理的逻辑
   LOAD_ADDR KeyBoard_Cache R0
   CALL printf
   CALL next_cursor_line
+  CALL next_cursor_line
   
   ;清空缓存区
   LOAD_ADDR KeyBoard_Cache R0
@@ -206,29 +207,32 @@ Chat_Main_Comm_Get:		;读串口
 	CMP R0 R1
 	BTEQZ Chat_Main_Comm_Ret
 	NOP
-	LI R1 20			;是回车则输出
+;CALL Debug_print_reg
+	LI R1 0A			;是回车则输出
 	CMP R0 R1
 	BTNEZ Chat_Main_Read_Char
 	NOP
+;CALL Debug_print_reg
 	;判断是否为空
 	Load_Data CHAT_COM_BUFFER_P R0 0
 	LOAD_ADDR CHAT_COM_BUFFER R1
+;CALL Debug_print_reg
 	CMP R0 R1
 	BTEQZ Chat_Main_Comm_Ret
 	NOP
+;CALL Debug_print_reg
 	CALL Chat_Print_Com
 	B Chat_Main_Comm_Ret
 	NOP
-	
-Chat_Main_Read_Char:
-	LOAD_DATA CHAT_COM_BUFFER_P R1 0		;读入一个字符
-	SW R1 R0 0
-	ADDIU R1 1
-	SAVE_DATA CHAT_COM_BUFFER_P R1 0  
-  
-Chat_Main_Comm_Ret:
-	LOAD_REG
-	RET
+    Chat_Main_Read_Char:
+    	LOAD_DATA CHAT_COM_BUFFER_P R1 0		;读入一个字符
+    	SW R1 R0 0
+    	ADDIU R1 1
+    	SAVE_DATA CHAT_COM_BUFFER_P R1 0  
+      
+    Chat_Main_Comm_Ret:
+    	LOAD_REG
+    	RET
   
 Chat_Print_Com:
 	SAVE_REG
@@ -242,6 +246,7 @@ Chat_Print_Com:
 	;补\0
 	Chat_Print_Com_Process:
 	LI R1 0
+	LOAD_DATA CHAT_COM_BUFFER_P R0 0
 	SW R0 R1 0
 
 	;移动坐标
@@ -254,6 +259,7 @@ Chat_Print_Com:
 	CALL next_cursor_line
 	LOAD_ADDR CHAT_COM_BUFFER R0
 	CALL printf
+	CALL next_cursor_line
 	CALL next_cursor_line
 
 	;清空缓存区

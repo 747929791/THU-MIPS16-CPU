@@ -23,6 +23,8 @@ COM_WRITE:   ;向串口R0写入字节R1
   CALL WAIT_COM_W
   ADDSP FF
   LW_SP R0 0
+  LI R6 FF
+  AND R1 R6
   SW R0 R1 0
   RET
   
@@ -37,6 +39,8 @@ COM_READ:  ;从串口R0读数据，无数据返回0，否则返回数据
   NOP
   LW_SP R0 0
   LW R0 R0 0
+  LI R6 FF
+  AND R0 R6
   COM_READ_RET:
   RET
   

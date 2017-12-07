@@ -102,41 +102,53 @@ Root_Main_KeyBoard_Enter:   ;当按下键盘回车时应当处理的逻辑
   LOAD_ADDR KeyBoard_Cache R0
   LOAD_ADDR Root_LifGame_AppName R1
   CALL STRING_CMP
-  BNEZ R0 GOTO_LifeGame
+  BEQZ R0 Dont_GOTO_LifeGame
   NOP
+  GOTO GOTO_LifeGame
+  Dont_GOTO_LifeGame:
   ;进入RetroSnake过程判定
   STRING Root_RetroSnake_AppName "RetroSnake"
   LOAD_ADDR KeyBoard_Cache R0
   LOAD_ADDR Root_RetroSnake_AppName R1
   CALL STRING_CMP
-  BNEZ R0 GOTO_RetroSnake
+  BEQZ R0 Dont_GOTO_RetroSnake
   NOP
+  GOTO GOTO_RetroSnake
+  Dont_GOTO_RetroSnake:
   ;进入Calculate过程判定
   STRING Root_Calculate_AppName "Calculate"
   LOAD_ADDR KeyBoard_Cache R0
   LOAD_ADDR Root_Calculate_AppName R1
   CALL STRING_CMP
-  BNEZ R0 GOTO_Calculate
+  BEQZ R0 Dont_GOTO_Calculate
   NOP
+  GOTO GOTO_Calculate
+  Dont_GOTO_Calculate:
   ;进入Chat过程判定
   STRING Root_Chat_AppName "Chat"
   LOAD_ADDR KeyBoard_Cache R0
   LOAD_ADDR Root_Chat_AppName R1
   CALL STRING_CMP
-  BNEZ R0 GOTO_Chat
+  BEQZ R0 Dont_GOTO_Chat
   NOP
+  GOTO GOTO_Chat
+  Dont_GOTO_Chat:
   ;进入ls过程判定
   STRING Root_ls_command "ls"
   LOAD_ADDR KeyBoard_Cache R0
   LOAD_ADDR Root_ls_command R1
   CALL STRING_CMP
-  BNEZ R0 GOTO_LS
+  BEQZ R0 Dont_GOTO_LS
   NOP
+  GOTO GOTO_LS
+  Dont_GOTO_LS:
   ;如果是空指令""，跳转至结束
   MOVE R0 R1
   ADDIU R0 0   ;R0-=0
-  BEQZ R0 Root_Main_KeyBoard_Enter_RET
+  BNEZ R0 Dont_GOTO_Root_Main_KeyBoard_Enter_RET
   NOP
+  GOTO Root_Main_KeyBoard_Enter_RET
+  Dont_GOTO_Root_Main_KeyBoard_Enter_RET:
   ;均不为以上指令
   Load_Addr KeyBoard_Cache R0
   CALL printf

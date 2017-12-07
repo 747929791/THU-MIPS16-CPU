@@ -61,3 +61,71 @@ String_PrefixCMP:    ;±È½ÏR0ºÍR1ÎªÆðÊ¼µØÖ·µÄ×Ö·û´®Ç°×ºÊÇ·ñÏàµÈ(Æ¥ÅäÖÐÓöµ½\0¼´ÈÏÎ
     SW_SP R0 F8
     LOAD_REG
     RET
+    
+
+
+String_CharToHex:  ;½«R0×ª»¯Îª16½øÖÆ×Ö·ûASCIIÂë
+  SAVE_REG
+  LI R6 0F
+  AND R0 R6  ;Ö»±£Áôºó4Î»
+  LI R6 0A
+  SLT R0 R6
+  BTNEZ String_CharToHex_0_9
+  NOP
+  String_CharToHex_A_F:
+    ADDIU R0 37
+    SW_SP R0 F8
+    LOAD_REG
+    RET
+  String_CharToHex_0_9:
+    ADDIU R0 30
+    SW_SP R0 F8
+    LOAD_REG
+    RET
+    
+String_HexCharToInt:  ;½«×Ö·ûR0(0-9,A-F)×ª»¯ÎªÕûÊýR0·µ»Ø
+  SAVE_REG
+  LI R6 30
+  SUBU R0 R6 R0
+  LI R6 0A
+  SLT R0 R6
+  BTNEZ String_HexCharToInt_0_9
+  NOP
+  String_HexCharToInt_A_F:
+    ADDIU R0 F0
+    ADDIU R0 09
+    SW_SP R0 F8
+    LOAD_REG
+    RET
+  String_HexCharToInt_0_9:
+    SW_SP R0 F8
+    LOAD_REG
+    RET
+
+String_IntToHex:   ;½«R0×ª»»Îª4bit16½øÖÆ×Ö·û´®£¬½«×Ö·û´®Ê×µØÖ·Í¨¹ýR0·µ»Ø
+  DATA String_IntToHex_result 5
+  SAVE_REG
+  LI R5 0
+  SAVE_DATA String_IntToHex_result R5 4 ;Ä©Î²\0
+  MOVE R5 R0
+  ;¼ÆËãµÚ0Î»
+  SRL R0 R5 0
+  SRL R0 R0 4
+  CALL String_CharToHex
+  SAVE_DATA String_IntToHex_result R0 0
+  ;¼ÆËãµÚ1Î»
+  SRL R0 R5 0
+  CALL String_CharToHex
+  SAVE_DATA String_IntToHex_result R0 1
+  ;¼ÆËãµÚ2Î»
+  SRL R0 R5 4
+  CALL String_CharToHex
+  SAVE_DATA String_IntToHex_result R0 2
+  ;¼ÆËãµÚ3Î»
+  MOVE R0 R5
+  CALL String_CharToHex
+  SAVE_DATA String_IntToHex_result R0 3
+  LOAD_ADDR String_IntToHex_result R0
+  SW_SP R0 F8
+  LOAD_REG
+  RET
