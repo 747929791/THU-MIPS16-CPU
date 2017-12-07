@@ -108,6 +108,7 @@ Chat_Main_KeyBoard_BackSpace:    ;按下退格应处理的逻辑
   
 Chat_Main_KeyBoard_Enter:   ;当按下键盘回车时应当处理的逻辑
   SAVE_REG
+  
   ;判断是否为空
   Load_Data KeyBoard_Cache_P R0 0
   LOAD_ADDR KeyBoard_Cache R1
@@ -121,6 +122,10 @@ Chat_Main_KeyBoard_Enter:   ;当按下键盘回车时应当处理的逻辑
   Chat_Main_KeyBoard_Enter_Process:
   LI R1 0
   SW R0 R1 0
+  
+  ;发送串口
+  LOAD_ADDR KeyBoard_Cache R0
+  CALL COM_SEND
   
   ;清空当前行
   LOAD_DATA CHAT_INPUT_START_X R0 0
@@ -149,10 +154,6 @@ Chat_Main_KeyBoard_Enter:   ;当按下键盘回车时应当处理的逻辑
   LOAD_ADDR KeyBoard_Cache R0
   CALL printf
   CALL next_cursor_line
-  
-  ;发送串口
-  LOAD_ADDR KeyBoard_Cache R0
-  CALL COM_SEND
   
   ;清空缓存区
   LOAD_ADDR KeyBoard_Cache R0

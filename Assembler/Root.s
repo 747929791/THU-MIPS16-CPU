@@ -76,10 +76,10 @@ GOTO_NotePad:
   ;CALL NotePad
   GOTO Root_Main
 GOTO_LifeGame:
-  ;CALL LifeGame_Main
+  CALL LifeGame_Main
   GOTO Root_Main
 GOTO_RetroSnake:
-  ;CALL RetroSnake_Main
+  CALL RetroSnake_Main
   GOTO Root_Main
 GOTO_Calculate:
   CALL Calculate_Main

@@ -246,7 +246,7 @@ Term_A_Command_Insert:   ;向指令表末尾插入一条指令，指令字符串首地址为R0
   MOVE R0 R5  ;R5缓存指令字符串地址
   LOAD_ADDR TERM_PC_ADDIU R1
   CALL STRING_PrefixCMP
-  BNEZ R0 Term_Insert_NotAddiu
+  BEQZ R0 Term_Insert_NotAddiu
   NOP
     ;处理ADDIU的逻辑
     LI R4 48;最终指令
@@ -274,7 +274,7 @@ Term_A_Command_Insert:   ;向指令表末尾插入一条指令，指令字符串首地址为R0
   MOVE R0 R5
   LOAD_ADDR TERM_PC_LI R1
   CALL STRING_PrefixCMP
-  BNEZ R0 Term_Insert_NotLI
+  BEQZ R0 Term_Insert_NotLI
   NOP
     ;处理LI的逻辑
     LI R4 68;最终指令
@@ -302,7 +302,7 @@ Term_A_Command_Insert:   ;向指令表末尾插入一条指令，指令字符串首地址为R0
   MOVE R0 R5
   LOAD_ADDR TERM_PC_JR R1
   CALL STRING_PrefixCMP
-  BNEZ R0 Term_Insert_NotJR
+  BEQZ R0 Term_Insert_NotJR
   NOP
     ;处理JR的逻辑
     LI R4 E8;最终指令
@@ -319,7 +319,7 @@ Term_A_Command_Insert:   ;向指令表末尾插入一条指令，指令字符串首地址为R0
   MOVE R0 R5
   LOAD_ADDR TERM_PC_NOP R1
   CALL STRING_PrefixCMP
-  BNEZ R0 Term_Insert_NotNOP
+  BEQZ R0 Term_Insert_NotNOP
   NOP
     ;处理NOP的逻辑
     LI R4 08
@@ -334,6 +334,7 @@ Term_A_Command_Insert:   ;向指令表末尾插入一条指令，指令字符串首地址为R0
 MOVE R0 R4
 CALL Term_IntToHex
 CALL printf
+CALL next_cursor_line
     LOAD_DATA Term_Program_End R5 0 ;R5现在是下一个写指令的地址
     SW R5 R4 0
     ADDIU R5 1
@@ -431,7 +432,7 @@ Term_D_Command:    ;
   RET
   
 Term_G_Command:    ;
-  SAVE_REG
+  SAVE_REG  
   LOAD_ADDR Term_Program R6 0
   SW_SP R7 0
   ADDSP 1
