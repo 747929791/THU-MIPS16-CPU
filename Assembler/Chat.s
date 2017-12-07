@@ -39,6 +39,17 @@ Chat_Main:
     CMP R0 R6   ;判断是否为退格
     BTEQZ Chat_Main_KeyBoard_Get_BackSpace ;是回车
     NOP
+	LOAD_DATA KeyBoard_Cache_P R1 0
+    LOAD_ADDR KeyBoard_Cache R2 
+	SUBU R1 R2 R3
+	LI R6 1D
+	CMP R3 R6		;最多25个字符
+	BTNEZ Chat_Main_KeyBoard_Get_Print
+	NOP
+	B Chat_Main_KeyBoard_Get_Loop
+	NOP
+	
+	Chat_Main_KeyBoard_Get_Print:
     CALL print_char  ;否则输出该字符
     LOAD_DATA KeyBoard_Cache_P R1 0
     SW R1 R0 0
@@ -85,10 +96,16 @@ Chat_Main_KeyBoard_BackSpace:    ;按下退格应处理的逻辑
   
 Chat_Main_KeyBoard_Enter:   ;当按下键盘回车时应当处理的逻辑
   SAVE_REG
-  ;补\0
+  ;判断是否为空
   Load_Data KeyBoard_Cache_P R0 0
-  ADDIU R0 1
-  SAVE_DATA KeyBoard_Cache_P R0 0
+  LOAD_ADDR KeyBoard_Cache R1
+  CMP R0 R1
+  BTEQZ Chat_Main_KeyBoard_Enter_Process
+  NOP
+  RET
+  
+  ;补\0
+  Chat_Main_KeyBoard_Enter_Process:
   LI R1 0
   SW R0 R1 0
   
