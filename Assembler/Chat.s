@@ -1,11 +1,11 @@
-;è¿™æ˜¯ä¸€ä¸ªèŠå¤©ç¨‹åº
+;ÕâÊÇÒ»¸öÁÄÌì³ÌĞò
 GOTO Chat_Main
 
 DATA CHAT_INPUT_START_X 1
-;å½“å‰è¾“å…¥æ¡†åæ ‡ä½ç½®
-DATA CHAT_INPUT_X 1		
+;µ±Ç°ÊäÈë¿ò×ø±êÎ»ÖÃ
+DATA CHAT_INPUT_X 1
 DATA CHAT_INPUT_Y 1
-;å½“å‰æ–‡æœ¬æ¡†ä¸‹æ¬¡æ‰“å°è¡Œä½ç½®
+;µ±Ç°ÎÄ±¾¿òÏÂ´Î´òÓ¡ĞĞÎ»ÖÃ
 DATA CHAT_TEXT_X 1
 
 DATA CHAT_COM_BUFFER 50
@@ -23,27 +23,27 @@ Chat_Main:
   LOAD_ADDR chat_hint R0
   CALL printf
   CALL next_cursor_line
-  ;ä¿å­˜è¾“å…¥æ¡†ä½ç½®
+  ;±£´æÊäÈë¿òÎ»ÖÃ
   LOAD_DATA CURSOR_X R0 0
   SAVE_DATA CHAT_INPUT_START_X R0 0	
-  ;æ¸…ç©ºä¸²å£ç¼“å­˜åŒº
+  ;Çå¿Õ»º´æÇø
   LOAD_ADDR CHAT_COM_BUFFER R0
   SAVE_DATA CHAT_COM_BUFFER_P R0 0
 
   Chat_Main_KeyBoard_Get_Loop:
-	Chat_Main_Comm_Get:		;è·å–ä¸²å£ä¿¡æ¯
-		LI R0 bf
+	Chat_Main_Comm_Get:		;¶Á´®¿Ú
+		LI R0 BF
 		SLL R0 R0 0
 		CALL COM_READ
-		LI R1 0				;æ— æ•°æ®åˆ™ç»“æŸ
+		LI R1 0				;ÊÇ0Ôò½áÊø
 		CMP R0 R1
 		BTEQZ Chat_Main_Keyboard_Get
 		NOP
-		LI R1 20			;ä¸ºå›è½¦åˆ™è¾“å‡º
+		LI R1 20			;ÊÇ»Ø³µÔòÊä³ö
 		CMP R0 R1
 		BTEQZ Chat_Print_Com
 		NOP
-		LOAD_DATA CHAT_COM_BUFFER_P R1 0		;ä¿å­˜ä¸²å£å†…å®¹
+		LOAD_DATA CHAT_COM_BUFFER_P R1 0		;¶ÁÈëÒ»¸ö×Ö·û
 		SW R1 R0 0
 		ADDIU R1 1
 		SAVE_DATA CHAT_COM_BUFFER_P R1 0
@@ -52,27 +52,27 @@ Chat_Main:
 		
 	Chat_Print_Com:
 		SAVE_REG
-		;åˆ¤æ–­æ˜¯å¦ä¸ºç©º
+		;ÅĞ¶ÏÊÇ·ñÎª¿Õ
 		Load_Data CHAT_COM_BUFFER_P R0 0
 		LOAD_ADDR CHAT_COM_BUFFER R1
 		CMP R0 R1
-		BTEQZ Chat_Print_Com_Process
+		BTNEZ Chat_Print_Com_Process
 		NOP
 		B Chat_Main_Keyboard_Get
 		NOP
 
-		;ä¿å­˜è¾“å…¥æ¡†ä½ç½®
-		LOAD_DATA CURSOR_X R0
+		;±£´æ×ø±ê
+		LOAD_DATA CURSOR_X R0 0
 		SAVE_DATA CHAT_INPUT_X R0 0
-		LOAD_DATA CURSOR_Y R0
+		LOAD_DATA CURSOR_Y R0 0
 		SAVE_DATA CHAT_INPUT_Y R0 0
 		
-		;è¡¥\0
+		;²¹\0
 		Chat_Print_Com_Process:
 		LI R1 0
 		SW R0 R1 0
 
-		;å°†è¾“å…¥å†…å®¹è¾“å…¥åˆ°æ–‡æœ¬æ¡†
+		;ÒÆ¶¯×ø±ê
 		LOAD_DATA CHAT_TEXT_X R0 0
 		LI R1 0
 		SAVE_DATA CURSOR_X R0 0
@@ -80,16 +80,16 @@ Chat_Main:
 		LOAD_ADDR chat_friend R0
 		CALL printf
 		CALL next_cursor_line
-		LOAD_ADDR CHAT_COM_BUFFER
+		LOAD_ADDR CHAT_COM_BUFFER R0
 		CALL printf
 		CALL next_cursor_line
 
-		;æ¸…ç©ºç¼“å­˜åŒº
+		;Çå¿Õ»º´æÇø
 		LOAD_ADDR CHAT_COM_BUFFER R0
 		SAVE_DATA CHAT_COM_BUFFER_P R0 0
 
-		;ä¿å­˜å„å¤„åæ ‡ä¿¡æ¯
-		Chat_Main_KeyBoard_Enter_RET:
+		;±£´æ¸÷´¦×ø±êĞÅÏ¢
+		Chat_Main_Com_RET:
 			LOAD_DATA CURSOR_X R0 0
 			SAVE_DATA CHAT_TEXT_X R0 0
 			LOAD_DATA CHAT_INPUT_X R0 0
@@ -104,63 +104,69 @@ Chat_Main:
 		CALL KeyBoard_Get
 		BEQZ R0 Chat_Main_KeyBoard_Get_Loop
 		NOP
+		LI R6 1B
+		CMP R0 R6   ;ÅĞ¶ÏÊÇ·ñÎªESC
+		BTNEZ Chat_Main_NoRET ;ÊÇESC
+		NOP
+		  RET
+		Chat_Main_NoRET:
 		LI R6 0A
-		CMP R0 R6   ;åˆ¤æ–­æ˜¯å¦ä¸ºå›è½¦
-		BTEQZ Chat_Main_KeyBoard_Get_Enter ;æ˜¯å›è½¦
+		CMP R0 R6   ;ÅĞ¶ÏÊÇ·ñÎª»Ø³µ
+		BTEQZ Chat_Main_KeyBoard_Get_Enter ;ÊÇ»Ø³µ
 		NOP
 		LI R6 08
-		CMP R0 R6   ;åˆ¤æ–­æ˜¯å¦ä¸ºé€€æ ¼
-		BTEQZ Chat_Main_KeyBoard_Get_BackSpace ;æ˜¯å›è½¦
+		CMP R0 R6   ;ÅĞ¶ÏÊÇ·ñÎªÍË¸ñ
+		BTEQZ Chat_Main_KeyBoard_Get_BackSpace ;ÊÇ»Ø³µ
 		NOP
-		
 		LOAD_DATA KeyBoard_Cache_P R1 0
 		LOAD_ADDR KeyBoard_Cache R2 
 		SUBU R1 R2 R3
-		CMP R3 1D		;æœ€å¤š25ä¸ªå­—ç¬¦
+		LI R6 4E
+		CMP R3 R6		;×î¶à78¸ö×Ö·û
 		BTNEZ Chat_Main_KeyBoard_Get_Print
 		NOP
 		B Chat_Main_KeyBoard_Get_Loop
 		NOP
 		
 		Chat_Main_KeyBoard_Get_Print:
-		CALL print_char  ;å¦åˆ™è¾“å‡ºè¯¥å­—ç¬¦
+		CALL print_char  ;·ñÔòÊä³ö¸Ã×Ö·û
 		LOAD_DATA KeyBoard_Cache_P R1 0
 		SW R1 R0 0
 		ADDIU R1 1
 		SAVE_DATA KeyBoard_Cache_P R1 0
-		;LI R3 0A
-		;SW R5 R3 0
+	;LI R3 0A
+	;SW R5 R3 0
 		B Chat_Main_KeyBoard_Get_Loop
 		NOP
-		
-    Chat_Main_KeyBoard_Get_Enter:
-      CALL Chat_Main_KeyBoard_Enter
-      CALL VGA_COM_PRINT
-	;ADDIU R4 1
-	;SW R5 R4 0
-      B Chat_Main_KeyBoard_Get_Loop
-      NOP
-    Chat_Main_KeyBoard_Get_BackSpace:
-      CALL Chat_Main_KeyBoard_BackSpace
-      CALL VGA_COM_PRINT
-      B Chat_Main_KeyBoard_Get_Loop
-      NOP
+
+		Chat_Main_KeyBoard_Get_Enter:
+		  CALL Chat_Main_KeyBoard_Enter
+		  CALL VGA_COM_PRINT
+		;ADDIU R4 1
+		;SW R5 R4 0
+		  B Chat_Main_KeyBoard_Get_Loop
+		  NOP
+		Chat_Main_KeyBoard_Get_BackSpace:
+		  CALL Chat_Main_KeyBoard_BackSpace
+		  CALL VGA_COM_PRINT
+		  B Chat_Main_KeyBoard_Get_Loop
+		  NOP
   RET
   
-Chat_Main_KeyBoard_BackSpace:    ;æŒ‰ä¸‹é€€æ ¼åº”å¤„ç†çš„é€»è¾‘
+Chat_Main_KeyBoard_BackSpace:    ;°´ÏÂÍË¸ñÓ¦´¦ÀíµÄÂß¼­
   SAVE_REG
   LOAD_DATA KeyBoard_Cache_P R0 0
   LOAD_ADDR KeyBoard_Cache R1
   CMP R0 R1
-  BTEQZ Chat_Main_KeyBoard_BackSpace_RET;è‹¥å·²ç»åˆ°è¾¾æœ€å·¦ä¾§åˆ™æ— è§†è¿™ä¸€æ“ä½œ
+  BTEQZ Chat_Main_KeyBoard_BackSpace_RET;ÈôÒÑ¾­µ½´ï×î×ó²àÔòÎŞÊÓÕâÒ»²Ù×÷
   NOP
-  CALL last_cursor ;å›é€€ä¸€æ ¼
+  CALL last_cursor ;»ØÍËÒ»¸ñ
   LOAD_DATA CURSOR_X R6 0
   SLL R0 R6 0
   LOAD_DATA CURSOR_Y R6 0
   ADDU R0 R6 R0
   LI R1 20
-  CALL VGA_Draw_Block ;æ¸…é™¤æ˜¾ç¤º
+  CALL VGA_Draw_Block ;Çå³ıÏÔÊ¾
   LOAD_DATA KeyBoard_Cache_P R0 0
   ADDIU R0 FF
   SAVE_DATA KeyBoard_Cache_P R0 0
@@ -168,30 +174,31 @@ Chat_Main_KeyBoard_BackSpace:    ;æŒ‰ä¸‹é€€æ ¼åº”å¤„ç†çš„é€»è¾‘
     LOAD_REG
     RET
   
-Chat_Main_KeyBoard_Enter:   ;å½“æŒ‰ä¸‹é”®ç›˜å›è½¦æ—¶åº”å½“å¤„ç†çš„é€»è¾‘
+Chat_Main_KeyBoard_Enter:   ;µ±°´ÏÂ¼üÅÌ»Ø³µÊ±Ó¦µ±´¦ÀíµÄÂß¼­
   SAVE_REG
-  ;åˆ¤æ–­æ˜¯å¦ä¸ºç©º
+  ;ÅĞ¶ÏÊÇ·ñÎª¿Õ
   Load_Data KeyBoard_Cache_P R0 0
   LOAD_ADDR KeyBoard_Cache R1
   CMP R0 R1
-  BTEQZ Chat_Main_KeyBoard_Enter_Process
+  BTNEZ Chat_Main_KeyBoard_Enter_Process
   NOP
+  LOAD_REG
   RET
   
-  ;è¡¥\0
+  ;²¹\0
   Chat_Main_KeyBoard_Enter_Process:
   LI R1 0
   SW R0 R1 0
   
-  ;æ¸…ç©ºå½“å‰è¡Œ
+  ;Çå¿Õµ±Ç°ĞĞ
   LOAD_DATA CHAT_INPUT_START_X R0 0
   SAVE_DATA CURSOR_X R0 0
   LI R1 0
   SAVE_DATA CURSOR_Y R1 0
-  LOAD_DATA KeyBoard_Cache_P R1 0	;R1ä¸ºå¾ªç¯å˜é‡
+  LOAD_DATA KeyBoard_Cache_P R1 0	;R1ÎªÑ­»·±äÁ¿
   LOAD_ADDR KeyBoard_Cache R2 0		
-  ADDIU R2 FF						;R2ä¸ºä¸‹ç•Œ
-  LI R0 20							;R0ä¸ºç©ºæ ¼çš„ASCII
+  ADDIU R2 FF						;R2ÎªÏÂ½ç
+  LI R0 20							;R0Îª¿Õ¸ñµÄASCII
   Chat_Clear_Current_Line_Loop:
 	CALL print_char
 	ADDIU R1 FF
@@ -199,7 +206,7 @@ Chat_Main_KeyBoard_Enter:   ;å½“æŒ‰ä¸‹é”®ç›˜å›è½¦æ—¶åº”å½“å¤„ç†çš„é€»è¾‘
 	BTNEZ Chat_Clear_Current_Line_Loop
 	NOP
   
-  ;å°†è¾“å…¥å†…å®¹è¾“å…¥åˆ°æ–‡æœ¬æ¡†
+  ;½«ÊäÈëÄÚÈİÊäÈëµ½ÎÄ±¾¿ò
   LOAD_DATA CHAT_TEXT_X R0 0
   LI R1 0
   SAVE_DATA CURSOR_X R0 0
@@ -207,15 +214,19 @@ Chat_Main_KeyBoard_Enter:   ;å½“æŒ‰ä¸‹é”®ç›˜å›è½¦æ—¶åº”å½“å¤„ç†çš„é€»è¾‘
   LOAD_ADDR chat_you R0
   CALL printf
   CALL next_cursor_line
-  LOAD_ADDR KeyBoard_Cache
+  LOAD_ADDR KeyBoard_Cache R0
   CALL printf
   CALL next_cursor_line
   
-  ;æ¸…ç©ºç¼“å­˜åŒº
+  ;·¢ËÍ´®¿Ú
+  LOAD_ADDR CHAT_COM_BUFFER R0
+  CALL COM_SEND
+  
+  ;Çå¿Õ»º´æÇø
   LOAD_ADDR KeyBoard_Cache R0
   SAVE_DATA KeyBoard_Cache_P R0 0
   
-  ;ä¿å­˜å„å¤„åæ ‡ä¿¡æ¯
+  ;±£´æ¸÷´¦×ø±êĞÅÏ¢
   Chat_Main_KeyBoard_Enter_RET:
   LOAD_DATA CURSOR_X R0 0
   SAVE_DATA CHAT_TEXT_X R0 0
@@ -233,9 +244,9 @@ STRING chat_you "You: "
 STRING chat_friend "Friend: "
 STRING chat_hint "Enter your words here: "
 
-Chat_INIT:     ;åˆå§‹åŒ–çš„å±å¹•å­—ç¬¦æ˜¾ç¤º
+Chat_INIT:     ;³õÊ¼»¯µÄÆÁÄ»×Ö·ûÏÔÊ¾
   SAVE_REG
-  ;è®¾ç½®æ»šå±é«˜åº¦ä¸ºå…¨å±å‡å»3è¡Œ
+  ;ÉèÖÃ¹öÆÁ¸ß¶ÈÎªÈ«ÆÁ¼õÈ¥3ĞĞ
   LI R0 VGA_N
   ADDIU R0 FD
   SAVE_DATA Print_Scroll_Bottom R0 0

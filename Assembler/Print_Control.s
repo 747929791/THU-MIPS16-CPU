@@ -86,7 +86,7 @@ last_cursor:    ;光标左移一格，越界后到达上一行最右侧的字符右一格的位置(若无字符
     LW R2 R2 0    ;R2现在是目标格子的内容
     LI R6 20
     CMP R2 R6
-    BTEQZ last_cursor_find_target
+    BTNEZ last_cursor_find_target
     NOP
     BNEZ R1 last_cursor_L1
     ADDIU R1 FF

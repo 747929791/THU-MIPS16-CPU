@@ -5,8 +5,6 @@ GOTO Calculate_Main
 STRING CALC_TEST_S "10/3E" ;²âÊÔ±í´ïÊ½
 DATA CALC_RESULT 10  ;´æ·Å¼ÆËã½á¹û
 DATA CALC_RESULT_END 1 ;½á¹û»º³åÇøµÄ½áÎ²
-DATA KeyBoard_Cache 100 ;»º´æµ±Ç°Î´Íê³ÉµÄÊäÈëµÄÄÚÈİ
-DATA KeyBoard_Cache_P 1 ;¼ÇÂ¼»º´æÇøÏÂÒ»¸ö×Ö·ûµÄµØÖ·
 STRING Calculate_Input_SIG ">>> "
 
 Calculate_Test:
@@ -29,6 +27,10 @@ Calculate_Main:
 ;NOP
     BEQZ R0 Calculate_Main_KeyBoard_Get_Loop
     NOP
+    LI R6 1B
+    CMP R0 R6   ;ÅĞ¶ÏÊÇ·ñÎªESC
+    BTEQZ Calculate_Main_RET ;ÊÇESC
+    NOP
     LI R6 0A
     CMP R0 R6   ;ÅĞ¶ÏÊÇ·ñÎª»Ø³µ
     BTEQZ Calculate_Main_KeyBoard_Get_Enter ;ÊÇ»Ø³µ
@@ -45,6 +47,7 @@ Calculate_Main:
     CALL VGA_COM_PRINT
     B Calculate_Main_KeyBoard_Get_Loop
     NOP
+  Calculate_Main_RET:
   RET
 
 Calculate_Main_KeyBoard_Enter:   ;µ±°´ÏÂ¼üÅÌ»Ø³µÊ±Ó¦µ±´¦ÀíµÄÂß¼­
@@ -68,6 +71,7 @@ Calculate_Main_KeyBoard_Enter:   ;µ±°´ÏÂ¼üÅÌ»Ø³µÊ±Ó¦µ±´¦ÀíµÄÂß¼­
 Calculate_Calc:     ;¸ù¾İR0Ö¸ÏòµØÖ·µÄ×Ö·û´®¼ÆËã±í´ïÊ½µÄÖµ£¬²¢½«½á¹û×Ö·û´®Ê×µØÖ·Í¨¹ıR0·µ»Ø
   SAVE_REG
   ;½«²Ù×÷Êı·ÅÓÚ¶ÑÕ»ÉÏ
+  LI R3 0
   LI R4 0 ;R4¼ÇÂ¼µ±Ç°ÕıÔÚ¼ÆËãµÄ²Ù×÷Êı£¬R3¼ÇÂ¼×ó²Ù×÷Êı
   LI R5 FF ;R5ÔËËã·û
   LW R0 R1 0   ;½«×Ö·û¶ÁÈëR1
@@ -108,6 +112,12 @@ Calculate_Calc:     ;¸ù¾İR0Ö¸ÏòµØÖ·µÄ×Ö·û´®¼ÆËã±í´ïÊ½µÄÖµ£¬²¢½«½á¹û×Ö·û´®Ê×µØÖ·Í
       LW R0 R1 0   ;½«×Ö·û¶ÁÈëR1
       BNEZ R1 Calculate_Calc_Loop
       NOP
+  ;Èç¹ûÃ»ÓĞ·¢ÏÖÔËËã·ûÔòÄ¬ÈÏÎª¼Ó·¨
+  LI R6 FF
+  CMP R5 R6
+  BTNEZ 2
+  NOP
+  LI R5 2B
   ;ÏÖÔÚR3ºÍR4Î»Á½¸ö²Ù×÷ÊıµÄÖµ£¬R5Îª²Ù×÷·û
   LI R6 2B
   CMP R5 R6
