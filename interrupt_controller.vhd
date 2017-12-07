@@ -71,20 +71,16 @@ begin
 	
 	OUTPUT : process(clk, current_state)
 	begin
-		if(enable = '1')then
-			case current_state is
-				when state0 =>
-					inst_out <= inst_in;
-				when state1 =>
-					inst_out <= "111110000000" & int_code;
-				when state2 =>
-					inst_out <= "0000100000000000";
-				when others =>
-					inst_out <= inst_in;
-			end case;
-		else
-			inst_out <= inst_in;
-		end if;
+		case current_state is
+			when state0 =>
+				inst_out <= inst_in;
+			when state1 =>
+				inst_out <= "111110000000" & int_code;
+			when state2 =>
+				inst_out <= "0000100000000000";
+			when others =>
+				inst_out <= inst_in;
+		end case;
 	end process;
 
 end Behavioral;
