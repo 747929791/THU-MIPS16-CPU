@@ -60,6 +60,7 @@ KeyBoard_Test_IntProgram:   ;按键测试中断处理程序
   LOAD_REG
   ADDSP 81
   LW_SP R6 7E
+  LI R5 FF
   INT F
   NOP
 
