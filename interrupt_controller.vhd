@@ -54,7 +54,6 @@ begin
 	INT_STATE : process(clk, int_s)
 	begin
 			if(int_s = '1')then
-				int_signal <= '1';
 				if(current_state = state0)then
 					current_state <= state1;
 				end if;

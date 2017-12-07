@@ -108,6 +108,7 @@ begin
 			wd_o <= RegAddrZero;
 			wreg_o <= Disable;
 			instvalid <= Disable;
+			int_enable_sig <= '1';
 		else
 			op := inst_i(15 downto 11);
 			sub_op := inst_i(4 downto 0);

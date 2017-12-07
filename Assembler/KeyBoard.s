@@ -8,22 +8,7 @@ KeyBoard_Test_NoInt:  ;测试轮训的键盘处理
   KeyBoard_Test_NoInt_Loop:
     CALL KeyBoard_Get
     BEQZ R0 KeyBoard_Test_NoInt_Loop
-    NOP
-    NOP
-    NOP
-    NOP
-    NOP
-    NOP
-    NOP
-    NOP
-    NOP
-    NOP
-    NOP
-    NOP
-    NOP
-    NOP
-    NOP
-    NOP
+   
     MOVE R1 R0
     MOVE R0 R5
     CALL COM_WRITE
@@ -35,11 +20,38 @@ KeyBoard_Test_Int:  ;测试带中断的键盘处理
   LI R5 BF
   SLL R5 R5 0
   KeyBoard_Test_Int_Loop:
-LI R0 31
-MOVE R1 R0
-LI R0 BF
-SLL R0 R0 0
-CALL COM_WRITE
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
     NOP
     B KeyBoard_Test_Int_Loop
     NOP
@@ -51,7 +63,6 @@ KeyBoard_Test_IntProgram:   ;按键测试中断处理程序
   ADDSP 7F
   SAVE_REG
   CALL KeyBoard_Get
-LI R0 30
   MOVE R1 R0
   LI R0 BF
   SLL R0 R0 0
