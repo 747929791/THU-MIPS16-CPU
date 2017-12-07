@@ -53,6 +53,7 @@ begin
 	int_code <= int_code_in;
 	int_s <= interrupt; -- and enable;
 	
+	process(clk, interrupt)
 	begin
 		if(interrupt = '1' and count = 0)then
 			count <= count + 1;
