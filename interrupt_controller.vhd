@@ -50,7 +50,7 @@ signal int_code : std_logic_vector(3 downto 0) := "0000";
 begin
 
 	int_code <= int_code_in;
-	int_s <= interrupt and enable;
+	int_s <= interrupt ;--and enable;
 	INT_STATE : process(clk, int_s)
 	begin
 			if(int_s = '1')then
