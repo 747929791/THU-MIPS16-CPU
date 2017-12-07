@@ -5,7 +5,7 @@ DEFINE VGA_M 50  ;80列
 DATA VGA_MEM 2400
 
 VGA_COM_PRINT:   ;将VGA_MEM通过串口打印到终端，用于测试
-;RET ;在连接真机的时候不输出串口
+RET ;在连接真机的时候不输出串口
   SAVE_REG
   LI R0 BF ;R0记录串口地址
   SLL R0 R0 0

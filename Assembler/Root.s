@@ -26,7 +26,7 @@ Root_Main:
     NOP
     LI R6 08
     CMP R0 R6   ;判断是否为退格
-    BTEQZ Root_Main_KeyBoard_Get_BackSpace ;是回车
+    BTEQZ Root_Main_KeyBoard_Get_BackSpace ;是退格
     NOP
     CALL print_char  ;否则输出该字符
     LOAD_DATA KeyBoard_Cache_P R1 0
@@ -71,13 +71,7 @@ Root_Main_KeyBoard_BackSpace:    ;按下退格应处理的逻辑
   Root_Main_KeyBoard_BackSpace_RET:
     LOAD_REG
     RET
-
-GOTO_LS:
-  STRING Applications "LifeGame RetroSnake"
-  CALL next_cursor_line
-  LOAD_ADDR Applications R0
-  CALL printf
-  GOTO Root_Main_KeyBoard_Enter_RET
+    
 GOTO_NotePad:
   ;CALL NotePad
   GOTO Root_Main
@@ -139,6 +133,13 @@ Root_Main_KeyBoard_Enter:   ;当按下键盘回车时应当处理的逻辑
   CALL printf
   LOAD_REG
   RET
+
+GOTO_LS:
+  STRING Applications "Calculate Chat LifeGame RetroSnake"
+  CALL next_cursor_line
+  LOAD_ADDR Applications R0
+  CALL printf
+  GOTO Root_Main_KeyBoard_Enter_RET
 
 STRING sys_s1 "Preparing to start your computer."
 STRING sys_s2 "This may take a few minuts. Please wait..."
