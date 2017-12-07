@@ -38,21 +38,11 @@ KeyBoard_Test_Int:  ;测试带中断的键盘处理
     NOP
     NOP
     NOP
-    NOP
-    NOP
-    NOP
-    NOP
-    NOP
-    NOP
-    NOP
-    NOP
-    NOP
-    NOP
-    NOP
-    NOP
-    NOP
-    NOP
-    NOP
+    LI R0 30
+	MOVE R1 R0
+	LI R0 BF
+	SLL R0 R0 0
+	CALL COM_WRITE
     B KeyBoard_Test_Int_Loop
     NOP
   LI R1 F0
