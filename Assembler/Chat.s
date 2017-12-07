@@ -8,6 +8,9 @@ DATA CHAT_INPUT_Y 1
 ;当前文本框下次打印行位置
 DATA CHAT_TEXT_X 1
 
+DATA CHAT_COM_BUFFER 50
+DATA CHAT_COM_BUFFER_P 1
+
 Chat_Main:
   CALL VGA_MEM_INIT
   CALL Chat_INIT
@@ -23,57 +26,131 @@ Chat_Main:
   ;保存输入框位置
   LOAD_DATA CURSOR_X R0 0
   SAVE_DATA CHAT_INPUT_START_X R0 0	
+  ;清空缓存区
+  LOAD_ADDR CHAT_COM_BUFFER R0
+  SAVE_DATA CHAT_COM_BUFFER_P R0 0
 
   Chat_Main_KeyBoard_Get_Loop:
-    CALL KeyBoard_Get
-    BEQZ R0 Chat_Main_KeyBoard_Get_Loop
-    NOP
-    LI R6 1B
-    CMP R0 R6   ;判断是否为ESC
-    BTNEZ Chat_Main_NoRET ;是ESC
-    NOP
-      RET
-    Chat_Main_NoRET:
-    LI R6 0A
-    CMP R0 R6   ;判断是否为回车
-    BTEQZ Chat_Main_KeyBoard_Get_Enter ;是回车
-    NOP
-    LI R6 08
-    CMP R0 R6   ;判断是否为退格
-    BTEQZ Chat_Main_KeyBoard_Get_BackSpace ;是回车
-    NOP
-	LOAD_DATA KeyBoard_Cache_P R1 0
-    LOAD_ADDR KeyBoard_Cache R2 
-	SUBU R1 R2 R3
-	LI R6 4E
-	CMP R3 R6		;最多78个字符
-	BTNEZ Chat_Main_KeyBoard_Get_Print
-	NOP
-	B Chat_Main_KeyBoard_Get_Loop
-	NOP
+	Chat_Main_Comm_Get:		;读串口
+		LI R0 BF
+		SLL R0 R0 0
+		CALL COM_READ
+		LI R1 0				;是0则结束
+		CMP R0 R1
+		BTEQZ Chat_Main_Keyboard_Get
+		NOP
+		LI R1 20			;是回车则输出
+		CMP R0 R1
+		BTEQZ Chat_Print_Com
+		NOP
+		LOAD_DATA CHAT_COM_BUFFER_P R1 0		;读入一个字符
+		SW R1 R0 0
+		ADDIU R1 1
+		SAVE_DATA CHAT_COM_BUFFER_P R1 0
+		B Chat_Main_Comm_Get
+		NOP
+		
+	Chat_Print_Com:
+		SAVE_REG
+		;判断是否为空
+		Load_Data CHAT_COM_BUFFER_P R0 0
+		LOAD_ADDR CHAT_COM_BUFFER R1
+		CMP R0 R1
+		BTNEZ Chat_Print_Com_Process
+		NOP
+		B Chat_Main_Keyboard_Get
+		NOP
+
+		;保存坐标
+		LOAD_DATA CURSOR_X R0 0
+		SAVE_DATA CHAT_INPUT_X R0 0
+		LOAD_DATA CURSOR_Y R0 0
+		SAVE_DATA CHAT_INPUT_Y R0 0
+		
+		;补\0
+		Chat_Print_Com_Process:
+		LI R1 0
+		SW R0 R1 0
+
+		;移动坐标
+		LOAD_DATA CHAT_TEXT_X R0 0
+		LI R1 0
+		SAVE_DATA CURSOR_X R0 0
+		SAVE_DATA CURSOR_Y R1 0
+		LOAD_ADDR chat_friend R0
+		CALL printf
+		CALL next_cursor_line
+		LOAD_ADDR CHAT_COM_BUFFER R0
+		CALL printf
+		CALL next_cursor_line
+
+		;清空缓存区
+		LOAD_ADDR CHAT_COM_BUFFER R0
+		SAVE_DATA CHAT_COM_BUFFER_P R0 0
+
+		;保存各处坐标信息
+		Chat_Main_Com_RET:
+			LOAD_DATA CURSOR_X R0 0
+			SAVE_DATA CHAT_TEXT_X R0 0
+			LOAD_DATA CHAT_INPUT_X R0 0
+			LOAD_DATA CHAT_INPUT_Y R1 0
+			SAVE_DATA CURSOR_X R0 0
+			SAVE_DATA CURSOR_Y R1 0
+		LOAD_REG
+		B Chat_Main_Keyboard_Get
+		NOP
 	
-	Chat_Main_KeyBoard_Get_Print:
-    CALL print_char  ;否则输出该字符
-    LOAD_DATA KeyBoard_Cache_P R1 0
-    SW R1 R0 0
-    ADDIU R1 1
-    SAVE_DATA KeyBoard_Cache_P R1 0
-;LI R3 0A
-;SW R5 R3 0
-    B Chat_Main_KeyBoard_Get_Loop
-    NOP
-    Chat_Main_KeyBoard_Get_Enter:
-      CALL Chat_Main_KeyBoard_Enter
-      CALL VGA_COM_PRINT
-;ADDIU R4 1
-;SW R5 R4 0
-      B Chat_Main_KeyBoard_Get_Loop
-      NOP
-    Chat_Main_KeyBoard_Get_BackSpace:
-      CALL Chat_Main_KeyBoard_BackSpace
-      CALL VGA_COM_PRINT
-      B Chat_Main_KeyBoard_Get_Loop
-      NOP
+	Chat_Main_Keyboard_Get:
+		CALL KeyBoard_Get
+		BEQZ R0 Chat_Main_KeyBoard_Get_Loop
+		NOP
+		LI R6 1B
+		CMP R0 R6   ;判断是否为ESC
+		BTNEZ Chat_Main_NoRET ;是ESC
+		NOP
+		  RET
+		Chat_Main_NoRET:
+		LI R6 0A
+		CMP R0 R6   ;判断是否为回车
+		BTEQZ Chat_Main_KeyBoard_Get_Enter ;是回车
+		NOP
+		LI R6 08
+		CMP R0 R6   ;判断是否为退格
+		BTEQZ Chat_Main_KeyBoard_Get_BackSpace ;是回车
+		NOP
+		LOAD_DATA KeyBoard_Cache_P R1 0
+		LOAD_ADDR KeyBoard_Cache R2 
+		SUBU R1 R2 R3
+		LI R6 4E
+		CMP R3 R6		;最多78个字符
+		BTNEZ Chat_Main_KeyBoard_Get_Print
+		NOP
+		B Chat_Main_KeyBoard_Get_Loop
+		NOP
+		
+		Chat_Main_KeyBoard_Get_Print:
+		CALL print_char  ;否则输出该字符
+		LOAD_DATA KeyBoard_Cache_P R1 0
+		SW R1 R0 0
+		ADDIU R1 1
+		SAVE_DATA KeyBoard_Cache_P R1 0
+	;LI R3 0A
+	;SW R5 R3 0
+		B Chat_Main_KeyBoard_Get_Loop
+		NOP
+
+		Chat_Main_KeyBoard_Get_Enter:
+		  CALL Chat_Main_KeyBoard_Enter
+		  CALL VGA_COM_PRINT
+		;ADDIU R4 1
+		;SW R5 R4 0
+		  B Chat_Main_KeyBoard_Get_Loop
+		  NOP
+		Chat_Main_KeyBoard_Get_BackSpace:
+		  CALL Chat_Main_KeyBoard_BackSpace
+		  CALL VGA_COM_PRINT
+		  B Chat_Main_KeyBoard_Get_Loop
+		  NOP
   RET
   
 Chat_Main_KeyBoard_BackSpace:    ;按下退格应处理的逻辑
@@ -140,6 +217,10 @@ Chat_Main_KeyBoard_Enter:   ;当按下键盘回车时应当处理的逻辑
   LOAD_ADDR KeyBoard_Cache R0
   CALL printf
   CALL next_cursor_line
+  
+  ;发送串口
+  LOAD_ADDR CHAT_COM_BUFFER R0
+  CALL COM_SEND
   
   ;清空缓存区
   LOAD_ADDR KeyBoard_Cache R0
