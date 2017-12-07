@@ -151,7 +151,7 @@ Chat_Main_KeyBoard_Enter:   ;当按下键盘回车时应当处理的逻辑
   CALL next_cursor_line
   
   ;发送串口
-  LOAD_ADDR CHAT_COM_BUFFER R0
+  LOAD_ADDR KeyBoard_Cache R0
   CALL COM_SEND
   
   ;清空缓存区

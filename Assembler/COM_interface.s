@@ -45,6 +45,7 @@ COM_SEND:	;将R0地址开始的数据从BF00发送出去
   MOVE R3 R0
   LI R0 BF
   SLL R0 R0 0
+  LI R2 0
   COM_SEND_LOOP:
 	LW R3 R1 0
 	CMP R1 R2
