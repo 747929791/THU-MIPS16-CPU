@@ -391,6 +391,8 @@ Term_A_Command:    ;汇编程序
       LOAD_DATA KeyBoard_Cache_P R0 0
       ADDIU R0 FF
       SAVE_DATA KeyBoard_Cache_P R0 0
+      B Term_A_Command_Get_Loop
+      NOP
     Term_A_Command_NoBackSpace:
     ;判断是否为回车
     LI R6 0A
