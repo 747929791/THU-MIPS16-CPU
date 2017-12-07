@@ -17,6 +17,7 @@ set_cursor:     ;设置输入光标坐标为R0(16)位，用于系统文字输出
   RET
 
 printf:       ;从R0指定的地址开始沿cursor输出字符，直到\0为止
+  SAVE_REG
   MOVE R5 R0   ;R5维持字符地址
   LW R5 R4 0 ;R4负责记录现在输出的字符是什么
   printf_loop1:
@@ -31,6 +32,7 @@ printf:       ;从R0指定的地址开始沿cursor输出字符，直到\0为止
     LW R5 R4 0
     BNEZ R4 printf_loop1
     NOP
+  LOAD_REG
   RET
   
 print_char:       ;向cursor输出R0，并右移cursor
