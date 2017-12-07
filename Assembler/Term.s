@@ -385,6 +385,35 @@ Term_G_Command:    ;
   LW_SP R7 0
   LOAD_REG
   RET
-  
+
+Term_UASM:         ;反汇编R0指令，并输出一行
+  CALL print_int
+  RET
+
 Term_U_Command:    ;
+  SAVE_REG
+  LOAD_ADDR Term_Program R4;R4是内存地址循环变量
+  LOAD_DATA Term_Program_End R5 0 ;R5是目标地址
+  Term_U_Command_Loop:
+    ;先打印当前指令地址
+    LI R0 5B;'['
+    CALL print_char
+    LOAD_ADDR Term_Program R0
+    LOAD_DATA Term_Program_End R1 0
+    SUBU R1 R0 R0
+    CALL String_IntToHex
+    CALL printf
+    LI R0 5D;']'
+    LW R4 R0 0 ;将指令写到R0
+    ;如果已经到达指令列表末尾则return
+    CMP R4 R5
+    BTEQZ Term_U_Command_RET
+    NOP
+    CALL Term_UASM  ;反汇编
+    CALL next_cursor_line
+    ADDIU R4 1
+    B Term_U_Command_Loop
+    NOP
+  Term_U_Command_RET:
+  LOAD_REG
   RET

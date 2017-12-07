@@ -127,3 +127,8 @@ next_cursor_line:    ;光标下移一行，越界后到达下一行行首，若超出屏幕则滚屏
   LW_SP R0 0
   LW_SP R1 1
   RET
+
+print_int:    ;打印R0表示的16位4个ASCII字符
+  CALL String_IntToHex
+  CALL printf
+  RET
