@@ -394,6 +394,11 @@ Term_UASM:         ;反汇编R0指令，并输出一行
   SAVE_REG
   SRL R1 R0 0
   SRL R1 R1 3      ;R1为R0前5位
+  SRL R4 R0 0      ;R4为R0前8位
+  SLL R5 R0 0
+  SLL R5 R5 3
+  SRL R5 R5 0
+  SRL R5 R5 3		;R5为R0后5位
   MOVE R3 R0
   
   LI R2 9	;ADDIU 
@@ -420,6 +425,143 @@ Term_UASM:         ;反汇编R0指令，并输出一行
   GOTO Term_UASM_RET
   Term_UASM_ADDSP3_END:
   
+  LI R2 63	;ADDSP
+  XOR R2 R4
+  BNEZ R2 Term_UASM_ADDSP_END
+  NOP
+  STRING Term_UASM_ADDSP_String "ADDSP "
+  LOAD_ADDR Term_UASM_ADDSP_String R0
+  CALL printf
+  MOVE R0 R3
+  CALL Term_UASM_Decode_imm
+  GOTO Term_UASM_RET
+  Term_UASM_ADDSP_END:
+  
+  LI R2 1C	;ADDU
+  XOR R2 R1
+  BNEZ R2 Term_UASM_ADDU_END
+  NOP
+  LI R2 1
+  MOVE R6 R3
+  SLL R6 0
+  SLL R6 6
+  SRL R6 0
+  SRL R6 6
+  XOR R2 R6
+  BNEZ R2 Term_UASM_ADDU_END
+  NOP
+  STRING Term_UASM_ADDU_String "ADDU "
+  LOAD_ADDR Term_UASM_ADDU_String R0
+  CALL printf
+  MOVE R0 R3
+  CALL Term_UASM_Decode_rxryrz
+  GOTO Term_UASM_RET
+  Term_UASM_ADDU_END:
+  
+  LI R2 1C	;AND
+  XOR R2 R1
+  BNEZ R2 Term_UASM_AND_END
+  NOP
+  STRING Term_UASM_AND_String "AND "
+  LOAD_ADDR Term_UASM_AND_String R0
+  CALL printf
+  MOVE R0 R3
+  CALL Term_UASM_Decode_rxry
+  GOTO Term_UASM_RET
+  Term_UASM_AND_END:
+  
+  LI R2 2	;B
+  XOR R2 R1
+  BNEZ R2 Term_UASM_B_END
+  NOP
+  STRING Term_UASM_B_String "B "
+  LOAD_ADDR Term_UASM_B_String R0
+  CALL printf
+  MOVE R0 R3
+  CALL Term_UASM_Decode_imm
+  GOTO Term_UASM_RET
+  Term_UASM_B_END:
+  
+  LI R2 4	;BEQZ
+  XOR R2 R1
+  BNEZ R2 Term_UASM_BEQZ_END
+  NOP
+  STRING Term_UASM_BEQZ_String "BEQZ "
+  LOAD_ADDR Term_UASM_BEQZ_String R0
+  CALL printf
+  MOVE R0 R3
+  CALL Term_UASM_Decode_rximm
+  GOTO Term_UASM_RET
+  Term_UASM_BEQZ_END:
+  
+  LI R2 5	;BNEZ
+  XOR R2 R1
+  BNEZ R2 Term_UASM_BNEZ_END
+  NOP
+  STRING Term_UASM_BNEZ_String "BNEZ "
+  LOAD_ADDR Term_UASM_BNEZ_String R0
+  CALL printf
+  MOVE R0 R3
+  CALL Term_UASM_Decode_rximm
+  GOTO Term_UASM_RET
+  Term_UASM_BNEZ_END:
+  
+  LI R2 60	;BTEQZ
+  XOR R2 R4
+  BNEZ R2 Term_UASM_BTEQZ_END
+  NOP
+  STRING Term_UASM_BTEQZ_String "BTEQZ "
+  LOAD_ADDR Term_UASM_BTEQZ_String R0
+  CALL printf
+  MOVE R0 R3
+  CALL Term_UASM_Decode_imm
+  GOTO Term_UASM_RET
+  Term_UASM_BTEQZ_END:
+  
+  LI R2 61	;BTNEZ
+  XOR R2 R4
+  BNEZ R2 Term_UASM_BTNEZ_END
+  NOP
+  STRING Term_UASM_BTNEZ_String "BTNEZ "
+  LOAD_ADDR Term_UASM_BTNEZ_String R0
+  CALL printf
+  MOVE R0 R3
+  CALL Term_UASM_Decode_imm
+  GOTO Term_UASM_RET
+  Term_UASM_BTNEZ_END:
+  
+  LI R2 1D	;CMP
+  XOR R2 R1
+  BNEZ R2 Term_UASM_CMP_END
+  NOP
+  LI R2 A
+  XOR R2 R5
+  BNEZ R2 Term_UASM_CMP_END
+  NOP
+  STRING Term_UASM_CMP_String "CMP "
+  LOAD_ADDR Term_UASM_CMP_String R0
+  CALL printf
+  MOVE R0 R3
+  CALL Term_UASM_Decode_rxry
+  GOTO Term_UASM_RET
+  Term_UASM_CMP_END:
+  
+  LI R2 1D	;JR
+  XOR R2 R1
+  BNEZ R2 Term_UASM_JR_END
+  NOP
+  LI R2 0
+  XOR R2 R5
+  BNEZ R2 Term_UASM_JR_END
+  NOP
+  STRING Term_UASM_JR_String "JR "
+  LOAD_ADDR Term_UASM_JR_String R0
+  CALL printf
+  MOVE R0 R3
+  CALL Term_UASM_Decode_rximm
+  GOTO Term_UASM_RET
+  Term_UASM_JR_END:
+  
   LI R2 D	;LI
   XOR R2 R1
   BNEZ R2 Term_UASM_LI_END
@@ -431,6 +573,144 @@ Term_UASM:         ;反汇编R0指令，并输出一行
   CALL Term_UASM_Decode_rximm
   GOTO Term_UASM_RET
   Term_UASM_LI_END:
+  
+  LI R2 13	;LW
+  XOR R2 R1
+  BNEZ R2 Term_UASM_LW_END
+  NOP
+  STRING Term_UASM_LW_String "LW "
+  LOAD_ADDR Term_UASM_LW_String R0
+  CALL printf
+  MOVE R0 R3
+  CALL Term_UASM_Decode_rximm
+  GOTO Term_UASM_RET
+  Term_UASM_LW_END:
+  
+  LI R2 12	;LW_SP
+  XOR R2 R1
+  BNEZ R2 Term_UASM_LW_SP_END
+  NOP
+  STRING Term_UASM_LW_SP_String "LW_SP "
+  LOAD_ADDR Term_UASM_LW_SP_String R0
+  CALL printf
+  MOVE R0 R3
+  CALL Term_UASM_Decode_rximm
+  GOTO Term_UASM_RET
+  Term_UASM_LW_SP_END:
+  
+  LI R2 F	;MOVE
+  XOR R2 R1
+  BNEZ R2 Term_UASM_MOVE_END
+  NOP
+  STRING Term_UASM_MOVE_String "MOVE "
+  LOAD_ADDR Term_UASM_MOVE_String R0
+  CALL printf
+  MOVE R0 R3
+  CALL Term_UASM_Decode_rxry
+  GOTO Term_UASM_RET
+  Term_UASM_MOVE_END:
+  
+  LI R2 08	;NOP
+  SLL R2 R2 0
+  XOR R2 R3
+  BNEZ R2 Term_UASM_NOP_END
+  NOP
+  STRING Term_UASM_NOP_String "NOP "
+  LOAD_ADDR Term_UASM_NOP_String R0
+  CALL printf
+  GOTO Term_UASM_RET
+  Term_UASM_NOP_END:
+  
+  LI R2 6	;SLL
+  XOR R2 R1
+  BNEZ R2 Term_UASM_SLL_END
+  NOP
+  LI R2 0
+  MOVE R6 R3
+  SLL R6 0
+  SLL R6 6
+  SRL R6 0
+  SRL R6 6
+  XOR R2 R6
+  BNEZ R2 Term_UASM_SLL_END
+  NOP
+  STRING Term_UASM_SLL_String "SLL "
+  LOAD_ADDR Term_UASM_SLL_String R0
+  CALL printf
+  MOVE R0 R3
+  CALL Term_UASM_Decode_rxryimm
+  GOTO Term_UASM_RET
+  Term_UASM_SLL_END:
+  
+  LI R2 1D	;SLT
+  XOR R2 R1
+  BNEZ R2 Term_UASM_SLT_END
+  NOP
+  LI R2 2
+  XOR R2 R5
+  BNEZ R2 Term_UASM_SLT_END
+  NOP
+  STRING Term_UASM_SLT_String "SLT "
+  LOAD_ADDR Term_UASM_SLT_String R0
+  CALL printf
+  MOVE R0 R3
+  CALL Term_UASM_Decode_rxry
+  GOTO Term_UASM_RET
+  Term_UASM_SLT_END:
+  
+  LI R2 6	;SRL
+  XOR R2 R1
+  BNEZ R2 Term_UASM_SRL_END
+  NOP
+  LI R2 2
+  MOVE R6 R3
+  SLL R6 0
+  SLL R6 6
+  SRL R6 0
+  SRL R6 6
+  XOR R2 R6
+  BNEZ R2 Term_UASM_SRL_END
+  NOP
+  STRING Term_UASM_SRL_String "SRL "
+  LOAD_ADDR Term_UASM_SRL_String R0
+  CALL printf
+  MOVE R0 R3
+  CALL Term_UASM_Decode_rxryimm
+  GOTO Term_UASM_RET
+  Term_UASM_SRL_END:
+  
+  LI R2 1C	;SUBU
+  XOR R2 R1
+  BNEZ R2 Term_UASM_SUBU_END
+  NOP
+  LI R2 3
+  MOVE R6 R3
+  SLL R6 0
+  SLL R6 6
+  SRL R6 0
+  SRL R6 6
+  XOR R2 R6
+  BNEZ R2 Term_UASM_SUBU_END
+  NOP
+  STRING Term_UASM_SUBU_String "SUBU "
+  LOAD_ADDR Term_UASM_SUBU_String R0
+  CALL printf
+  MOVE R0 R3
+  CALL Term_UASM_Decode_rxryrz
+  GOTO Term_UASM_RET
+  Term_UASM_SUBU_END:
+  
+  LI R2 1B	;SW
+  XOR R2 R1
+  BNEZ R2 Term_UASM_SW_END
+  NOP
+  STRING Term_UASM_SW_String "SW "
+  LOAD_ADDR Term_UASM_SW_String R0
+  CALL printf
+  MOVE R0 R3
+  CALL Term_UASM_Decode_rxryimm
+  GOTO Term_UASM_RET
+  Term_UASM_SW_END:
   
   STRING Term_UASM_Unknown "--- Unknown ---"
   LOAD_ADDR Term_UASM_Unknown R0
@@ -479,10 +759,131 @@ Term_U_Command:    ;
   LOAD_REG
   RET
   
-Term_UASM_Decode_rximm:		;解码op rx imm类指令，指令内容在R0
+Term_UASM_Decode_rxryrz:		;解码op rx ry rz类指令后半，指令内容在R0
   SAVE_REG
   MOVE R1 R0
-  LI R0 52
+  
+  LI R0 52	;R
+  CALL print_char
+  MOVE R0 R1
+  SLL R0 R0 5
+  SRL R0 R0 0
+  SRL R0 R0 5
+  ADDIU R0 30
+  CALL print_char 
+  LI R0 20
+  CALL print_char
+  MOVE R0 R1
+  
+  LI R0 52	;R
+  CALL print_char
+  MOVE R0 R1
+  SLL R0 R0 0
+  SRL R0 R0 0
+  SRL R0 R0 5
+  ADDIU R0 30
+  CALL print_char 
+  LI R0 20
+  CALL print_char
+  MOVE R0 R1
+  
+  LI R0 52	;R
+  CALL print_char
+  MOVE R0 R1
+  SLL R0 R0 3
+  SLL R0 R0 0
+  SRL R0 R0 0
+  SRL R0 R0 5
+  ADDIU R0 30
+  CALL print_char 
+  
+  LOAD_REG
+  RET  
+  
+Term_UASM_Decode_rxry:		;解码op rx ry类指令后半，指令内容在R0
+  SAVE_REG
+  MOVE R1 R0
+  
+  LI R0 52	;R
+  CALL print_char
+  MOVE R0 R1
+  SLL R0 R0 5
+  SRL R0 R0 0
+  SRL R0 R0 5
+  ADDIU R0 30
+  CALL print_char 
+  LI R0 20
+  CALL print_char
+  MOVE R0 R1
+  
+  LI R0 52	;R
+  CALL print_char
+  MOVE R0 R1
+  SLL R0 R0 0
+  SRL R0 R0 0
+  SRL R0 R0 5
+  ADDIU R0 30
+  CALL print_char 
+
+  LOAD_REG
+  RET  
+  
+Term_UASM_Decode_rxryimm:		;解码op rx ry imm类指令后半，指令内容在R0
+  SAVE_REG
+  MOVE R1 R0
+  
+  LI R0 52	;R
+  CALL print_char
+  MOVE R0 R1
+  SLL R0 R0 5
+  SRL R0 R0 0
+  SRL R0 R0 5
+  ADDIU R0 30
+  CALL print_char 
+  LI R0 20
+  CALL print_char
+  MOVE R0 R1
+  
+  LI R0 52	;R
+  CALL print_char
+  MOVE R0 R1
+  SLL R0 R0 0
+  SRL R0 R0 0
+  SRL R0 R0 5
+  ADDIU R0 30
+  CALL print_char 
+  LI R0 20
+  CALL print_char
+  MOVE R0 R1
+  
+  SRL R0 R0 2
+  SLL R0 R0 0
+  SLL R0 R0 5
+  SRL R0 R0 0
+  SRL R0 R0 5
+  CALL String_8IntToHex
+  CALL printf
+  LOAD_REG
+  RET    
+  
+Term_UASM_Decode_rx:		;解码op rx 类指令后半，指令内容在R0
+  SAVE_REG
+  MOVE R1 R0
+  LI R0 52	;R
+  CALL print_char
+  MOVE R0 R1
+  SLL R0 R0 5
+  SRL R0 R0 0
+  SRL R0 R0 5
+  ADDIU R0 30
+  CALL print_char 
+  LOAD_REG
+  RET  
+  
+Term_UASM_Decode_rximm:		;解码op rx imm类指令后半，指令内容在R0
+  SAVE_REG
+  MOVE R1 R0
+  LI R0 52	;R
   CALL print_char
   MOVE R0 R1
   SLL R0 R0 5
@@ -498,3 +899,9 @@ Term_UASM_Decode_rximm:		;解码op rx imm类指令，指令内容在R0
   LOAD_REG
   RET
   
+Term_UASM_Decode_imm:		;解码rx imm类指令后半，指令内容在R0
+  SAVE_REG
+  CALL String_8IntToHex
+  CALL printf
+  LOAD_REG
+  RET
