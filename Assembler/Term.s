@@ -362,6 +362,7 @@ Term_A_Command:    ;汇编程序
     B Term_A_Command_Get_Loop
     NOP
   Term_A_Command_RET:
+  CALL next_cursor_line
   LOAD_REG
   RET
   
@@ -417,11 +418,19 @@ Term_U_Command:    ;
     CMP R4 R5
     BTEQZ Term_U_Command_RET
     NOP
+    LI R0 20;' '
+    CALL print_char
+    LW R4 R0 0 ;将指令写到R0
+    CALL print_int
+    LI R0 20;' '
+    CALL print_char
+    LW R4 R0 0 ;将指令写到R0
     CALL Term_UASM  ;反汇编
     CALL next_cursor_line
     ADDIU R4 1
     B Term_U_Command_Loop
     NOP
   Term_U_Command_RET:
+  CALL next_cursor_line
   LOAD_REG
   RET
