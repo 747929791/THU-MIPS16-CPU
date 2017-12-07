@@ -199,7 +199,7 @@ Term_A_Command_Insert:   ;向指令表末尾插入一条指令，指令字符串首地址为R0
     ADDU R0 R4 R4
     ;取出imm低位
     MOVE R0 R5
-    LI R1 10
+    LI R1 A
     CALL Term_A_Command_Insert_Get1Bit
     ADDU R0 R4 R4
     GOTO Term_A_Command_Insert_Correct
@@ -368,6 +368,12 @@ Term_D_Command:    ;
   
 Term_G_Command:    ;
   SAVE_REG  
+  LOAD_DATA Term_RegSave R0 0
+  LOAD_DATA Term_RegSave R1 1
+  LOAD_DATA Term_RegSave R2 2
+  LOAD_DATA Term_RegSave R3 3
+  LOAD_DATA Term_RegSave R4 4
+  LOAD_DATA Term_RegSave R5 5
   LOAD_ADDR Term_Program R6 0
   SW_SP R7 0
   ADDSP 1
@@ -404,6 +410,7 @@ Term_U_Command:    ;
     CALL String_IntToHex
     CALL printf
     LI R0 5D;']'
+    CALL print_char
     LW R4 R0 0 ;将指令写到R0
     ;如果已经到达指令列表末尾则return
     CMP R4 R5
