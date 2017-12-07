@@ -150,6 +150,8 @@ Term_R_Command:   ;查看寄存器堆
 
 Term_INIT:     ;初始化的屏幕字符显示
   SAVE_REG
+  LI R0 VGA_N;初始化滚屏高度
+  SAVE_DATA Print_Scroll_Bottom R0 0
   LI R0 0
   SAVE_DATA Term_RegSave R0 0
   SAVE_DATA Term_RegSave R0 1
@@ -405,8 +407,7 @@ Term_U_Command:    ;
     LI R0 5B;'['
     CALL print_char
     LOAD_ADDR Term_Program R0
-    LOAD_DATA Term_Program_End R1 0
-    SUBU R1 R0 R0
+    SUBU R4 R0 R0
     CALL String_IntToHex
     CALL printf
     LI R0 5D;']'
