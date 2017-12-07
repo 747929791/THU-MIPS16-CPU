@@ -217,6 +217,7 @@ Chat_Main_Comm_Get:		;读串口
 	NOP
 	CALL Chat_Print_Com
 	B Chat_Main_Comm_Ret
+	NOP
 	
 Chat_Main_Read_Char:
 	LOAD_DATA CHAT_COM_BUFFER_P R1 0		;读入一个字符
