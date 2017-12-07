@@ -64,19 +64,23 @@ entity id is
 			  --供访存储的指令信号
 			  inst_o : out STD_LOGIC_VECTOR(15 downto 0);
 			  --ex阶段aluop信号检测Load相关
-			  ex_aluop_i : in STD_LOGIC_VECTOR(7 downto 0)
+			  ex_aluop_i : in STD_LOGIC_VECTOR(7 downto 0);
+			  
+			  int_enable : out STD_LOGIC
 			  );
 end id;
 
 architecture Behavioral of id is
 signal imm:STD_LOGIC_VECTOR(15 downto 0);
 signal instvalid:STD_LOGIC; --指令是否有效
+signal int_enable_sig :std_logic := '1';
 --内部信号
 signal reg1_read_e,reg2_read_e:STD_LOGIC;
 signal reg1_addr,reg2_addr:STD_LOGIC_VECTOR(3 downto 0);
 signal reg1_data,reg2_data:STD_LOGIC_VECTOR(15 downto 0); --考虑旁路取得的正确reg_data
 begin
 	inst_o <= inst_i;
+	int_enable <= int_enable_sig;
 	reg1_read_o <= reg1_read_e;
 	reg2_read_o <= reg2_read_e;
 	reg1_addr_o <= reg1_addr;
@@ -570,6 +574,7 @@ begin
 					case imm4 is
 						when "1111" => --ERET
 							--jump to reg INT
+							int_enable_sig <= '1';
 							wreg_o <= Disable;
 							reg1_read_e <= Enable;
 							reg1_addr <= INT_REGISTER;
@@ -577,6 +582,7 @@ begin
 							branch_target_address_o <= reg1_data;
 						when others => --INT
 							--write the interrupted pc to INT_REG
+							int_enable_sig <= '0';
 							wreg_o <= Enable;
 							aluop_o <= EXE_INT_OP;
 							alusel_o <= EXE_RES_LOGIC;

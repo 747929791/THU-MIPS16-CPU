@@ -1,6 +1,5 @@
 LOAD_ADDR KeyBoard_Test_IntProgram R0
 MTIH R0;指定中断处理程序
-RET
 GOTO KeyBoard_Test_Int
 
 KeyBoard_Test_NoInt:  ;测试轮训的键盘处理
@@ -9,6 +8,21 @@ KeyBoard_Test_NoInt:  ;测试轮训的键盘处理
   KeyBoard_Test_NoInt_Loop:
     CALL KeyBoard_Get
     BEQZ R0 KeyBoard_Test_NoInt_Loop
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
     NOP
     MOVE R1 R0
     MOVE R0 R5

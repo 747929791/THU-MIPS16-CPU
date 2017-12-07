@@ -118,6 +118,7 @@ signal branch_flag : STD_LOGIC;
 signal branch_target_address : STD_LOGIC_VECTOR(15 downto 0);
 --暂停信号
 
+signal int_en_sig : std_logic;
 
 component pc
     Port ( rst : in  STD_LOGIC; --复位信号
@@ -172,7 +173,8 @@ component id
 			  --供访存储的指令信号
 			  inst_o : out STD_LOGIC_VECTOR(15 downto 0);
 			  --ex阶段aluop信号检测Load相关
-			  ex_aluop_i : in STD_LOGIC_VECTOR(7 downto 0)
+			  ex_aluop_i : in STD_LOGIC_VECTOR(7 downto 0);
+			  int_enable : out STD_LOGIC
 			  );
 end component;
 
@@ -305,6 +307,7 @@ component interrupt_controller is
 	port(
 		clk,rst : in std_logic;
 		interrupt : in std_logic;
+		enable : in std_logic;
 		int_code_in: in std_logic_vector(3 downto 0);
 		inst_in : in std_logic_vector(15 downto 0);
 		inst_out : out std_logic_vector(15 downto 0)
@@ -319,7 +322,7 @@ begin
 										reg1_read_o=>reg1_read, reg2_read_o=>reg2_read, reg1_addr_o=>reg1_addr, reg2_addr_o=>reg2_addr, 
 										aluop_o=>id_aluop_o, alusel_o=>id_alusel_o, reg1_o=>id_reg1_o, reg2_o=>id_reg2_o, wd_o=>id_wd_o, wreg_o=>id_wreg_o,
 										ex_wreg_i=>ex_wreg_o, ex_wd_i=>ex_wd_o, ex_wdata_i=>ex_wdata_o, mem_wreg_i=>mem_wreg_o, mem_wd_i=>mem_wd_o, mem_wdata_i=>mem_wdata_o,
-										stallreq=>stallreq_id, branch_flag_o=>branch_flag, branch_target_address_o=>branch_target_address, inst_o=>id_inst_o, ex_aluop_i=>ex_aluop_o);
+										stallreq=>stallreq_id, branch_flag_o=>branch_flag, branch_target_address_o=>branch_target_address, inst_o=>id_inst_o, ex_aluop_i=>ex_aluop_o, int_enable=>int_en_sig);
 	regfile_component : regfile port map(rst=>rst, clk=>clk, waddr=>wb_wd_i, wdata=>wb_wdata_i, we=>wb_wreg_i, raddr1=>reg1_addr, re1=>reg1_read, 
 													 LED=>LED, 
 													 rdata1=>reg1_data, raddr2=>reg2_addr, re2=>reg2_read, rdata2=>reg2_data);
@@ -340,6 +343,6 @@ begin
 	stallreq_mem <= not ram_ready_i;
 	ctrl_component : ctrl port map(rst=>rst, stallreq_from_id=>stallreq_id, stallreq_from_ex=>stallreq_ex, stall=>stall, stallreq_from_if=>stallreq_if, stallreq_from_mem=>stallreq_mem);
 
-	int_ctrl_component : interrupt_controller port map(clk=>clk, rst=>rst, interrupt => interrupt_in, inst_in => rom_data_i, inst_out => if_inst_i, int_code_in => "0000");
+	int_ctrl_component : interrupt_controller port map(clk=>clk, rst=>rst, interrupt => interrupt_in, enable => int_en_sig, inst_in => rom_data_i, inst_out => if_inst_i, int_code_in => "0000");
 end Behavioral;
 

@@ -63,6 +63,7 @@ architecture Behavioral of ex is
 begin
 	stallreq <= NoStop; --ÔÝÊ±²»ÔÝÍ£
 	aluop_o<=aluop_i;
+	inst_o <= inst_i;
 	calc: process(rst,aluop_i,reg1_i,reg2_i,inst_i)
 	begin
 		if(rst = Enable) then

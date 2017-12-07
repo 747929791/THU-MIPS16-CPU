@@ -33,6 +33,7 @@ entity interrupt_controller is
 port(
 	clk,rst : in std_logic;
 	interrupt : in std_logic;
+	enable : in std_logic;
 	int_code_in: in std_logic_vector(3 downto 0);
 	inst_in : in std_logic_vector(15 downto 0);
 	inst_out : out std_logic_vector(15 downto 0)
@@ -51,33 +52,39 @@ begin
 	
 	INT_STATE : process(clk, interrupt)
 	begin
-		if(interrupt = '1')then
-			int_signal <= '1';
-		elsif(rising_edge(clk))then
-			case current_state is
-				when state0 =>
-					if(int_signal = '1')then
-						current_state <= state1;
-						int_signal <= '0';
-					end if;
-				when state1 => current_state <= state2;
-				when state2 => current_state <= state0;
-				when others =>
-			end case;
+		if(enable = '1')then
+			if(interrupt = '1')then
+				int_signal <= '1';
+				if(current_state = state0)then
+					current_state <= state1;
+				end if;
+			elsif(rising_edge(clk))then
+				case current_state is
+					when state1 =>
+						current_state <= state2;
+					when others =>
+						current_state <= state0;
+				end case;
+			end if;
 		end if;
 	end process;
 	
 	OUTPUT : process(clk, current_state)
 	begin
-		case current_state is
-			when state0 =>
-				inst_out <= inst_in;
-			when state1 =>
-				inst_out <= "111110000000" & int_code;
-			when state2 =>
-				inst_out <= "0001000000000000";
-			when others =>
-		end case;
+		if(enable = '1')then
+			case current_state is
+				when state0 =>
+					inst_out <= inst_in;
+				when state1 =>
+					inst_out <= "111110000000" & int_code;
+				when state2 =>
+					inst_out <= "0000100000000000";
+				when others =>
+					inst_out <= inst_in;
+			end case;
+		else
+			inst_out <= inst_in;
+		end if;
 	end process;
 
 end Behavioral;
