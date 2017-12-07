@@ -7,7 +7,7 @@ DATA KeyBoard_Cache_P 1 ;记录缓存区下一个字符的地址
 DATA Term_RegSave 8 ;缓存G指令执行后的寄存器
 DATA Term_Program 200 ;指令存储区
 DATA Term_Program_End 1 ;指令存储区结尾(将要写入的地址)
-STRING Term_Input_SIG ">> "
+STRING Term_Input_SIG "  >> "
 
 Term_Main:
   CALL VGA_MEM_INIT
@@ -108,14 +108,14 @@ Term_R_Command:   ;查看寄存器堆
   CALL String_IntToHex
   CALL printf
   
-  STRING Term_R_Command_1 " R1="
+  STRING Term_R_Command_1 "  R1="
   LOAD_ADDR Term_R_Command_1 R0
   CALL printf
   LOAD_DATA Term_RegSave R0 1
   CALL String_IntToHex
   CALL printf
   
-  STRING Term_R_Command_2 " R2="
+  STRING Term_R_Command_2 "  R2="
   LOAD_ADDR Term_R_Command_2 R0
   CALL printf
   LOAD_DATA Term_RegSave R0 2
@@ -131,14 +131,14 @@ Term_R_Command:   ;查看寄存器堆
   CALL String_IntToHex
   CALL printf
   
-  STRING Term_R_Command_4 " R4="
+  STRING Term_R_Command_4 "  R4="
   LOAD_ADDR Term_R_Command_4 R0
   CALL printf
   LOAD_DATA Term_RegSave R0 4
   CALL String_IntToHex
   CALL printf
   
-  STRING Term_R_Command_5 " R5="
+  STRING Term_R_Command_5 "  R5="
   LOAD_ADDR Term_R_Command_5 R0
   CALL printf
   LOAD_DATA Term_RegSave R0 5
@@ -268,10 +268,6 @@ Term_A_Command_Insert:   ;向指令表末尾插入一条指令，指令字符串首地址为R0
   NOP
   Term_A_Command_Insert_Correct:  ;接受正确的指令
     ;现在R4是正确的指令格式
-MOVE R0 R4
-CALL String_IntToHex
-CALL printf
-CALL next_cursor_line
     LOAD_DATA Term_Program_End R5 0 ;R5现在是下一个写指令的地址
     SW R5 R4 0
     ADDIU R5 1
@@ -282,7 +278,6 @@ CALL next_cursor_line
     STRING Term_Program_Command_Error "Syntax Error"
     LOAD_ADDR Term_Program_Command_Error R0
     CALL printf
-    CALL next_cursor_line
     LOAD_REG
     RET
 
@@ -399,35 +394,47 @@ Term_UASM:         ;反汇编R0指令，并输出一行
   SAVE_REG
   SRL R1 R0 0
   SRL R1 R1 3      ;R1为R0前5位
+  MOVE R3 R0
   
   LI R2 9	;ADDIU 
   XOR R2 R1
   BNEZ R2 Term_UASM_ADDIU_END
   NOP
   STRING Term_UASM_ADDIU_String "ADDIU "
+  LOAD_ADDR Term_UASM_ADDIU_String R0
+  CALL printf
+  MOVE R0 R3
   CALL Term_UASM_Decode_rximm
   GOTO Term_UASM_RET
-  
   Term_UASM_ADDIU_END:
+  
   LI R2 0	;ADDSP3 
   XOR R2 R1
   BNEZ R2 Term_UASM_ADDSP3_END
   NOP
-  STRING Term_UASM_ADDIU_String "ADDSP3 "
+  STRING Term_UASM_ADDSP3_String "ADDSP3 "
+  LOAD_ADDR Term_UASM_ADDSP3_String R0
+  CALL printf
+  MOVE R0 R3
   CALL Term_UASM_Decode_rximm
   GOTO Term_UASM_RET
-  
   Term_UASM_ADDSP3_END:
+  
   LI R2 D	;LI
   XOR R2 R1
   BNEZ R2 Term_UASM_LI_END
   NOP
   STRING Term_UASM_LI_String "LI "
+  LOAD_ADDR Term_UASM_LI_String R0
+  CALL printf
+  MOVE R0 R3
   CALL Term_UASM_Decode_rximm
   GOTO Term_UASM_RET
-  
   Term_UASM_LI_END:
-	STRING Term_UASM_Unknown "---Unknown---"
+  
+  STRING Term_UASM_Unknown "--- Unknown ---"
+  LOAD_ADDR Term_UASM_Unknown R0
+  CALL printf
   
   Term_UASM_RET:
 	  LOAD_REG
@@ -438,6 +445,11 @@ Term_U_Command:    ;
   LOAD_ADDR Term_Program R4;R4是内存地址循环变量
   LOAD_DATA Term_Program_End R5 0 ;R5是目标地址
   Term_U_Command_Loop:
+    LW R4 R0 0 ;将指令写到R0
+    ;如果已经到达指令列表末尾则return
+    CMP R4 R5
+    BTEQZ Term_U_Command_RET
+    NOP
     ;先打印当前指令地址
     LI R0 5B;'['
     CALL print_char
@@ -448,16 +460,14 @@ Term_U_Command:    ;
     LI R0 5D;']'
     CALL print_char
     LW R4 R0 0 ;将指令写到R0
-    ;如果已经到达指令列表末尾则return
-    CMP R4 R5
-    BTEQZ Term_U_Command_RET
-    NOP
-    LI R0 20;' '
-    CALL print_char
+    STRING Term_U_Command_Left_String "      <"
+    LOAD_ADDR Term_U_Command_Left_String R0
+    CALL printf
     LW R4 R0 0 ;将指令写到R0
     CALL print_int
-    LI R0 20;' '
-    CALL print_char
+    STRING Term_U_Command_Right_String ">    "
+    LOAD_ADDR Term_U_Command_Right_String R0
+    CALL printf
     LW R4 R0 0 ;将指令写到R0
     CALL Term_UASM  ;反汇编
     CALL next_cursor_line
@@ -475,9 +485,9 @@ Term_UASM_Decode_rximm:		;解码op rx imm类指令，指令内容在R0
   LI R0 52
   CALL print_char
   MOVE R0 R1
-  SLL R0 5
-  SRL R0 0
-  SRL R0 5
+  SLL R0 R0 5
+  SRL R0 R0 0
+  SRL R0 R0 5
   ADDIU R0 30
   CALL print_char 
   LI R0 20
