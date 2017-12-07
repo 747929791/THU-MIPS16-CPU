@@ -44,16 +44,16 @@ architecture Behavioral of interrupt_controller is
 
 type state is (state0, state1, state2);
 signal current_state : state := state0;
+signal int_s : std_logic;
 signal int_signal : std_logic := '0';
 signal int_code : std_logic_vector(3 downto 0) := "0000";
 begin
 
 	int_code <= int_code_in;
-	
-	INT_STATE : process(clk, interrupt)
+	int_s <= interrupt and enable;
+	INT_STATE : process(clk, int_s)
 	begin
-		if(enable = '1')then
-			if(interrupt = '1')then
+			if(int_s = '1')then
 				int_signal <= '1';
 				if(current_state = state0)then
 					current_state <= state1;
@@ -66,7 +66,6 @@ begin
 						current_state <= state0;
 				end case;
 			end if;
-		end if;
 	end process;
 	
 	OUTPUT : process(clk, current_state)
