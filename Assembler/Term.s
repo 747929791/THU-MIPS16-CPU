@@ -1,4 +1,4 @@
-;这是一个文本计算器(输入"34*100"输出"3400")
+;这是一个Term中断，支持A,D,G,R,U命令
 GOTO Term_Main
 
 DATA KeyBoard_Cache 500 ;缓存当前未完成的输入的内容
@@ -189,14 +189,14 @@ Term_R_Command:   ;查看寄存器堆
   
   CALL next_cursor_line
   
-  STRING Term_R_Command_3 " R3="
+  STRING Term_R_Command_3 "R3="
   LOAD_ADDR Term_R_Command_3 R0
   CALL printf
   LOAD_DATA Term_RegSave R0 3
   CALL Term_IntToHex
   CALL printf
   
-  STRING Term_R_Command_4 "R4="
+  STRING Term_R_Command_4 " R4="
   LOAD_ADDR Term_R_Command_4 R0
   CALL printf
   LOAD_DATA Term_RegSave R0 4
@@ -234,14 +234,70 @@ Term_INIT:     ;初始化的屏幕字符显示
 Term_A_Command_Insert:   ;向指令表末尾插入一条指令，指令字符串首地址为R0
   SAVE_REG
   ;译码
-  LOAD_REG
-  RET
+  MOVE R5 R0
+;将Rx放于R2,2位16进制imm放于R4
+;LW R0 7
+  ;判断是否为ADDIU
+  STRING TERM_PC_ADDIU "ADDIU"
+  MOVE R0 R5
+  LOAD_ADDR TERM_PC_ADDIU R1
+  CALL STRING_PrefixCMP
+  BNEZ R0 Term_Insert_NotAddiu
+  NOP
+    ;处理ADDIU的逻辑
+    GOTO Term_A_Command_Insert_Correct
+  Term_Insert_NotAddiu:
+  ;判断是否为LI
+  STRING TERM_PC_LI "LI"
+  MOVE R0 R5
+  LOAD_ADDR TERM_PC_LI R1
+  CALL STRING_PrefixCMP
+  BNEZ R0 Term_Insert_NotLI
+  NOP
+    ;处理LI的逻辑
+    GOTO Term_A_Command_Insert_Correct
+  Term_Insert_NotLI:
+  ;判断是否为JR
+  STRING TERM_PC_JR "JR"
+  MOVE R0 R5
+  LOAD_ADDR TERM_PC_JR R1
+  CALL STRING_PrefixCMP
+  BNEZ R0 Term_Insert_NotJR
+  NOP
+    ;处理JR的逻辑
+    GOTO Term_A_Command_Insert_Correct
+  Term_Insert_NotJR:
+  ;判断是否为NOP
+  STRING TERM_PC_NOP "NOP"
+  MOVE R0 R5
+  LOAD_ADDR TERM_PC_NOP R1
+  CALL STRING_PrefixCMP
+  BNEZ R0 Term_Insert_NotNOP
+  NOP
+    ;处理NOP的逻辑
+    GOTO Term_A_Command_Insert_Correct
+  Term_Insert_NotNOP:
+  ;均不为以上指令，非法
+  B Term_A_Command_Insert_Error
+  NOP
+  Term_A_Command_Insert_Correct:  ;接受正确的指令
+    ;现在R0是正确的指令格式
+    LOAD_DATA Term_Program_End R5 0 ;R5现在是下一个写指令的地址
+    ADDIU R5 1
+    LOAD_REG
+    RET
+  Term_A_Command_Insert_Error:  ;拒绝错误的指令
+    STRING Term_Program_Command_Error "Syntax Error"
+    LOAD_ADDR Term_Program_Command_Error R0
+    CALL printf
+    CALL next_cursor_line
+    LOAD_REG
+    RET
 
 Term_A_Command:    ;汇编程序
   SAVE_REG
   LOAD_ADDR Term_Program R0
   SAVE_DATA Term_Program_End R0 0
-  Term_A_Command_Loop:
   Term_A_Command_InstLoop:
   ;先打印当前指令地址
   LI R0 5B;'['
@@ -257,14 +313,16 @@ Term_A_Command:    ;汇编程序
   CALL print_char
   LI R0 20;' '
   CALL print_char
+  Term_A_Command_Get_Loop:
   CALL KeyBoard_Get
-    BEQZ R0 Term_A_Command_Loop
+    BEQZ R0 Term_A_Command_Get_Loop
     NOP
     LI R6 0A
     CMP R0 R6   ;判断是否为回车
-    BTNEZ Term_A_Command_NoEnter ;是回车
+    BTNEZ Term_A_Command_NoEnter
     NOP
-      ;处理回车逻辑
+      ;是回车,处理回车逻辑
+      CALL next_cursor_line
       LOAD_DATA KeyBoard_Cache_P R1 0
       LOAD_ADDR KeyBoard_Cache R2
       CMP R1 R2
@@ -280,7 +338,7 @@ Term_A_Command:    ;汇编程序
     SW R1 R0 0
     ADDIU R1 1
     SAVE_DATA KeyBoard_Cache_P R1 0
-    B Term_A_Command_Loop
+    B Term_A_Command_Get_Loop
     NOP
   Term_A_Command_RET:
   LOAD_REG
