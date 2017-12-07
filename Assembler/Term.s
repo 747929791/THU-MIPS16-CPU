@@ -331,9 +331,13 @@ Term_A_Command_Insert:   ;向指令表末尾插入一条指令，指令字符串首地址为R0
   NOP
   Term_A_Command_Insert_Correct:  ;接受正确的指令
     ;现在R4是正确的指令格式
+MOVE R0 R4
+CALL Term_IntToHex
+CALL printf
     LOAD_DATA Term_Program_End R5 0 ;R5现在是下一个写指令的地址
     SW R5 R4 0
     ADDIU R5 1
+    SAVE_DATA Term_Program_End R5 0 ;R5现在是下一个写指令的地址
     LOAD_REG
     RET
   Term_A_Command_Insert_Error:  ;拒绝错误的指令
@@ -367,8 +371,30 @@ Term_A_Command:    ;汇编程序
   CALL KeyBoard_Get
     BEQZ R0 Term_A_Command_Get_Loop
     NOP
+    ;判断是否为退格
+    LI R6 08
+    CMP R0 R6
+    BTNEZ Term_A_Command_NoBackSpace
+    NOP
+      LOAD_DATA KeyBoard_Cache_P R0 0
+      LOAD_ADDR KeyBoard_Cache R1
+      CMP R0 R1
+      BTEQZ Term_A_Command_NoBackSpace;若已经到达最左侧则无视这一操作
+      NOP
+      CALL last_cursor ;回退一格
+      LOAD_DATA CURSOR_X R6 0
+      SLL R0 R6 0
+      LOAD_DATA CURSOR_Y R6 0
+      ADDU R0 R6 R0
+      LI R1 20
+      CALL VGA_Draw_Block ;清除显示
+      LOAD_DATA KeyBoard_Cache_P R0 0
+      ADDIU R0 FF
+      SAVE_DATA KeyBoard_Cache_P R0 0
+    Term_A_Command_NoBackSpace:
+    ;判断是否为回车
     LI R6 0A
-    CMP R0 R6   ;判断是否为回车
+    CMP R0 R6
     BTNEZ Term_A_Command_NoEnter
     NOP
       ;是回车,处理回车逻辑
@@ -378,7 +404,12 @@ Term_A_Command:    ;汇编程序
       CMP R1 R2
       BTEQZ Term_A_Command_RET ;如果输入为空则表示输入结束
       NOP
+      ;清空缓存区，补\0
+      Load_Data KeyBoard_Cache_P R0 0
+      LI R1 0
+      SW R0 R1 0
       LOAD_ADDR KeyBoard_Cache R0
+      SAVE_DATA KeyBoard_Cache_P R0 0
       CALL Term_A_Command_Insert
       B Term_A_Command_InstLoop
       NOP
