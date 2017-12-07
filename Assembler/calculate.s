@@ -18,23 +18,29 @@ Calculate_Main:
   CALL VGA_COM_PRINT
   LOAD_ADDR Calculate_Input_SIG R0   ;先输出">>> "
   CALL printf
-;LOAD_ADDR CALC_TEST_S R2
   Calculate_Main_KeyBoard_Get_Loop:
     CALL KeyBoard_Get
-;LW R2 R0 0
-;ADDIU R2 1
-;BEQZ R0 Calculate_Main_KeyBoard_Get_Enter
-;NOP
     BEQZ R0 Calculate_Main_KeyBoard_Get_Loop
     NOP
+    
+    LI R6 08
+    CMP R0 R6   ;判断是否为BackSpace
+    BTNEZ Calculate_Main_NoBackSpace
+    NOP
+    CALL Print_Cache_BackSpace
+    GOTO Calculate_Main_KeyBoard_Get_Loop
+    Calculate_Main_NoBackSpace:
+    
     LI R6 1B
     CMP R0 R6   ;判断是否为ESC
     BTEQZ Calculate_Main_RET ;是ESC
     NOP
+    
     LI R6 0A
     CMP R0 R6   ;判断是否为回车
     BTEQZ Calculate_Main_KeyBoard_Get_Enter ;是回车
     NOP
+    
     CALL print_char  ;否则输出该字符
     LOAD_DATA KeyBoard_Cache_P R1 0
     SW R1 R0 0
@@ -45,8 +51,7 @@ Calculate_Main:
     Calculate_Main_KeyBoard_Get_Enter:
         CALL Calculate_Main_KeyBoard_Enter
     CALL VGA_COM_PRINT
-    B Calculate_Main_KeyBoard_Get_Loop
-    NOP
+    GOTO Calculate_Main_KeyBoard_Get_Loop
   Calculate_Main_RET:
   RET
 
@@ -202,5 +207,9 @@ Calculate_INIT:     ;初始化的屏幕字符显示
   SAVE_DATA KeyBoard_Cache_P R0 0
   LI R0 0
   CALL set_cursor
+  STRING Calculate_INIT_Info "Calculate Program. Support '+-*/%^'."
+  LOAD_ADDR Calculate_INIT_Info R0
+  CALL printf
+  CALL next_cursor_line
   LOAD_REG
   RET

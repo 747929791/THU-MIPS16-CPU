@@ -1,9 +1,6 @@
 ;这是一个Term中断，支持A,D,G,R,U命令
 GOTO Term_Main
 
-DATA KeyBoard_Cache 500 ;缓存当前未完成的输入的内容
-DATA KeyBoard_Cache_P 1 ;记录缓存区下一个字符的地址
-
 DATA Term_RegSave 8 ;缓存G指令执行后的寄存器
 DATA Term_Program 200 ;指令存储区
 DATA Term_Program_End 1 ;指令存储区结尾(将要写入的地址)
@@ -15,35 +12,41 @@ Term_Main:
   CALL VGA_COM_PRINT
   LOAD_ADDR Term_Input_SIG R0   ;先输出">>> "
   CALL printf
-;LOAD_ADDR CALC_TEST_S R2
   Term_Main_KeyBoard_Get_Loop:
     CALL KeyBoard_Get
-;LW R2 R0 0
-;ADDIU R2 1
-;BEQZ R0 Term_Main_KeyBoard_Get_Enter
-;NOP
     BEQZ R0 Term_Main_KeyBoard_Get_Loop
     NOP
+    
+    LI R6 08
+    CMP R0 R6   ;判断是否为退格
+    BTNEZ Term_Main_KeyBoard_Get_NoBackSpace
+    NOP
+    CALL Print_Cache_BackSpace
+    GOTO Term_Main_KeyBoard_Get_Loop
+    Term_Main_KeyBoard_Get_NoBackSpace:
+    
+    LI R6 0A
+    CMP R0 R6   ;判断是否为回车
+    BTNEZ Term_Main_KeyBoard_Get_NoEnter
+    NOP
+    CALL Term_Main_KeyBoard_Enter
+    GOTO Term_Main_KeyBoard_Get_Loop
+    Term_Main_KeyBoard_Get_NoEnter:
+    
     LI R6 1B
     CMP R0 R6   ;判断是否为ESC
     BTEQZ Term_Main_RET ;是ESC
-    NOP
-    LI R6 0A
-    CMP R0 R6   ;判断是否为回车
-    BTEQZ Term_Main_KeyBoard_Get_Enter ;是回车
     NOP
     CALL print_char  ;否则输出该字符
     LOAD_DATA KeyBoard_Cache_P R1 0
     SW R1 R0 0
     ADDIU R1 1
     SAVE_DATA KeyBoard_Cache_P R1 0
-    B Term_Main_KeyBoard_Get_Loop
-    NOP
+    GOTO Term_Main_KeyBoard_Get_Loop
     Term_Main_KeyBoard_Get_Enter:
         CALL Term_Main_KeyBoard_Enter
     CALL VGA_COM_PRINT
-    B Term_Main_KeyBoard_Get_Loop
-    NOP
+    GOTO Term_Main_KeyBoard_Get_Loop
   Term_Main_RET:
   RET
 
@@ -357,7 +360,6 @@ Term_A_Command:    ;汇编程序
     B Term_A_Command_Get_Loop
     NOP
   Term_A_Command_RET:
-  CALL next_cursor_line
   LOAD_REG
   RET
   
@@ -445,11 +447,12 @@ Term_U_Command:    ;
   LOAD_ADDR Term_Program R4;R4是内存地址循环变量
   LOAD_DATA Term_Program_End R5 0 ;R5是目标地址
   Term_U_Command_Loop:
-    LW R4 R0 0 ;将指令写到R0
     ;如果已经到达指令列表末尾则return
     CMP R4 R5
-    BTEQZ Term_U_Command_RET
+    BTNEZ Term_U_Command_NotRET
     NOP
+    RET
+    Term_U_Command_NotRET:
     ;先打印当前指令地址
     LI R0 5B;'['
     CALL print_char
@@ -472,9 +475,7 @@ Term_U_Command:    ;
     CALL Term_UASM  ;反汇编
     CALL next_cursor_line
     ADDIU R4 1
-    B Term_U_Command_Loop
-    NOP
-  Term_U_Command_RET:
+    GOTO Term_U_Command_Loop
   CALL next_cursor_line
   LOAD_REG
   RET
