@@ -29,6 +29,7 @@ LOAD_REG  =>  从堆栈读取所有寄存器(务必与SAVE_REG成对使用)
 2、展开语句计算符号地址，并展开中间代码(位置地址占位符为"SigAddr(X)")
 3、展开语句
 """
+EnhancedMode=True  #当该开关打开时将尽力优化由于硬件和官方软件的F9/FA错误，但会降低运行代码的时间
 
 statement_addr="4000"
 bss_addr="8000" #DATA段起始地址
@@ -38,84 +39,169 @@ string_map=dict() #静态符号->字符串内容映射(用于支持STRING指令)
 
 #对于所有的HI LOW操作，由于LOW是符号扩展加法，故HI在计算时有时要加一
 statement=dict()
-statement["GOTO"]=[
-  "LI R6 HI",
-  "SLL R6 R6 0",
-  "ADDIU R6 LOW",
-  "JR R6",
-  "NOP"
-]
-statement["CALL"]=[
-  "SW_SP R7 0",
-  "ADDSP 1",
-  "LI R6 HI",
-  "SLL R6 R6 0",
-  "ADDIU R6 LOW",
-  "MFPC R7",
-  "ADDIU R7 3",
-  "JR R6",
-  "NOP",
-  "ADDSP FF",
-  "LW_SP R7 0"
-]
-statement["RET"]=[
-  "JR R7",
-  "NOP"
-]
-statement["LOAD_DATA"]=[
-  "LI R6 HI",
-  "SLL R6 R6 0",
-  "ADDIU R6 LOW",
-  "LW R6 REG IMM"
-]
-statement["SAVE_DATA"]=[
-  "LI R6 HI",
-  "SLL R6 R6 0",
-  "ADDIU R6 LOW",
-  "SW R6 REG IMM"
-]
-statement["LOAD_ADDR"]=[
-  "LI REG HI",
-  "SLL REG REG 0",
-  "ADDIU REG LOW",
-]
-statement["B"]=[
-  "B OFFSET11"
-]
-statement["BEQZ"]=[
-  "BEQZ REG OFFSET8"
-]
-statement["BNEZ"]=[
-  "BNEZ REG OFFSET8"
-]
-statement["BTEQZ"]=[
-  "BTEQZ OFFSET8"
-]
-statement["BTNEZ"]=[
-  "BTNEZ OFFSET8"
-]
-statement["SAVE_REG"]=[
-  "SW_SP R0 0",
-  "SW_SP R1 1",
-  "SW_SP R2 2",
-  "SW_SP R3 3",
-  "SW_SP R4 4",
-  "SW_SP R5 5",
-  "SW_SP R6 6",
-  "SW_SP R7 7",
-  "ADDSP 8"
-]
-statement["LOAD_REG"]=[
-  "ADDSP F8",
-  "LW_SP R0 0",
-  "LW_SP R1 1",
-  "LW_SP R2 2",
-  "LW_SP R3 3",
-  "LW_SP R4 4",
-  "LW_SP R5 5",
-  "LW_SP R6 6",
-  "LW_SP R7 7"
-]
+if(EnhancedMode==False):
+    statement["GOTO"]=[
+      "LI R6 HI",
+      "SLL R6 R6 0",
+      "ADDIU R6 LOW",
+      "JR R6",
+      "NOP"
+    ]
+    statement["CALL"]=[
+      "SW_SP R7 0",
+      "ADDSP 1",
+      "LI R6 HI",
+      "SLL R6 R6 0",
+      "ADDIU R6 LOW",
+      "MFPC R7",
+      "ADDIU R7 3",
+      "JR R6",
+      "NOP",
+      "ADDSP FF",
+      "LW_SP R7 0"
+    ]
+    statement["RET"]=[
+      "JR R7",
+      "NOP"
+    ]
+    statement["LOAD_DATA"]=[
+      "LI R6 HI",
+      "SLL R6 R6 0",
+      "ADDIU R6 LOW",
+      "LW R6 REG IMM"
+    ]
+    statement["SAVE_DATA"]=[
+      "LI R6 HI",
+      "SLL R6 R6 0",
+      "ADDIU R6 LOW",
+      "SW R6 REG IMM"
+    ]
+    statement["LOAD_ADDR"]=[
+      "LI REG HI",
+      "SLL REG REG 0",
+      "ADDIU REG LOW",
+    ]
+    statement["B"]=[
+      "B OFFSET11"
+    ]
+    statement["BEQZ"]=[
+      "BEQZ REG OFFSET8"
+    ]
+    statement["BNEZ"]=[
+      "BNEZ REG OFFSET8"
+    ]
+    statement["BTEQZ"]=[
+      "BTEQZ OFFSET8"
+    ]
+    statement["BTNEZ"]=[
+      "BTNEZ OFFSET8"
+    ]
+    statement["SAVE_REG"]=[
+      "SW_SP R0 0",
+      "SW_SP R1 1",
+      "SW_SP R2 2",
+      "SW_SP R3 3",
+      "SW_SP R4 4",
+      "SW_SP R5 5",
+      "SW_SP R6 6",
+      "SW_SP R7 7",
+      "ADDSP 8"
+    ]
+    statement["LOAD_REG"]=[
+      "ADDSP F8",
+      "LW_SP R0 0",
+      "LW_SP R1 1",
+      "LW_SP R2 2",
+      "LW_SP R3 3",
+      "LW_SP R4 4",
+      "LW_SP R5 5",
+      "LW_SP R6 6",
+      "LW_SP R7 7"
+    ]
+else:
+    statement["GOTO"]=[
+      "LI R6 HI",
+      "SLL R6 R6 0",
+      "ADDIU R6 LOW1",
+      "ADDIU R6 LOW2",
+      "JR R6",
+      "NOP"
+    ]
+    statement["CALL"]=[
+      "SW_SP R7 0",
+      "ADDSP 1",
+      "LI R6 HI",
+      "SLL R6 R6 0",
+      "ADDIU R6 LOW1",
+      "ADDIU R6 LOW2",
+      "MFPC R7",
+      "ADDIU R7 3",
+      "JR R6",
+      "NOP",
+      "ADDSP FF",
+      "LW_SP R7 0"
+    ]
+    statement["RET"]=[
+      "JR R7",
+      "NOP"
+    ]
+    statement["LOAD_DATA"]=[
+      "LI R6 HI",
+      "SLL R6 R6 0",
+      "ADDIU R6 LOW1",
+      "ADDIU R6 LOW2",
+      "LW R6 REG IMM"
+    ]
+    statement["SAVE_DATA"]=[
+      "LI R6 HI",
+      "SLL R6 R6 0",
+      "ADDIU R6 LOW1",
+      "ADDIU R6 LOW2",
+      "SW R6 REG IMM"
+    ]
+    statement["LOAD_ADDR"]=[
+      "LI REG HI",
+      "SLL REG REG 0",
+      "ADDIU REG LOW1",
+      "ADDIU REG LOW2",
+    ]
+    statement["B"]=[
+      "B OFFSET11"
+    ]
+    statement["BEQZ"]=[
+      "BEQZ REG OFFSET8"
+    ]
+    statement["BNEZ"]=[
+      "BNEZ REG OFFSET8"
+    ]
+    statement["BTEQZ"]=[
+      "BTEQZ OFFSET8"
+    ]
+    statement["BTNEZ"]=[
+      "BTNEZ OFFSET8"
+    ]
+    statement["SAVE_REG"]=[
+      "SW_SP R0 0",
+      "SW_SP R1 1",
+      "SW_SP R2 2",
+      "SW_SP R3 3",
+      "SW_SP R4 4",
+      "SW_SP R5 5",
+      "SW_SP R6 6",
+      "SW_SP R7 7",
+      "ADDSP 8"
+    ]
+    statement["LOAD_REG"]=[
+      "ADDSP F8",
+      "LW_SP R0 0",
+      "LW_SP R1 1",
+      "LW_SP R2 2",
+      "LW_SP R3 3",
+      "LW_SP R4 4",
+      "LW_SP R5 5",
+      "LW_SP R6 6",
+      "LW_SP R7 7"
+    ]
 
 
 #去除冗余字符，注释
@@ -278,11 +364,14 @@ def parseFinal(text):
             OFFSET11=ToHex(OFFSET,11)
             OFFSET8=ToHex(OFFSET,8)
           addr+=len(statement[b[0]])
-          ret+=("\n".join(statement[b[0]])).replace(" HI"," "+X[0:2]).replace(" LOW"," "+X[2:4]).replace(" REG"," "+REG).replace(" IMM"," "+IMM).replace(" OFFSET8"," "+OFFSET8).replace(" OFFSET11"," "+OFFSET11).split('\n')
+          if(EnhancedMode):
+            ret+=("\n".join(statement[b[0]])).replace(" HI"," "+X[0:2]).replace(" LOW1"," "+X[2:3]+"0").replace(" LOW2"," 0"+X[3:4]).replace(" REG"," "+REG).replace(" IMM"," "+IMM).replace(" OFFSET8"," "+OFFSET8).replace(" OFFSET11"," "+OFFSET11).split('\n')
+          else:
+            ret+=("\n".join(statement[b[0]])).replace(" HI"," "+X[0:2]).replace(" LOW"," "+X[2:4]).replace(" REG"," "+REG).replace(" IMM"," "+IMM).replace(" OFFSET8"," "+OFFSET8).replace(" OFFSET11"," "+OFFSET11).split('\n')
         else:
           addr+=1
           ret.append(line)
-  return "\n".join(ret)
+  return ("\n".join(ret)).upper()
 
 def Assemble(text):   #由行隔开的标准MIPS16汇编语言汇编为二进制文件格式bytes
   binFormat=dict()   #产生的二进制代码格式
@@ -383,6 +472,8 @@ def Assemble(text):   #由行隔开的标准MIPS16汇编语言汇编为二进制
         if(bit_inst[i]!='0' and bit_inst[i]!='1'):
           print("syn error, bit_inst Error! ",line,bit_inst)
           break
+      if(bit_inst[8:16]=="11111001" or bit_inst[8:16]=="11111010"):
+        print("Warning! Due to hardware and official software bugs, this directive may load errors.",line)
       bit_init_array.append(bit_inst)
   #print(bit_init_array)
   ret=bytes()

@@ -126,7 +126,8 @@ Term_HexCharToInt:  ;将字符R0(0-9,A-F)转化为整数R0返回
   BTNEZ Term_HexCharToInt_0_9
   NOP
   Term_HexCharToInt_A_F:
-    ADDIU R0 F9
+    ADDIU R0 F0
+    ADDIU R0 09
     SW_SP R0 F8
     LOAD_REG
     RET
