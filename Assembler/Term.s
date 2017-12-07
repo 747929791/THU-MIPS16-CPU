@@ -393,11 +393,45 @@ Term_G_Command:    ;
   ADDSP FF
   LW_SP R7 0
   LOAD_REG
-  RET
-
+  RET  
+  
 Term_UASM:         ;反汇编R0指令，并输出一行
-  CALL print_int
-  RET
+  SAVE_REG
+  SRL R1 R0 0
+  SRL R1 R1 3      ;R1为R0前5位
+  
+  LI R2 9	;ADDIU 
+  XOR R2 R1
+  BNEZ R2 Term_UASM_ADDIU_END
+  NOP
+  STRING Term_UASM_ADDIU_String "ADDIU "
+  CALL Term_UASM_Decode_rximm
+  GOTO Term_UASM_RET
+  
+  Term_UASM_ADDIU_END:
+  LI R2 0	;ADDSP3 
+  XOR R2 R1
+  BNEZ R2 Term_UASM_ADDSP3_END
+  NOP
+  STRING Term_UASM_ADDIU_String "ADDSP3 "
+  CALL Term_UASM_Decode_rximm
+  GOTO Term_UASM_RET
+  
+  Term_UASM_ADDSP3_END:
+  LI R2 D	;LI
+  XOR R2 R1
+  BNEZ R2 Term_UASM_LI_END
+  NOP
+  STRING Term_UASM_LI_String "LI "
+  CALL Term_UASM_Decode_rximm
+  GOTO Term_UASM_RET
+  
+  Term_UASM_LI_END:
+	STRING Term_UASM_Unknown "---Unknown---"
+  
+  Term_UASM_RET:
+	  LOAD_REG
+	  RET
 
 Term_U_Command:    ;
   SAVE_REG
@@ -434,3 +468,23 @@ Term_U_Command:    ;
   CALL next_cursor_line
   LOAD_REG
   RET
+  
+Term_UASM_Decode_rximm:		;解码op rx imm类指令，指令内容在R0
+  SAVE_REG
+  MOVE R1 R0
+  LI R0 52
+  CALL print_char
+  MOVE R0 R1
+  SLL R0 5
+  SRL R0 0
+  SRL R0 5
+  ADDIU R0 30
+  CALL print_char 
+  LI R0 20
+  CALL print_char
+  MOVE R0 R1
+  CALL String_8IntToHex
+  CALL printf
+  LOAD_REG
+  RET
+  

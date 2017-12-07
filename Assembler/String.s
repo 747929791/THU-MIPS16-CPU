@@ -129,3 +129,8 @@ String_IntToHex:   ;将R0转换为4bit16进制字符串，将字符串首地址通过R0返回
   SW_SP R0 F8
   LOAD_REG
   RET
+  
+ String_8IntToHex:   ;将R0后8位转换为2bit16进制字符串，将字符串首地址通过R0返回
+  CALL String_IntToHex
+  ADDIU R0 2
+  RET
