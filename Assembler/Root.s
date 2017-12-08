@@ -171,7 +171,7 @@ Root_Main_KeyBoard_Enter:   ;当按下键盘回车时应当处理的逻辑
   NOP
     ;HELP的实现
     STRING ROOT_HELP0 "Use 'ls' to see the installed applications"
-    STRING ROOT_HELP1 "Use '<ProgramName> --help' to see the program's information"
+    STRING ROOT_HELP1 "Use '<ProgramName>' to enter the application"
     LOAD_ADDR ROOT_HELP0 R0
     CALL printf
     CALL next_cursor_line

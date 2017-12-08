@@ -800,6 +800,7 @@ Term_A_Command_Insert:   ;向指令表末尾插入一条指令，指令字符串首地址为R0
     STRING Term_Program_Command_Error "Syntax Error"
     LOAD_ADDR Term_Program_Command_Error R0
     CALL printf
+    CALL next_cursor_line
     LOAD_REG
     RET
 
@@ -883,6 +884,36 @@ Term_A_Command:    ;汇编程序
   RET
   
 Term_D_Command:    ;
+  SAVE_REG
+  LOAD_ADDR KeyBoard_Cache R0
+  ADDIU R0 1
+  CALL String_ReadHex ;读第一操作数(起始地址)
+  MOVE R2 R0  ;R2为当前打印地址
+  MOVE R0 R1
+  CALL String_ReadHex ;读第二操作数(打印元素个数)
+  BNEZ R0 2
+  NOP
+  LI R0 A;如果没有第二个操作数或为0，则固定打印10个
+  MOVE R3 R0 ;R3为还需打印的数字个数
+  Term_D_Command_Loop:
+    ;先打印当前指令地址
+    LI R0 5B;'['
+    CALL print_char
+    MOVE R0 R2
+    CALL String_IntToHex
+    CALL printf
+    STRING Term_D_Command_SLast "]    "
+    LOAD_ADDR Term_D_Command_SLast R0
+    CALL printf
+    LW R2 R0 0 ;将指令写到R0
+    CALL String_IntToHex
+    CALL printf
+    CALL next_cursor_line
+    ADDIU R3 FF
+    ADDIU R2 1
+    BNEZ R3 Term_D_Command_Loop
+    NOP
+  LOAD_REG
   RET
   
 Term_G_Command:    ;
