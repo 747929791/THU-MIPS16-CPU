@@ -45,7 +45,8 @@ entity cpu is
            ram_write_o : out STD_LOGIC;
            ram_addr_o : out STD_LOGIC_VECTOR(15 downto 0);
            ram_wdata_o : out STD_LOGIC_VECTOR(15 downto 0);
-           ram_ce_o : out STD_LOGIC --数据存储器使能
+           ram_ce_o : out STD_LOGIC; --数据存储器使能
+			  int_i : in std_logic
 			  );
 end cpu;
 
@@ -114,7 +115,8 @@ signal branch_flag : STD_LOGIC;
 signal branch_target_address : STD_LOGIC_VECTOR(15 downto 0);
 --暂停信号
 
-
+signal int_en: std_logic;
+signal int_inst_out, id_prev_inst : std_logic_vector(15 downto 0);
 component pc
     Port ( rst : in  STD_LOGIC; --复位信号
            clk : in  STD_LOGIC; --时钟信号
@@ -123,6 +125,7 @@ component pc
 			  stall : in STD_LOGIC_VECTOR(5 downto 0); --暂停信号
 			  branch_flag_i : in STD_LOGIC; --是否跳转信号
 			  branch_target_address_i : in STD_LOGIC_VECTOR(15 downto 0)
+			  
 			  );
 end component;
 
@@ -167,7 +170,8 @@ component id
 			  --供访存储的指令信号
 			  inst_o : out STD_LOGIC_VECTOR(15 downto 0);
 			  --ex阶段aluop信号检测Load相关
-			  ex_aluop_i : in STD_LOGIC_VECTOR(7 downto 0)
+			  ex_aluop_i : in STD_LOGIC_VECTOR(7 downto 0);
+			  previous_inst_i : in std_logic_vector(15 downto 0)
 			  );
 end component;
 
@@ -227,7 +231,8 @@ component ex
 			  --指令(用于获取访存立即数)
 			  inst_i : in STD_LOGIC_VECTOR(15 downto 0);
 			  --供id阶段检测Load相关
-			  aluop_o : out STD_LOGIC_VECTOR(7 downto 0)
+			  aluop_o : out STD_LOGIC_VECTOR(7 downto 0);
+			  inst_o : out STD_LOGIC_VECTOR(15 downto 0)
 			  );
 end component;
 
@@ -295,11 +300,22 @@ component ctrl
            stall : out  STD_LOGIC_VECTOR (5 downto 0));
 end component;
 
+component interrupt_controller
+port(
+	clk,rst : in std_logic;
+	interrupt : in std_logic;
+	enable : in std_logic;
+	int_code_in: in std_logic_vector(3 downto 0);
+	inst_in : in std_logic_vector(15 downto 0);
+	inst_out : out std_logic_vector(15 downto 0)
+);
+end component;
+
 begin
 	rom_addr_o <= pc_pc;
 	pc_component : pc port map(rst=>rst,clk=>clk,pc_o=>pc_pc,ce_o=>rom_ce_o, stall=>stall, branch_flag_i=>branch_flag, branch_target_address_i=>branch_target_address);
-	if_id_component : if_id port map(rst=>rst,clk=>clk,if_pc=>pc_pc,if_inst=>rom_data_i,id_pc=>id_pc_i,id_inst=>id_inst_i, stall=>stall);
-	id_component : id port map(rst=>rst, pc_i=>id_pc_i, inst_i=>id_inst_i, reg1_data_i=>reg1_data, reg2_data_i=>reg2_data, 
+	if_id_component : if_id port map(rst=>rst,clk=>clk,if_pc=>pc_pc,if_inst=>int_inst_out,id_pc=>id_pc_i,id_inst=>id_inst_i, stall=>stall);
+	id_component : id port map(previous_inst_i => id_prev_inst, rst=>rst, pc_i=>id_pc_i, inst_i=>id_inst_i, reg1_data_i=>reg1_data, reg2_data_i=>reg2_data, 
 										reg1_read_o=>reg1_read, reg2_read_o=>reg2_read, reg1_addr_o=>reg1_addr, reg2_addr_o=>reg2_addr, 
 										aluop_o=>id_aluop_o, alusel_o=>id_alusel_o, reg1_o=>id_reg1_o, reg2_o=>id_reg2_o, wd_o=>id_wd_o, wreg_o=>id_wreg_o,
 										ex_wreg_i=>ex_wreg_o, ex_wd_i=>ex_wd_o, ex_wdata_i=>ex_wdata_o, mem_wreg_i=>mem_wreg_o, mem_wd_i=>mem_wd_o, mem_wdata_i=>mem_wdata_o,
@@ -310,7 +326,7 @@ begin
 	id_ex_component : id_ex port map(rst=>rst, clk=>clk, id_alusel=>id_alusel_o, id_aluop=>id_aluop_o, id_reg1=>id_reg1_o, id_reg2=>id_reg2_o, id_wd=>id_wd_o, id_wreg=>id_wreg_o,
 												ex_alusel=>ex_alusel_i, ex_aluop=>ex_aluop_i, ex_reg1=>ex_reg1_i, ex_reg2=>ex_reg2_i, ex_wd=>ex_wd_i, ex_wreg=>ex_wreg_i, stall=>stall,
 												id_inst=>id_inst_o, ex_inst=>ex_inst_i);
-	ex_component : ex port map(rst=>rst,alusel_i=>ex_alusel_i, aluop_i=>ex_aluop_i, reg1_i=>ex_reg1_i, reg2_i=>ex_reg2_i, wd_i=>ex_wd_i, wreg_i=>ex_wreg_i, 
+	ex_component : ex port map(inst_o => id_prev_inst, rst=>rst,alusel_i=>ex_alusel_i, aluop_i=>ex_aluop_i, reg1_i=>ex_reg1_i, reg2_i=>ex_reg2_i, wd_i=>ex_wd_i, wreg_i=>ex_wreg_i, 
 										wd_o=>ex_wd_o, wreg_o=>ex_wreg_o, wdata_o=>ex_wdata_o, stallreq=>stallreq_ex, inst_i=>ex_inst_i,
 										mem_read_o=>ex_mem_read_o, mem_write_o=>ex_mem_write_o, mem_addr_o=>ex_mem_addr_o, mem_wdata_o=>ex_mem_wdata_o, aluop_o=>ex_aluop_o);
 	ex_mem_component : ex_mem port map(rst=>rst, clk=>clk, ex_wd=>ex_wd_o, ex_wreg=>ex_wreg_o, ex_wdata=>ex_wdata_o, mem_wd=>mem_wd_i, mem_wreg=>mem_wreg_i, mem_wdata=>mem_wdata_i, stall=>stall,
@@ -323,5 +339,7 @@ begin
 	stallreq_if <= not rom_ready_i;
 	stallreq_mem <= not ram_ready_i;
 	ctrl_component : ctrl port map(rst=>rst, stallreq_from_id=>stallreq_id, stallreq_from_ex=>stallreq_ex, stall=>stall, stallreq_from_if=>stallreq_if, stallreq_from_mem=>stallreq_mem);
+	int_component : interrupt_controller port map(int_code_in => "0000", clk => clk, rst => rst, interrupt => int_i, enable => int_en, inst_in => rom_data_i, inst_out => int_inst_out);
+
 end Behavioral;
 
