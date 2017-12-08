@@ -445,10 +445,10 @@ Term_UASM:         ;反汇编R0指令，并输出一行
   NOP
   LI R2 1
   MOVE R6 R3
-  SLL R6 0
-  SLL R6 6
-  SRL R6 0
-  SRL R6 6
+  SLL R6 R6 0
+  SLL R6 R6 6
+  SRL R6 R6 0
+  SRL R6 R6 6
   XOR R2 R6
   BNEZ R2 Term_UASM_ADDU_END
   NOP
@@ -629,10 +629,10 @@ Term_UASM:         ;反汇编R0指令，并输出一行
   NOP
   LI R2 0
   MOVE R6 R3
-  SLL R6 0
-  SLL R6 6
-  SRL R6 0
-  SRL R6 6
+  SLL R6 R6 0
+  SLL R6 R6 6
+  SRL R6 R6 0
+  SRL R6 R6 6
   XOR R2 R6
   BNEZ R2 Term_UASM_SLL_END
   NOP
@@ -666,10 +666,10 @@ Term_UASM:         ;反汇编R0指令，并输出一行
   NOP
   LI R2 2
   MOVE R6 R3
-  SLL R6 0
-  SLL R6 6
-  SRL R6 0
-  SRL R6 6
+  SLL R6 R6 0
+  SLL R6 R6 6
+  SRL R6 R6 0
+  SRL R6 R6 6
   XOR R2 R6
   BNEZ R2 Term_UASM_SRL_END
   NOP
@@ -687,10 +687,10 @@ Term_UASM:         ;反汇编R0指令，并输出一行
   NOP
   LI R2 3
   MOVE R6 R3
-  SLL R6 0
-  SLL R6 6
-  SRL R6 0
-  SRL R6 6
+  SLL R6 R6 0
+  SLL R6 R6 6
+  SRL R6 R6 0
+  SRL R6 R6 6
   XOR R2 R6
   BNEZ R2 Term_UASM_SUBU_END
   NOP
@@ -731,7 +731,7 @@ Term_U_Command:    ;
     CMP R4 R5
     BTNEZ Term_U_Command_NotRET
     NOP
-    RET
+    GOTO Term_U_Command_RET
     Term_U_Command_NotRET:
     ;先打印当前指令地址
     LI R0 5B;'['
@@ -756,6 +756,7 @@ Term_U_Command:    ;
     CALL next_cursor_line
     ADDIU R4 1
     GOTO Term_U_Command_Loop
+  Term_U_Command_RET:
   CALL next_cursor_line
   LOAD_REG
   RET
