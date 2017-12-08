@@ -1,6 +1,6 @@
 LOAD_ADDR KeyBoard_Test_IntProgram R0
 MTIH R0;指定中断处理程序
-GOTO KeyBoard_Test_Int
+GOTO KeyBoard_Test_NoInt
 
 KeyBoard_Test_NoInt:  ;测试轮训的键盘处理
   LI R5 BF

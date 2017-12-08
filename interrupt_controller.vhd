@@ -49,9 +49,17 @@ signal int_signal : std_logic := '0';
 signal int_code : std_logic_vector(3 downto 0) := "0000";
 signal count : integer := 0;
 begin
-
+	
+	
 	int_code <= int_code_in;
 	int_s <= interrupt; -- and enable;
+	
+	process(interrupt)
+	begin
+		if(interrupt = '1')then
+			int_signal <= '1';
+		end if;
+	end process;
 	
 	process(clk, interrupt)
 	begin
