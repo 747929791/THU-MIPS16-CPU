@@ -73,7 +73,9 @@ DIVISION:  ;加减交替原码一位除法，R0/R1，商保存于R0，余数存于R1
   MOVE R1 R0
   LI R0 0
   DIVISION_LOOP:
+    ADDIU R3 FF
     SLTU R3 R1
+    ADDIU R3 1
     BTEQZ 3
     NOP
     ADDU R0 R4 R0
@@ -88,9 +90,28 @@ DIVISION:  ;加减交替原码一位除法，R0/R1，商保存于R0，余数存于R1
   LW_SP R4 2
   RET
 
+POWER:   ;计算R0^R1,返回R0(16位)
+  SAVE_REG
+  MOVE R3 R1
+  MOVE R2 R0
+  LI R0 1
+  BEQZ R1 POWER_LOOP_RET
+  NOP
+  POWER_LOOP:
+    MOVE R1 R2
+    CALL MULTI
+    ADDIU R3 FF
+    BNEZ R3 POWER_LOOP
+    NOP
+  POWER_LOOP_RET:
+  SW_SP R0 F8
+  LOAD_REG
+  RET
+  
+DATA RANDOM_SEED 1
+
 FastRAND:  ;快速的伪随机数发生器，将15位结果返回至寄存器R0
 ; x(n+1)=(3*x(n)+59)%65536
-  DATA RANDOM_SEED 1
   LOAD_DATA RANDOM_SEED R0 0
   ADDU R0 R0 R6
   ADDU R0 R6 R0
@@ -101,7 +122,6 @@ FastRAND:  ;快速的伪随机数发生器，将15位结果返回至寄存器R0
 
 RAND:  ;伪随机数发生器，将15位结果返回至寄存器R0
 ; x(n+1)=(123*x(n)+59)%65536
-  DATA RANDOM_SEED 1
   SW_SP R1 0
   ADDSP 1
   LOAD_DATA RANDOM_SEED R0 0

@@ -1,1 +1,4 @@
-python .\Assembler.py .\Root.s .\LifeGame.s .\RetroSnake.s  .\VGA.s .\COM_interface.s .\function.s .\KeyBoard.s .\Delay.s -o build\Root
+完整编译命令：
+python .\Assembler.py Root.s Calculate.s Chat.s LifeGame.s RetroSnake.s VGA.s COM_interface.s function.s KeyBoard.s Print_Control.s String.s Delay.s -o build\Root
+不带APP的编译命令
+python .\Assembler.py Root.s VGA.s COM_interface.s function.s KeyBoard.s Print_Control.s -o build\Root

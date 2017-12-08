@@ -18,11 +18,14 @@ type state_type is (delay,arrow,breakCheck,done);
 signal state:state_type;
 signal CodeBuffer, prevCode: STD_LOGIC_VECTOR(7 downto 0);
 signal ASCIIBuffer: STD_LOGIC_VECTOR(15 downto 0);
-signal shiftModifier,LshiftModifier,RshiftModifier: STD_LOGIC;
+signal shiftModifier,LshiftModifier,RshiftModifier,capsModifier,upperModifier: STD_LOGIC;
+
+-- ALT:000f,  ESC:001b,  TAB:0009
 
 begin
 	ASCII <= ASCIIBuffer;
 	shiftModifier <= LshiftModifier or RshiftModifier;
+	upperModifier <= shiftModifier xor capsModifier;
 
 	ASCII_translate: process(RST,PS2_OE,CLK_MAIN,PS2_CODE, shiftModifier, prevCode, CodeBuffer)
 	begin
@@ -31,6 +34,7 @@ begin
 			CodeBuffer <= x"00";
 			LshiftModifier <= '0';
 			RshiftModifier <= '0';
+			capsModifier <= '0';
 			ASCIIBuffer <= x"0000";
 			state <= delay;
 		elsif rising_edge(CLK_MAIN) then
@@ -86,182 +90,182 @@ begin
 						case CodeBuffer is
 							--a-z
 							when x"1c" => 
-								if (shiftModifier = '1') then
+								if (upperModifier = '1') then
 									ASCIIBuffer <= x"0041";
 								else
 									ASCIIBuffer <= x"0061";
 								end if;
 								state <= delay;										--a
 							when x"32" => 
-								if (shiftModifier = '1') then
+								if (upperModifier = '1') then
 									ASCIIBuffer <= x"0042";
 								else
 									ASCIIBuffer <= x"0062";
 								end if;
 								state <= delay;										--b
 							when x"21" => 
-								if (shiftModifier = '1') then
+								if (upperModifier = '1') then
 									ASCIIBuffer <= x"0043";
 								else
 									ASCIIBuffer <= x"0063";
 								end if;
 								state <= delay;										--c
 							when x"23" => 								
-								if (shiftModifier = '1') then
+								if (upperModifier = '1') then
 									ASCIIBuffer <= x"0044";
 								else
 									ASCIIBuffer <= x"0064";
 								end if;
 								state <= delay;										--d
 							when x"24" => 
-								if (shiftModifier = '1') then
+								if (upperModifier = '1') then
 									ASCIIBuffer <= x"0045";
 								else
 									ASCIIBuffer <= x"0065";
 								end if;
 								state <= delay;										--e
 							when x"2b" => 								
-								if (shiftModifier = '1') then
+								if (upperModifier = '1') then
 									ASCIIBuffer <= x"0046";
 								else
 									ASCIIBuffer <= x"0066";
 								end if;
 								state <= delay;										--f
 							when x"34" => 
-								if (shiftModifier = '1') then
+								if (upperModifier = '1') then
 									ASCIIBuffer <= x"0047";
 								else
 									ASCIIBuffer <= x"0067";
 								end if;
 								state <= delay;										--g
 							when x"33" => 
-								if (shiftModifier = '1') then
+								if (upperModifier = '1') then
 									ASCIIBuffer <= x"0048";
 								else
 									ASCIIBuffer <= x"0068";
 								end if;
 								state <= delay;										--h
 							when x"43" =>
-								if (shiftModifier = '1') then
+								if (upperModifier = '1') then
 									ASCIIBuffer <= x"0049";
 								else
 									ASCIIBuffer <= x"0069";
 								end if;
 								state <= delay;										--i
 							when x"3b" => 
-								if (shiftModifier = '1') then
+								if (upperModifier = '1') then
 									ASCIIBuffer <= x"004a";
 								else
 									ASCIIBuffer <= x"006a";
 								end if;
 								state <= delay;										--j
 							when x"42" => 
-								if (shiftModifier = '1') then
+								if (upperModifier = '1') then
 									ASCIIBuffer <= x"004b";
 								else
 									ASCIIBuffer <= x"006b";
 								end if;
 								state <= delay;										--k
 							when x"4b" => 
-								if (shiftModifier = '1') then
+								if (upperModifier = '1') then
 									ASCIIBuffer <= x"004c";
 								else
 									ASCIIBuffer <= x"006c";
 								end if;
 								state <= delay;										--l
 							when x"3a" => 
-								if (shiftModifier = '1') then
+								if (upperModifier = '1') then
 									ASCIIBuffer <= x"004d";
 								else
 									ASCIIBuffer <= x"006d";
 								end if;
 								state <= delay;										--m
 							when x"31" => 
-								if (shiftModifier = '1') then
+								if (upperModifier = '1') then
 									ASCIIBuffer <= x"004e";
 								else
 									ASCIIBuffer <= x"006e";
 								end if;
 								state <= delay;										--n
 							when x"44" => 
-								if (shiftModifier = '1') then
+								if (upperModifier = '1') then
 									ASCIIBuffer <= x"004f";
 								else
 									ASCIIBuffer <= x"006f";
 								end if;
 								state <= delay;										--o
 							when x"4d" => 
-								if (shiftModifier = '1') then
+								if (upperModifier = '1') then
 									ASCIIBuffer <= x"0050";
 								else
 									ASCIIBuffer <= x"0070";
 								end if;
 								state <= delay;										--p
 							when x"15" => 
-								if (shiftModifier = '1') then
+								if (upperModifier = '1') then
 									ASCIIBuffer <= x"0051";
 								else
 									ASCIIBuffer <= x"0071";
 								end if;
 								state <= delay;										--q
 							when x"2d" => 
-								if (shiftModifier = '1') then
+								if (upperModifier = '1') then
 									ASCIIBuffer <= x"0052";
 								else
 									ASCIIBuffer <= x"0072";
 								end if;
 								state <= delay;										--r
 							when x"1b" => 
-								if (shiftModifier = '1') then
+								if (upperModifier = '1') then
 									ASCIIBuffer <= x"0053";
 								else
 									ASCIIBuffer <= x"0073";
 								end if;
 								state <= delay;										--s
 							when x"2c" => 
-								if (shiftModifier = '1') then
+								if (upperModifier = '1') then
 									ASCIIBuffer <= x"0054";
 								else
 									ASCIIBuffer <= x"0074";
 								end if;
 								state <= delay;										--t
 							when x"3c" => 
-								if (shiftModifier = '1') then
+								if (upperModifier = '1') then
 									ASCIIBuffer <= x"0055";
 								else
 									ASCIIBuffer <= x"0075";
 								end if;
 								state <= delay;										--u
 							when x"2a" => 
-								if (shiftModifier = '1') then
+								if (upperModifier = '1') then
 									ASCIIBuffer <= x"0056";
 								else
 									ASCIIBuffer <= x"0076";
 								end if;
 								state <= delay;										--v
 							when x"1d" => 
-								if (shiftModifier = '1') then
+								if (upperModifier = '1') then
 									ASCIIBuffer <= x"0057";
 								else
 									ASCIIBuffer <= x"0077";
 								end if;
 								state <= delay;										--w
 							when x"22" => 
-								if (shiftModifier = '1') then
+								if (upperModifier = '1') then
 									ASCIIBuffer <= x"0058";
 								else
 									ASCIIBuffer <= x"0078";
 								end if;
 								state <= delay;										--x
 							when x"35" => 
-								if (shiftModifier = '1') then
+								if (upperModifier = '1') then
 									ASCIIBuffer <= x"0059";
 								else
 									ASCIIBuffer <= x"0079";
 								end if;
 								state <= delay;										--y
 							when x"1a" => 								
-								if (shiftModifier = '1') then
+								if (upperModifier = '1') then
 									ASCIIBuffer <= x"005a";
 								else
 									ASCIIBuffer <= x"007a";
@@ -424,7 +428,7 @@ begin
 								state <= delay;										--space
 								
 							when x"66" => 
-								ASCIIBuffer <= x"007f";
+								ASCIIBuffer <= x"0008";
 								state <= delay;										--backspace
 								
 							when x"5a" => 
@@ -442,24 +446,36 @@ begin
 								
 							--control keys
 							when x"58" => 
-								ASCIIBuffer <= x"8020";
+								capsModifier <= not(capsModifier);
 								state <= delay;										--caps lock
+								
+							when x"11" => 
+								ASCIIBuffer <= x"000f";
+								state <= delay;										--L ALT		
+								
+							when x"76" => 
+								ASCIIBuffer <= x"001b";
+								state <= delay;										--ESC		
+
+							when x"0d" => 
+								ASCIIBuffer <= x"0009";
+								state <= delay;										--TAB								
 								
 							--U arrow
 							when x"75" => 
-								ASCIIBuffer <= x"8011";
+								ASCIIBuffer <= x"0011";
 								state <= delay;
 							--L arrow
 							when x"6b" => 
-								ASCIIBuffer <= x"8012";
+								ASCIIBuffer <= x"0012";
 								state <= delay;
 							--D arrow
 							when x"72" => 
-								ASCIIBuffer <= x"8013";
+								ASCIIBuffer <= x"0013";
 								state <= delay;
 							--R arrow
 							when x"74" => 
-								ASCIIBuffer <= x"8014";
+								ASCIIBuffer <= x"0014";
 								state <= delay;
 								
 							when others => 

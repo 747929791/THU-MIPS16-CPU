@@ -1,3 +1,4 @@
+;这是一个DOS命令行管理主程序
 GOTO Root_Main
 
 DATA KeyBoard_Cache 500 ;缓存当前未完成的输入的内容
@@ -23,6 +24,10 @@ Root_Main:
     CMP R0 R6   ;判断是否为回车
     BTEQZ Root_Main_KeyBoard_Get_Enter ;是回车
     NOP
+    LI R6 08
+    CMP R0 R6   ;判断是否为退格
+    BTEQZ Root_Main_KeyBoard_Get_BackSpace ;是退格
+    NOP
     CALL print_char  ;否则输出该字符
     LOAD_DATA KeyBoard_Cache_P R1 0
     SW R1 R0 0
@@ -33,12 +38,55 @@ Root_Main:
     B Root_Main_KeyBoard_Get_Loop
     NOP
     Root_Main_KeyBoard_Get_Enter:
-        CALL Root_Main_KeyBoard_Enter
+      CALL Root_Main_KeyBoard_Enter
+      CALL VGA_COM_PRINT
 ;ADDIU R4 1
 ;SW R5 R4 0
-    B Root_Main_KeyBoard_Get_Loop
-    NOP
+      B Root_Main_KeyBoard_Get_Loop
+      NOP
+    Root_Main_KeyBoard_Get_BackSpace:
+      CALL Root_Main_KeyBoard_BackSpace
+      CALL VGA_COM_PRINT
+      B Root_Main_KeyBoard_Get_Loop
+      NOP
   RET
+  
+Root_Main_KeyBoard_BackSpace:    ;按下退格应处理的逻辑
+  SAVE_REG
+  LOAD_DATA KeyBoard_Cache_P R0 0
+  LOAD_ADDR KeyBoard_Cache R1
+  CMP R0 R1
+  BTEQZ Root_Main_KeyBoard_BackSpace_RET;若已经到达最左侧则无视这一操作
+  NOP
+  CALL last_cursor ;回退一格
+  LOAD_DATA CURSOR_X R6 0
+  SLL R0 R6 0
+  LOAD_DATA CURSOR_Y R6 0
+  ADDU R0 R6 R0
+  LI R1 20
+  CALL VGA_Draw_Block ;清除显示
+  LOAD_DATA KeyBoard_Cache_P R0 0
+  ADDIU R0 FF
+  SAVE_DATA KeyBoard_Cache_P R0 0
+  Root_Main_KeyBoard_BackSpace_RET:
+    LOAD_REG
+    RET
+    
+GOTO_NotePad:
+  ;CALL NotePad
+  GOTO Root_Main
+GOTO_LifeGame:
+  CALL LifeGame_Main
+  GOTO Root_Main
+GOTO_RetroSnake:
+  CALL RetroSnake_Main
+  GOTO Root_Main
+GOTO_Calculate:
+  CALL Calculate_Main
+  GOTO Root_Main
+GOTO_CHAT:
+  CALL Chat_Main
+  GOTO Root_Main
 
 Root_Main_KeyBoard_Enter:   ;当按下键盘回车时应当处理的逻辑
   SAVE_REG
@@ -49,26 +97,58 @@ Root_Main_KeyBoard_Enter:   ;当按下键盘回车时应当处理的逻辑
   SW R0 R1 0
   LOAD_ADDR KeyBoard_Cache R0
   SAVE_DATA KeyBoard_Cache_P R0 0
-  ;如果输入L，进入LifeGame
-  Load_Data KeyBoard_Cache R0 0
-  ADDIU R0 B4   ;R0-=ord(L)
-  BEQZ R0 GOTO_LifeGame
+  ;进入LifeGame过程判定
+  STRING Root_LifGame_AppName "LifeGame"
+  LOAD_ADDR KeyBoard_Cache R0
+  LOAD_ADDR Root_LifGame_AppName R1
+  CALL STRING_CMP
+  BEQZ R0 Dont_GOTO_LifeGame
   NOP
-  ;如果输入R，进入RetroSnake
-  Load_Data KeyBoard_Cache R0 0
-  ADDIU R0 AE   ;R0-=ord(R)
-  BEQZ R0 GOTO_RetroSnake
+  GOTO GOTO_LifeGame
+  Dont_GOTO_LifeGame:
+  ;进入RetroSnake过程判定
+  STRING Root_RetroSnake_AppName "RetroSnake"
+  LOAD_ADDR KeyBoard_Cache R0
+  LOAD_ADDR Root_RetroSnake_AppName R1
+  CALL STRING_CMP
+  BEQZ R0 Dont_GOTO_RetroSnake
   NOP
-  ;如果输入l，输出已有的应用程序(ls)
-  Load_Data KeyBoard_Cache R0 0
-  ADDIU R0 94   ;R0-=ord(l)
-  BEQZ R0 GOTO_LS
+  GOTO GOTO_RetroSnake
+  Dont_GOTO_RetroSnake:
+  ;进入Calculate过程判定
+  STRING Root_Calculate_AppName "Calculate"
+  LOAD_ADDR KeyBoard_Cache R0
+  LOAD_ADDR Root_Calculate_AppName R1
+  CALL STRING_CMP
+  BEQZ R0 Dont_GOTO_Calculate
   NOP
+  GOTO GOTO_Calculate
+  Dont_GOTO_Calculate:
+  ;进入Chat过程判定
+  STRING Root_Chat_AppName "Chat"
+  LOAD_ADDR KeyBoard_Cache R0
+  LOAD_ADDR Root_Chat_AppName R1
+  CALL STRING_CMP
+  BEQZ R0 Dont_GOTO_Chat
+  NOP
+  GOTO GOTO_Chat
+  Dont_GOTO_Chat:
+  ;进入ls过程判定
+  STRING Root_ls_command "ls"
+  LOAD_ADDR KeyBoard_Cache R0
+  LOAD_ADDR Root_ls_command R1
+  CALL STRING_CMP
+  BEQZ R0 Dont_GOTO_LS
+  NOP
+  GOTO GOTO_LS
+  Dont_GOTO_LS:
   ;如果是空指令""，跳转至结束
-  Load_Data KeyBoard_Cache R0 0
+  MOVE R0 R1
   ADDIU R0 0   ;R0-=0
-  BEQZ R0 Root_Main_KeyBoard_Enter_RET
+  BNEZ R0 Dont_GOTO_Root_Main_KeyBoard_Enter_RET
   NOP
+  GOTO Root_Main_KeyBoard_Enter_RET
+  Dont_GOTO_Root_Main_KeyBoard_Enter_RET:
   ;均不为以上指令
   Load_Addr KeyBoard_Cache R0
   CALL printf
@@ -84,105 +164,11 @@ Root_Main_KeyBoard_Enter:   ;当按下键盘回车时应当处理的逻辑
   RET
 
 GOTO_LS:
-  STRING Applications "LifeGame RetroSnake"
+  STRING Applications "Calculate Chat LifeGame RetroSnake"
   CALL next_cursor_line
   LOAD_ADDR Applications R0
   CALL printf
   GOTO Root_Main_KeyBoard_Enter_RET
-GOTO_NotePad:
-  ;CALL NotePad
-  GOTO Root_Main
-GOTO_LifeGame:
-  CALL LifeGame_Main
-  GOTO Root_Main
-GOTO_RetroSnake:
-  ;GOTO RetroSnake_Main
-  GOTO Root_Main
-
-
-set_cursor:     ;设置输入光标坐标为R0(16)位，用于系统文字输出
-  DATA CURSOR_X 1
-  DATA CURSOR_Y 1
-  SW_SP R1 0
-  ADDSP 1
-  SRL R1 R0 0
-  SAVE_DATA CURSOR_X R1 0
-  SLL R0 R0 0
-  SRL R0 R0 0
-  SAVE_DATA CURSOR_Y R0 0
-  ADDSP FF
-  LW_SP R1 0
-  RET
-
-printf:       ;从R0指定的地址开始沿cursor输出字符，直到\0为止
-  MOVE R5 R0   ;R5维持字符地址
-  LW R5 R4 0 ;R4负责记录现在输出的字符是什么
-  printf_loop1:
-    LOAD_DATA CURSOR_X R0 0
-    LOAD_DATA CURSOR_Y R1 0
-    SLL R0 R0 0
-    ADDU R0 R1 R0
-    MOVE R1 R4
-    CALL VGA_Draw_Block
-    CALL next_cursor
-    ADDIU R5 1
-    LW R5 R4 0
-    BNEZ R4 printf_loop1
-    NOP
-  RET
-  
-print_char:       ;向cursor输出R0，并右移cursor
-  SAVE_REG
-  MOVE R1 R0
-  LOAD_DATA CURSOR_X R2 0
-  LOAD_DATA CURSOR_Y R3 0
-  SLL R2 R2 0
-  ADDU R2 R3 R0
-  CALL VGA_Draw_Block
-  CALL next_cursor
-  LOAD_REG
-  RET
-
-next_cursor:    ;光标右移一格，越界后到达下一行行首
-  SAVE_REG
-  LOAD_DATA CURSOR_X R0 0
-  LOAD_DATA CURSOR_Y R1 0
-  ADDIU R1 1
-  LI R6 VGA_M
-  CMP R1 R6
-  BTNEZ next_cursor_ret
-  NOP
-    CALL next_cursor_line
-    LOAD_REG
-    RET
-  next_cursor_ret:
-    SAVE_DATA CURSOR_X R0 0
-    SAVE_DATA CURSOR_Y R1 0
-    LOAD_REG
-    RET
-
-next_cursor_line:    ;光标下移一行，越界后到达下一行行首，若超出屏幕则滚屏
-  SW_SP R0 0
-  SW_SP R1 1
-  ADDSP 2
-  LOAD_DATA CURSOR_X R0 0
-  LOAD_DATA CURSOR_Y R1 0
-  LI R1 0
-  ADDIU R0 1
-  LI R6 VGA_N
-  CMP R1 R6
-  BTNEZ next_cursor_line_ret
-  NOP
-  ADDIU R0 FF
-  ;这是一个未完成的实现，理应刷新屏幕，下滚一行
-  next_cursor_line_ret:
-  SAVE_DATA CURSOR_X R0 0
-  SAVE_DATA CURSOR_Y R1 0
-  ADDSP FE
-  LW_SP R0 0
-  LW_SP R1 1
-  RET
-
 
 STRING sys_s1 "Preparing to start your computer."
 STRING sys_s2 "This may take a few minuts. Please wait..."
@@ -199,6 +185,9 @@ STRING sys_command_not_found " command not found."
 
 Root_INIT:     ;初始化的屏幕字符显示
   SAVE_REG
+  ;设置滚屏高度为全屏
+  LI R0 VGA_N
+  SAVE_DATA Print_Scroll_Bottom R0 0
   LOAD_ADDR KeyBoard_Cache R0
   SAVE_DATA KeyBoard_Cache_P R0 0
   LI R0 0
