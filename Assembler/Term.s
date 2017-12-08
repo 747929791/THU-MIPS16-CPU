@@ -285,7 +285,6 @@ Term_A_Command_Insert:   ;向指令表末尾插入一条指令，指令字符串首地址为R0
     CALL Term_A_Command_Insert_Get1Bit
     ADDU R0 R4 R4
     SLL R4 R4 0
-    GOTO Term_A_Command_Insert_Correct
 	;取imm
     MOVE R0 R5
     ADDIU R0 8
@@ -313,7 +312,6 @@ Term_A_Command_Insert:   ;向指令表末尾插入一条指令，指令字符串首地址为R0
     CALL Term_A_Command_Insert_Get1Bit
     ADDU R0 R4 R4
     SLL R4 R4 0
-    GOTO Term_A_Command_Insert_Correct
 	;取imm
     MOVE R0 R5
     ADDIU R0 8
@@ -640,7 +638,7 @@ Term_A_Command_Insert:   ;向指令表末尾插入一条指令，指令字符串首地址为R0
     ADDU R0 R4 R4
     ;取imm
     MOVE R0 R5
-    ADDIU R0 10
+    ADDIU R0 0A
     CALL String_ReadHex
 	LI R2 FF
 	SLL R2 R2 0
@@ -703,7 +701,7 @@ Term_A_Command_Insert:   ;向指令表末尾插入一条指令，指令字符串首地址为R0
     ADDU R0 R4 R4
     ;取imm
     MOVE R0 R5
-    ADDIU R0 10
+    ADDIU R0 A
     CALL String_ReadHex
 	LI R2 FF
 	SLL R2 R2 0
@@ -1159,7 +1157,7 @@ Term_UASM:         ;反汇编R0指令，并输出一行
   LOAD_ADDR Term_UASM_LW_String R0
   CALL printf
   MOVE R0 R3
-  CALL Term_UASM_Decode_rximm
+  CALL Term_UASM_Decode_rxryimm
   GOTO Term_UASM_RET
   Term_UASM_LW_END:
   
