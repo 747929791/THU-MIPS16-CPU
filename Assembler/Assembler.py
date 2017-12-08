@@ -39,6 +39,47 @@ string_map=dict() #静态符号->字符串内容映射(用于支持STRING指令)
 
 #对于所有的HI LOW操作，由于LOW是符号扩展加法，故HI在计算时有时要加一
 statement=dict()
+statement["RET"]=[
+  "JR R7",
+  "NOP"
+]
+statement["B"]=[
+  "B OFFSET11"
+]
+statement["BEQZ"]=[
+  "BEQZ REG OFFSET8"
+]
+statement["BNEZ"]=[
+  "BNEZ REG OFFSET8"
+]
+statement["BTEQZ"]=[
+  "BTEQZ OFFSET8"
+]
+statement["BTNEZ"]=[
+  "BTNEZ OFFSET8"
+]
+statement["SAVE_REG"]=[
+  "SW_SP R0 0",
+  "SW_SP R1 1",
+  "SW_SP R2 2",
+  "SW_SP R3 3",
+  "SW_SP R4 4",
+  "SW_SP R5 5",
+  "SW_SP R6 6",
+  "SW_SP R7 7",
+  "ADDSP 8"
+]
+statement["LOAD_REG"]=[
+  "ADDSP F8",
+  "LW_SP R0 0",
+  "LW_SP R1 1",
+  "LW_SP R2 2",
+  "LW_SP R3 3",
+  "LW_SP R4 4",
+  "LW_SP R5 5",
+  "LW_SP R6 6",
+  "LW_SP R7 7"
+]
 if(EnhancedMode==False):
     statement["GOTO"]=[
       "LI R6 HI",
@@ -60,10 +101,6 @@ if(EnhancedMode==False):
       "ADDSP FF",
       "LW_SP R7 0"
     ]
-    statement["RET"]=[
-      "JR R7",
-      "NOP"
-    ]
     statement["LOAD_DATA"]=[
       "LI R6 HI",
       "SLL R6 R6 0",
@@ -80,43 +117,6 @@ if(EnhancedMode==False):
       "LI REG HI",
       "SLL REG REG 0",
       "ADDIU REG LOW",
-    ]
-    statement["B"]=[
-      "B OFFSET11"
-    ]
-    statement["BEQZ"]=[
-      "BEQZ REG OFFSET8"
-    ]
-    statement["BNEZ"]=[
-      "BNEZ REG OFFSET8"
-    ]
-    statement["BTEQZ"]=[
-      "BTEQZ OFFSET8"
-    ]
-    statement["BTNEZ"]=[
-      "BTNEZ OFFSET8"
-    ]
-    statement["SAVE_REG"]=[
-      "SW_SP R0 0",
-      "SW_SP R1 1",
-      "SW_SP R2 2",
-      "SW_SP R3 3",
-      "SW_SP R4 4",
-      "SW_SP R5 5",
-      "SW_SP R6 6",
-      "SW_SP R7 7",
-      "ADDSP 8"
-    ]
-    statement["LOAD_REG"]=[
-      "ADDSP F8",
-      "LW_SP R0 0",
-      "LW_SP R1 1",
-      "LW_SP R2 2",
-      "LW_SP R3 3",
-      "LW_SP R4 4",
-      "LW_SP R5 5",
-      "LW_SP R6 6",
-      "LW_SP R7 7"
     ]
 else:
     statement["GOTO"]=[
@@ -141,10 +141,6 @@ else:
       "ADDSP FF",
       "LW_SP R7 0"
     ]
-    statement["RET"]=[
-      "JR R7",
-      "NOP"
-    ]
     statement["LOAD_DATA"]=[
       "LI R6 HI",
       "SLL R6 R6 0",
@@ -164,43 +160,6 @@ else:
       "SLL REG REG 0",
       "ADDIU REG LOW1",
       "ADDIU REG LOW2",
-    ]
-    statement["B"]=[
-      "B OFFSET11"
-    ]
-    statement["BEQZ"]=[
-      "BEQZ REG OFFSET8"
-    ]
-    statement["BNEZ"]=[
-      "BNEZ REG OFFSET8"
-    ]
-    statement["BTEQZ"]=[
-      "BTEQZ OFFSET8"
-    ]
-    statement["BTNEZ"]=[
-      "BTNEZ OFFSET8"
-    ]
-    statement["SAVE_REG"]=[
-      "SW_SP R0 0",
-      "SW_SP R1 1",
-      "SW_SP R2 2",
-      "SW_SP R3 3",
-      "SW_SP R4 4",
-      "SW_SP R5 5",
-      "SW_SP R6 6",
-      "SW_SP R7 7",
-      "ADDSP 8"
-    ]
-    statement["LOAD_REG"]=[
-      "ADDSP F8",
-      "LW_SP R0 0",
-      "LW_SP R1 1",
-      "LW_SP R2 2",
-      "LW_SP R3 3",
-      "LW_SP R4 4",
-      "LW_SP R5 5",
-      "LW_SP R6 6",
-      "LW_SP R7 7"
     ]
 
 
@@ -472,7 +431,7 @@ def Assemble(text):   #由行隔开的标准MIPS16汇编语言汇编为二进制
         if(bit_inst[i]!='0' and bit_inst[i]!='1'):
           print("syn error, bit_inst Error! ",line,bit_inst)
           break
-      if(bit_inst[8:16]=="11111001" or bit_inst[8:16]=="11111010"):
+      if(bit_inst[8:16]=="11111001" or bit_inst[8:16]=="11111010"):#F9/FA
         print("Warning! Due to hardware and official software bugs, this directive may load errors.",line)
       bit_init_array.append(bit_inst)
   #print(bit_init_array)
