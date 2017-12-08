@@ -17,6 +17,10 @@ Root_Main:
     CALL KeyBoard_Get
     BEQZ R0 Root_Main_KeyBoard_Get_Loop
     NOP
+    LI R6 1B
+    CMP R0 R6   ;判断是否为ESC
+    BTEQZ Root_Main ;是ESC
+    NOP
     LI R6 0A
     CMP R0 R6   ;判断是否为回车
     BTEQZ Root_Main_KeyBoard_Get_Enter ;是回车

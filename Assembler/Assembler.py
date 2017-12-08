@@ -298,8 +298,12 @@ def parseFinal(text):
           OFFSET8=""
           if(b[0]=="GOTO" or b[0]=="CALL" or b[0]=="LOAD_DATA" or b[0]=="SAVE_DATA" or b[0]=="LOAD_ADDR"):
             if(b[0]=="GOTO" or b[0]=="CALL"):
+              if(len(b)<2):
+                print("Syntax error!",line)
               X=int(str(sig_addr[b[1]]),10)+int(statement_addr,16)
             elif(b[0]=="LOAD_DATA" or b[0]=="SAVE_DATA" or b[0]=="LOAD_ADDR"):
+              if(len(b)<2):
+                print("Syntax error!",line)
               X=int(str(sig_addr[b[1]]),10)+int(bss_addr,16)
             if((X//(2**7))%2==1):#对符号加法的扩展
               X+=2**8
@@ -307,14 +311,22 @@ def parseFinal(text):
             while(len(X)<4):
               X="0"+X
           if(b[0]=="LOAD_DATA" or b[0]=="SAVE_DATA" or b[0]=="LOAD_ADDR"):
+            if(len(b)<3):
+              print("Syntax error!",line)
             REG=b[2]
           if(b[0]=="LOAD_DATA" or b[0]=="SAVE_DATA"):
+            if(len(b)<4):
+              print("Syntax error!",line)
             IMM=b[3]
           if(b[0]=="B" or b[0]=="BEQZ" or b[0]=="BNEZ" or b[0]=="BTEQZ" or b[0]=="BTNEZ"):
+            if(len(b)<2):
+              print("Syntax error!",line)
             REG=b[1]
             if(b[0]=="B" or b[0]=="BTEQZ" or b[0]=="BTNEZ"):
               IMM=b[1]
             else:
+              if(len(b)<3):
+                print("Syntax error!",line)
               IMM=b[2]
             if(IMM in sig_addr):
               OFFSET=sig_addr[IMM]-addr-1

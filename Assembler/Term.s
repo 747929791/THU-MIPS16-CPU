@@ -181,6 +181,7 @@ Term_A_Command_Insert:   ;向指令表末尾插入一条指令，指令字符串首地址为R0
   SAVE_REG
   ;译码
   MOVE R5 R0
+  Term_ASM:
   ;判断是否为ADDIU
   STRING TERM_PC_ADDIU "ADDIU"
   MOVE R0 R5  ;R5缓存指令字符串地址
@@ -196,16 +197,10 @@ Term_A_Command_Insert:   ;向指令表末尾插入一条指令，指令字符串首地址为R0
     CALL Term_A_Command_Insert_Get1Bit
     ADDU R0 R4 R4
     SLL R4 R4 0
-    ;取出imm高位
+    ;取imm
     MOVE R0 R5
-    LI R1 9
-    CALL Term_A_Command_Insert_Get1Bit
-    SLL R0 R0 4
-    ADDU R0 R4 R4
-    ;取出imm低位
-    MOVE R0 R5
-    LI R1 A
-    CALL Term_A_Command_Insert_Get1Bit
+    ADDIU R0 9
+    CALL String_ReadHex
     ADDU R0 R4 R4
     GOTO Term_A_Command_Insert_Correct
   Term_Insert_NotAddiu:
@@ -224,16 +219,10 @@ Term_A_Command_Insert:   ;向指令表末尾插入一条指令，指令字符串首地址为R0
     CALL Term_A_Command_Insert_Get1Bit
     ADDU R0 R4 R4
     SLL R4 R4 0
-    ;取出imm高位
+    ;取imm
     MOVE R0 R5
-    LI R1 6
-    CALL Term_A_Command_Insert_Get1Bit
-    SLL R0 R0 4
-    ADDU R0 R4 R4
-    ;取出imm低位
-    MOVE R0 R5
-    LI R1 7
-    CALL Term_A_Command_Insert_Get1Bit
+    ADDIU R0 6
+    CALL String_ReadHex
     ADDU R0 R4 R4
     GOTO Term_A_Command_Insert_Correct
   Term_Insert_NotLI:

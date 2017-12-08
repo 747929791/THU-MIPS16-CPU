@@ -134,3 +134,65 @@ String_IntToHex:   ;将R0转换为4bit16进制字符串，将字符串首地址通过R0返回
   CALL String_IntToHex
   ADDIU R0 2
   RET
+  
+String_IsHexChar:    ;判断R0 ASCII码是否为16进制合法字符，将Bool通过R0返回
+  LI R6 30
+  SUBU R0 R6 R0
+  LI R6 0A
+  SLTU R0 R6
+  BTNEZ String_IsHexChat_True;判断是否为0-9
+  NOP
+  LI R6 11
+  SUBU R0 R6 R0
+  LI R6 1A
+  SLTU R0 R6
+  BTNEZ String_IsHexChat_True;判断是否为A-Z
+  NOP
+  String_IsHexChat_False:
+    LI R0 0
+    RET  
+  String_IsHexChat_True:
+    LI R0 1
+    RET  
+
+String_ReadHex:      ;从R0内存地址开始读取一个十六进制数的字符串，将整数结果通过R0返回，末尾指针通过R1返回(功能同scanf)
+  SAVE_REG
+  MOVE R5 R0
+  ;先将R0变为最近的一个数字(0-9,A-F)
+  B String_ReadHex_FindFirst_Loop_Middle ;Jump to middle
+  NOP
+  String_ReadHex_FindFirst_Loop:
+    ADDIU R5 1
+    String_ReadHex_FindFirst_Loop_Middle:
+    LW R5 R0 0
+    ;如果遇到\0则返回0退出
+      BNEZ R0 String_ReadHex_NotReturn0
+      NOP
+        LI R4 0
+        B String_ReadHex_RET
+        NOP
+      String_ReadHex_NotReturn0:
+    CALL String_IsHexChar
+    BEQZ R0 String_ReadHex_FindFirst_Loop
+    NOP
+  ;现在R5指向第一个字符的地址
+  LI R4 0;R4缓存结果数值
+  String_ReadHex_FindLast_Loop:
+    LW R5 R0 0
+    CALL String_IsHexChar
+    BEQZ R0 String_ReadHex_RET
+    NOP
+    LW R5 R0 0
+    CALL String_HexCharToInt
+    SLL R4 R4 4
+    ADDU R0 R4 R4
+    ADDIU R5 1
+    B String_ReadHex_FindLast_Loop
+    NOP
+  String_ReadHex_RET:
+    SW_SP R4 F8
+    ;SW_SP R5 F9
+    SW_SP R5 0
+    LOAD_REG
+    LW_SP R1 8
+    RET
