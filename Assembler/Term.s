@@ -182,6 +182,7 @@ Term_A_Command_Insert:   ;向指令表末尾插入一条指令，指令字符串首地址为R0
   ;译码
   MOVE R5 R0
   Term_ASM:
+  
   ;判断是否为ADDIU
   STRING TERM_PC_ADDIU "ADDIU"
   MOVE R0 R5  ;R5缓存指令字符串地址
@@ -201,9 +202,223 @@ Term_A_Command_Insert:   ;向指令表末尾插入一条指令，指令字符串首地址为R0
     MOVE R0 R5
     ADDIU R0 9
     CALL String_ReadHex
+	LI R2 FF
+	SLL R2 R2 0
+	SRL R2 R2 0		;R2为后8位mask
+	AND R0 R2
     ADDU R0 R4 R4
     GOTO Term_A_Command_Insert_Correct
   Term_Insert_NotAddiu:
+  
+  ;判断是否为ADDU
+  STRING TERM_PC_ADDU "ADDU"
+  MOVE R0 R5  ;R5缓存指令字符串地址
+  LOAD_ADDR TERM_PC_ADDU R1
+  CALL STRING_PrefixCMP
+  BEQZ R0 Term_Insert_NotADDU
+  NOP
+    ;处理ADDU的逻辑
+    LI R4 E0;最终指令
+    ;取出Rx
+    MOVE R0 R5
+    LI R1 6
+    CALL Term_A_Command_Insert_Get1Bit
+    ADDU R0 R4 R4
+    SLL R4 R4 0
+	;取出Ry
+    MOVE R0 R5
+    LI R1 9
+    CALL Term_A_Command_Insert_Get1Bit
+	SLL R0 R0 5
+    ADDU R0 R4 R4
+	;取出Rz
+    MOVE R0 R5
+    LI R1 C
+    CALL Term_A_Command_Insert_Get1Bit
+	SLL R0 R0 2
+    ADDU R0 R4 R4
+    ;取imm
+    LI R0 1
+	ADDU R0 R4 R4
+	GOTO Term_A_Command_Insert_Correct
+  Term_Insert_NotAddu:
+  
+  ;判断是否为AND
+  STRING TERM_PC_AND "AND"
+  MOVE R0 R5  ;R5缓存指令字符串地址
+  LOAD_ADDR TERM_PC_AND R1
+  CALL STRING_PrefixCMP
+  BEQZ R0 Term_Insert_NotAND
+  NOP
+    ;处理AND的逻辑
+    LI R4 E8;最终指令
+    ;取出Rx
+    MOVE R0 R5
+    LI R1 5
+    CALL Term_A_Command_Insert_Get1Bit
+    ADDU R0 R4 R4
+    SLL R4 R4 0
+	;取出Ry
+    MOVE R0 R5
+    LI R1 8
+    CALL Term_A_Command_Insert_Get1Bit
+	SLL R0 R0 5
+    ADDU R0 R4 R4
+    ;取imm
+    LI R0 C
+	ADDU R0 R4 R4
+	GOTO Term_A_Command_Insert_Correct
+  Term_Insert_NotAND:
+  
+  ;判断是否为B
+  STRING TERM_PC_B "B"
+  MOVE R0 R5
+  LOAD_ADDR TERM_PC_B R1
+  CALL STRING_PrefixCMP
+  BEQZ R0 Term_Insert_NotB
+  NOP
+    ;处理B的逻辑
+    LI R4 10;最终指令
+	SLL R4 R4 0
+    ;取imm
+    MOVE R0 R5
+    ADDIU R0 2
+    CALL String_ReadHex
+	LI R2 FF
+	SLL R2 R2 5
+	SRL R2 R2 5		;R2为后11位mask
+	AND R0 R2
+    ADDU R0 R4 R4
+    GOTO Term_A_Command_Insert_Correct
+  Term_Insert_NotB:
+  
+  ;判断是否为BEQZ
+  STRING TERM_PC_BEQZ "BEQZ"
+  MOVE R0 R5
+  LOAD_ADDR TERM_PC_BEQZ R1
+  CALL STRING_PrefixCMP
+  BEQZ R0 Term_Insert_NotBEQZ
+  NOP
+    ;处理BEQZ的逻辑
+    LI R4 20;最终指令
+    ;取出Rx
+    MOVE R0 R5
+    LI R1 6
+    CALL Term_A_Command_Insert_Get1Bit
+    ADDU R0 R4 R4
+    SLL R4 R4 0
+    GOTO Term_A_Command_Insert_Correct
+	;取imm
+    MOVE R0 R5
+    ADDIU R0 8
+    CALL String_ReadHex
+	LI R2 FF
+	SLL R2 R2 0
+	SRL R2 R2 0		;R2为后8位mask
+	AND R0 R2
+    ADDU R0 R4 R4
+    GOTO Term_A_Command_Insert_Correct
+  Term_Insert_NotBEQZ:
+  
+  ;判断是否为BNEZ
+  STRING TERM_PC_BNEZ "BNEZ"
+  MOVE R0 R5
+  LOAD_ADDR TERM_PC_BNEZ R1
+  CALL STRING_PrefixCMP
+  BEQZ R0 Term_Insert_NotBNEZ
+  NOP
+    ;处理BNEZ的逻辑
+    LI R4 28;最终指令
+    ;取出Rx
+    MOVE R0 R5
+    LI R1 6
+    CALL Term_A_Command_Insert_Get1Bit
+    ADDU R0 R4 R4
+    SLL R4 R4 0
+    GOTO Term_A_Command_Insert_Correct
+	;取imm
+    MOVE R0 R5
+    ADDIU R0 8
+    CALL String_ReadHex
+	LI R2 FF
+	SLL R2 R2 0
+	SRL R2 R2 0		;R2为后8位mask
+	AND R0 R2
+    ADDU R0 R4 R4
+    GOTO Term_A_Command_Insert_Correct
+  Term_Insert_NotBNEZ:
+  
+  ;判断是否为BTEQZ
+  STRING TERM_PC_BTEQZ "BTEQZ"
+  MOVE R0 R5
+  LOAD_ADDR TERM_PC_BTEQZ R1
+  CALL STRING_PrefixCMP
+  BEQZ R0 Term_Insert_NotBTEQZ
+  NOP
+    ;处理BTEQZ的逻辑
+    LI R4 60;最终指令
+	SLL R4 R4 0
+	;取imm
+    MOVE R0 R5
+    ADDIU R0 6
+    CALL String_ReadHex
+	LI R2 FF
+	SLL R2 R2 0
+	SRL R2 R2 0		;R2为后8位mask
+	AND R0 R2
+    ADDU R0 R4 R4
+    GOTO Term_A_Command_Insert_Correct
+  Term_Insert_NotBTEQZ:
+  
+  ;判断是否为BTNEZ
+  STRING TERM_PC_BTNEZ "BTNEZ"
+  MOVE R0 R5
+  LOAD_ADDR TERM_PC_BTNEZ R1
+  CALL STRING_PrefixCMP
+  BEQZ R0 Term_Insert_NotBTNEZ
+  NOP
+    ;处理BTNEZ的逻辑
+    LI R4 61;最终指令
+	SLL R4 R4 0
+	;取imm
+    MOVE R0 R5
+    ADDIU R0 6
+    CALL String_ReadHex
+	LI R2 FF
+	SLL R2 R2 0
+	SRL R2 R2 0		;R2为后8位mask
+	AND R0 R2
+    ADDU R0 R4 R4
+    GOTO Term_A_Command_Insert_Correct
+  Term_Insert_NotBTNEZ:
+  
+  ;判断是否为CMP
+  STRING TERM_PC_CMP "CMP"
+  MOVE R0 R5  ;R5缓存指令字符串地址
+  LOAD_ADDR TERM_PC_CMP R1
+  CALL STRING_PrefixCMP
+  BEQZ R0 Term_Insert_NotCMP
+  NOP
+    ;处理CMP的逻辑
+    LI R4 E8;最终指令
+    ;取出Rx
+    MOVE R0 R5
+    LI R1 5
+    CALL Term_A_Command_Insert_Get1Bit
+    ADDU R0 R4 R4
+    SLL R4 R4 0
+	;取出Ry
+    MOVE R0 R5
+    LI R1 8
+    CALL Term_A_Command_Insert_Get1Bit
+	SLL R0 R0 5
+    ADDU R0 R4 R4
+    ;取imm
+    LI R0 A
+	ADDU R0 R4 R4
+	GOTO Term_A_Command_Insert_Correct
+  Term_Insert_NotCMP:
+  
   ;判断是否为LI
   STRING TERM_PC_LI "LI"
   MOVE R0 R5
@@ -223,9 +438,38 @@ Term_A_Command_Insert:   ;向指令表末尾插入一条指令，指令字符串首地址为R0
     MOVE R0 R5
     ADDIU R0 6
     CALL String_ReadHex
+	LI R2 FF
+	SLL R2 R2 0
+	SRL R2 R2 0		;R2为后8位mask
+	AND R0 R2
     ADDU R0 R4 R4
     GOTO Term_A_Command_Insert_Correct
   Term_Insert_NotLI:
+  
+  ;判断是否为INT
+  STRING TERM_PC_INT "INT"
+  MOVE R0 R5
+  LOAD_ADDR TERM_PC_INT R1
+  CALL STRING_PrefixCMP
+  BEQZ R0 Term_Insert_NotINT
+  NOP
+    ;处理INT的逻辑
+    LI R4 F8;最终指令
+	SLL R4 R4 0
+    ;取imm
+    MOVE R0 R5
+    ADDIU R0 4
+    CALL String_ReadHex
+	LI R2 FF
+	SLL R2 R2 0
+	SLL R2 R2 4
+	SRL R2 R2 0
+	SRL R2 R2 4		;R2为后4位mask
+	AND R0 R2
+    ADDU R0 R4 R4
+    GOTO Term_A_Command_Insert_Correct
+  Term_Insert_NotINT:
+  
   ;判断是否为JR
   STRING TERM_PC_JR "JR"
   MOVE R0 R5
@@ -243,6 +487,96 @@ Term_A_Command_Insert:   ;向指令表末尾插入一条指令，指令字符串首地址为R0
     SLL R4 R4 0
     GOTO Term_A_Command_Insert_Correct
   Term_Insert_NotJR:
+  
+  ;判断是否为LW
+  STRING TERM_PC_LW "LW"
+  MOVE R0 R5  ;R5缓存指令字符串地址
+  LOAD_ADDR TERM_PC_LW R1
+  CALL STRING_PrefixCMP
+  BEQZ R0 Term_Insert_NotLW
+  NOP
+    ;处理LW的逻辑
+    LI R4 98;最终指令
+    ;取出Rx
+    MOVE R0 R5
+    LI R1 4
+    CALL Term_A_Command_Insert_Get1Bit
+    ADDU R0 R4 R4
+    SLL R4 R4 0
+	;取出Ry
+    MOVE R0 R5
+    LI R1 7
+    CALL Term_A_Command_Insert_Get1Bit
+	SLL R0 R0 5
+    ADDU R0 R4 R4
+    ;取imm
+    MOVE R0 R5
+    ADDIU R0 9
+    CALL String_ReadHex
+	LI R2 FF
+	SLL R2 R2 0
+	SLL R2 R2 3
+	SRL R2 R2 0
+	SRL R2 R2 3		;R2为后5位mask
+	AND R0 R2
+    ADDU R0 R4 R4
+    GOTO Term_A_Command_Insert_Correct
+  Term_Insert_NotLW:
+  
+  ;判断是否为LW_SP
+  STRING TERM_PC_LW_SP "LW_SP"
+  MOVE R0 R5  ;R5缓存指令字符串地址
+  LOAD_ADDR TERM_PC_LW_SP R1
+  CALL STRING_PrefixCMP
+  BEQZ R0 Term_Insert_NotLW_SP
+  NOP
+    ;处理LW_SP的逻辑
+    LI R4 90;最终指令
+    ;取出Rx
+    MOVE R0 R5
+    LI R1 8
+    CALL Term_A_Command_Insert_Get1Bit
+    ADDU R0 R4 R4
+    SLL R4 R4 0
+    ;取imm
+    MOVE R0 R5
+    ADDIU R0 10
+    CALL String_ReadHex
+	LI R2 FF
+	SLL R2 R2 0
+	SRL R2 R2 0			;R2为后8位mask
+	AND R0 R2
+    ADDU R0 R4 R4
+    GOTO Term_A_Command_Insert_Correct
+  Term_Insert_NotLW_SP:
+  
+  ;判断是否为MOVE
+  STRING TERM_PC_MOVE "MOVE"
+  MOVE R0 R5  ;R5缓存指令字符串地址
+  LOAD_ADDR TERM_PC_MOVE R1
+  CALL STRING_PrefixCMP
+  BEQZ R0 Term_Insert_NotMOVE
+  NOP
+    ;处理MOVE的逻辑
+    LI R4 78;最终指令
+    ;取出Rx
+    MOVE R0 R5
+    LI R1 6
+    CALL Term_A_Command_Insert_Get1Bit
+    ADDU R0 R4 R4
+    SLL R4 R4 0
+	;取出Ry
+    MOVE R0 R5
+    LI R1 9
+    CALL Term_A_Command_Insert_Get1Bit
+	SLL R0 R0 5
+    ADDU R0 R4 R4
+    ;取imm
+    LI R0 0
+	ADDU R0 R4 R4
+	GOTO Term_A_Command_Insert_Correct
+  Term_Insert_NotMOVE:
+  
   ;判断是否为NOP
   STRING TERM_PC_NOP "NOP"
   MOVE R0 R5
@@ -255,6 +589,202 @@ Term_A_Command_Insert:   ;向指令表末尾插入一条指令，指令字符串首地址为R0
     SLL R4 R4 0
     GOTO Term_A_Command_Insert_Correct
   Term_Insert_NotNOP:
+  
+  ;判断是否为OR
+  STRING TERM_PC_OR "OR"
+  MOVE R0 R5  ;R5缓存指令字符串地址
+  LOAD_ADDR TERM_PC_OR R1
+  CALL STRING_PrefixCMP
+  BEQZ R0 Term_Insert_NotOR
+  NOP
+    ;处理OR的逻辑
+    LI R4 E8;最终指令
+    ;取出Rx
+    MOVE R0 R5
+    LI R1 4
+    CALL Term_A_Command_Insert_Get1Bit
+    ADDU R0 R4 R4
+    SLL R4 R4 0
+	;取出Ry
+    MOVE R0 R5
+    LI R1 7
+    CALL Term_A_Command_Insert_Get1Bit
+	SLL R0 R0 5
+    ADDU R0 R4 R4
+    ;取imm
+    LI R0 D
+	ADDU R0 R4 R4
+	GOTO Term_A_Command_Insert_Correct
+  Term_Insert_NotOR:
+  
+  ;判断是否为SLL
+  STRING TERM_PC_SLL "SLL"
+  MOVE R0 R5  ;R5缓存指令字符串地址
+  LOAD_ADDR TERM_PC_SLL R1
+  CALL STRING_PrefixCMP
+  BEQZ R0 Term_Insert_NotSLL
+  NOP
+    ;处理SLL的逻辑
+    LI R4 30;最终指令
+    ;取出Rx
+    MOVE R0 R5
+    LI R1 5
+    CALL Term_A_Command_Insert_Get1Bit
+    ADDU R0 R4 R4
+    SLL R4 R4 0
+	;取出Ry
+    MOVE R0 R5
+    LI R1 8
+    CALL Term_A_Command_Insert_Get1Bit
+	SLL R0 R0 5
+    ADDU R0 R4 R4
+    ;取imm
+    MOVE R0 R5
+    ADDIU R0 10
+    CALL String_ReadHex
+	LI R2 FF
+	SLL R2 R2 0
+	SLL R2 R2 5
+	SRL R2 R2 0		
+	SRL R2 R2 5		;R2为后3位mask
+	AND R0 R2
+	SLL R0 R0 2
+    ADDU R0 R4 R4
+    GOTO Term_A_Command_Insert_Correct
+  Term_Insert_NotSLL:
+  
+  ;判断是否为SLT
+  STRING TERM_PC_SLT "SLT"
+  MOVE R0 R5  ;R5缓存指令字符串地址
+  LOAD_ADDR TERM_PC_SLT R1
+  CALL STRING_PrefixCMP
+  BEQZ R0 Term_Insert_NotSLT
+  NOP
+    ;处理SLT的逻辑
+    LI R4 E8;最终指令
+    ;取出Rx
+    MOVE R0 R5
+    LI R1 5
+    CALL Term_A_Command_Insert_Get1Bit
+    ADDU R0 R4 R4
+    SLL R4 R4 0
+	;取出Ry
+    MOVE R0 R5
+    LI R1 8
+    CALL Term_A_Command_Insert_Get1Bit
+	SLL R0 R0 5
+    ADDU R0 R4 R4
+    ;取imm
+    LI R0 2
+    ADDU R0 R4 R4
+    GOTO Term_A_Command_Insert_Correct
+  Term_Insert_NotSLT:
+  
+  ;判断是否为SRL
+  STRING TERM_PC_SRL "SRL"
+  MOVE R0 R5  ;R5缓存指令字符串地址
+  LOAD_ADDR TERM_PC_SRL R1
+  CALL STRING_PrefixCMP
+  BEQZ R0 Term_Insert_NotSRL
+  NOP
+    ;处理SRL的逻辑
+    LI R4 30;最终指令
+    ;取出Rx
+    MOVE R0 R5
+    LI R1 5
+    CALL Term_A_Command_Insert_Get1Bit
+    ADDU R0 R4 R4
+    SLL R4 R4 0
+	;取出Ry
+    MOVE R0 R5
+    LI R1 8
+    CALL Term_A_Command_Insert_Get1Bit
+	SLL R0 R0 5
+    ADDU R0 R4 R4
+    ;取imm
+    MOVE R0 R5
+    ADDIU R0 10
+    CALL String_ReadHex
+	LI R2 FF
+	SLL R2 R2 0
+	SLL R2 R2 5
+	SRL R2 R2 0		
+	SRL R2 R2 5		;R2为后3位mask
+	AND R0 R2
+	SLL R0 R0 2
+	ADDIU R0 2
+    ADDU R0 R4 R4
+    GOTO Term_A_Command_Insert_Correct
+  Term_Insert_NotSRL:
+  
+  ;判断是否为SUBU
+  STRING TERM_PC_SUBU "SUBU"
+  MOVE R0 R5  ;R5缓存指令字符串地址
+  LOAD_ADDR TERM_PC_SUBU R1
+  CALL STRING_PrefixCMP
+  BEQZ R0 Term_Insert_NotSUBU
+  NOP
+    ;处理SUBU的逻辑
+    LI R4 E0;最终指令
+    ;取出Rx
+    MOVE R0 R5
+    LI R1 6
+    CALL Term_A_Command_Insert_Get1Bit
+    ADDU R0 R4 R4
+    SLL R4 R4 0
+	;取出Ry
+    MOVE R0 R5
+    LI R1 9
+    CALL Term_A_Command_Insert_Get1Bit
+	SLL R0 R0 5
+    ADDU R0 R4 R4
+	;取出Rz
+    MOVE R0 R5
+    LI R1 C
+    CALL Term_A_Command_Insert_Get1Bit
+	SLL R0 R0 2
+    ADDU R0 R4 R4
+    ;取imm
+    LI R0 3
+	ADDU R0 R4 R4
+	GOTO Term_A_Command_Insert_Correct
+  Term_Insert_NotSUBU:
+  
+  ;判断是否为SW
+  STRING TERM_PC_SW "SW"
+  MOVE R0 R5  ;R5缓存指令字符串地址
+  LOAD_ADDR TERM_PC_SW R1
+  CALL STRING_PrefixCMP
+  BEQZ R0 Term_Insert_NotSW
+  NOP
+    ;处理SW的逻辑
+    LI R4 D8;最终指令
+    ;取出Rx
+    MOVE R0 R5
+    LI R1 4
+    CALL Term_A_Command_Insert_Get1Bit
+    ADDU R0 R4 R4
+    SLL R4 R4 0
+	;取出Ry
+    MOVE R0 R5
+    LI R1 7
+    CALL Term_A_Command_Insert_Get1Bit
+	SLL R0 R0 5
+    ADDU R0 R4 R4
+    ;取imm
+    MOVE R0 R5
+    ADDIU R0 9
+    CALL String_ReadHex
+	LI R2 FF
+	SLL R2 R2 0
+	SLL R2 R2 3
+	SRL R2 R2 0
+	SRL R2 R2 3		;R2为后5位mask
+	AND R0 R2
+    ADDU R0 R4 R4
+    GOTO Term_A_Command_Insert_Correct
+  Term_Insert_NotSW:
+  
   ;均不为以上指令，非法
   B Term_A_Command_Insert_Error
   NOP
@@ -480,7 +1010,7 @@ Term_UASM:         ;反汇编R0指令，并输出一行
   GOTO Term_UASM_RET
   Term_UASM_ADDU_END:
   
-  LI R2 1C	;AND
+  LI R2 1D	;AND
   XOR R2 R1
   BNEZ R2 Term_UASM_AND_END
   NOP
@@ -568,6 +1098,27 @@ Term_UASM:         ;反汇编R0指令，并输出一行
   GOTO Term_UASM_RET
   Term_UASM_CMP_END:
   
+  LI R2 F8	;INT
+  XOR R2 R4
+  BNEZ R2 Term_UASM_INT_END
+  NOP
+  LI R2 0
+  XOR R2 R5
+  BNEZ R2 Term_UASM_INT_END
+  NOP
+  STRING Term_UASM_INT_String "INT "
+  LOAD_ADDR Term_UASM_INT_String R0
+  CALL printf
+  MOVE R0 R3
+  SLL R0 R0 0
+  SLL R0 R0 4
+  SRL R0 R0 4
+  SRL R0 R0 0
+  ADDIU R0 30
+  CALL print_char
+  GOTO Term_UASM_RET
+  Term_UASM_INT_END:
+  
   LI R2 1D	;JR
   XOR R2 R1
   BNEZ R2 Term_UASM_JR_END
@@ -580,7 +1131,7 @@ Term_UASM:         ;反汇编R0指令，并输出一行
   LOAD_ADDR Term_UASM_JR_String R0
   CALL printf
   MOVE R0 R3
-  CALL Term_UASM_Decode_rximm
+  CALL Term_UASM_Decode_rx
   GOTO Term_UASM_RET
   Term_UASM_JR_END:
   
