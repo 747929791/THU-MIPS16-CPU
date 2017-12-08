@@ -33,8 +33,8 @@ import sys
 
 EnhancedMode=True  #当该开关打开时将尽力优化由于硬件和官方软件的F9/FA错误，但会降低运行代码的时间
 
-statement_addr="0000"  #程序首地址
-bss_addr="C000" #DATA段起始地址
+statement_addr="4000"  #程序首地址
+bss_addr="8000" #DATA段起始地址
 define=dict()
 sig_addr=dict() #符号地址，0起始
 string_map=dict() #静态符号->字符串内容映射(用于支持STRING指令)
