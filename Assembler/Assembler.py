@@ -456,7 +456,7 @@ if __name__ == '__main__':
     text=parseDefine(text)
     parseSigAddr(text)
     text=parseFinal(text)
-    print("\n\nresult:\nsig_addr:",sig_addr,"\n")
+    print("result:\nsig_addr:",sig_addr,"\n")
     output=open(file_name+"_o.s","w")
     output.write(text)
     output.close()

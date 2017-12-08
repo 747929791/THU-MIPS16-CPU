@@ -2,6 +2,10 @@
 
 DATA Print_Scroll_Bottom 1 ;描述滚屏底部的行号(为VGA_N表示全屏滚动)，所有函数发现需要移至下一行时，发现到达底部则滚屏一次
 
+;以下是支持单行输入模块的缓存区与变量(同一时间仅支持一个进程使用)
+DATA KeyBoard_Cache 500 ;缓存当前未完成的输入的内容
+DATA KeyBoard_Cache_P 1 ;记录缓存区下一个字符的地址
+
 set_cursor:     ;设置输入光标坐标为R0(16)位，用于系统文字输出
   DATA CURSOR_X 1
   DATA CURSOR_Y 1
@@ -133,4 +137,25 @@ next_cursor_line:    ;光标下移一行，越界后到达下一行行首，若超出屏幕则滚屏
 print_int:    ;打印R0表示的16位4个ASCII字符
   CALL String_IntToHex
   CALL printf
+  RET
+  
+Print_Cache_BackSpace:   ;缓存区输入时回退一格
+  SAVE_REG
+  LOAD_DATA KeyBoard_Cache_P R0 0
+  LOAD_ADDR KeyBoard_Cache R1
+  CMP R0 R1
+  BTEQZ KeyBoard_Cache_BackSpace_RET;若已经到达最左侧则无视这一操作
+  NOP
+  CALL last_cursor ;回退一格
+  LOAD_DATA CURSOR_X R6 0
+  SLL R0 R6 0
+  LOAD_DATA CURSOR_Y R6 0
+  ADDU R0 R6 R0
+  LI R1 20
+  CALL VGA_Draw_Block ;清除显示
+  LOAD_DATA KeyBoard_Cache_P R0 0
+  ADDIU R0 FF
+  SAVE_DATA KeyBoard_Cache_P R0 0
+  KeyBoard_Cache_BackSpace_RET:
+  LOAD_REG
   RET

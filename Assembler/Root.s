@@ -1,9 +1,6 @@
 ;这是一个DOS命令行管理主程序
 GOTO Root_Main
 
-DATA KeyBoard_Cache 500 ;缓存当前未完成的输入的内容
-DATA KeyBoard_Cache_P 1 ;记录缓存区下一个字符的地址
-
 Root_Main:
   CALL VGA_MEM_INIT
   CALL Root_INIT
@@ -87,9 +84,19 @@ GOTO_Calculate:
 GOTO_CHAT:
   CALL Chat_Main
   GOTO Root_Main
+GOTO_TERM:
+  CALL Term_Main
+  GOTO Root_Main
 
 Root_Main_KeyBoard_Enter:   ;当按下键盘回车时应当处理的逻辑
   SAVE_REG
+  LOAD_DATA KeyBoard_Cache_P R0 0
+  LOAD_ADDR KeyBoard_Cache R1
+  CMP R0 R1
+  BTNEZ Root_Main_KeyBoard_Enter_NotEmpty
+  NOP
+  RET
+  Root_Main_KeyBoard_Enter_NotEmpty:
   ;清空缓存区，补\0
   CALL next_cursor_line
   Load_Data KeyBoard_Cache_P R0 0
@@ -133,6 +140,15 @@ Root_Main_KeyBoard_Enter:   ;当按下键盘回车时应当处理的逻辑
   NOP
   GOTO GOTO_Chat
   Dont_GOTO_Chat:
+  ;进入Term过程判定
+  STRING Root_Term_AppName "Term"
+  LOAD_ADDR KeyBoard_Cache R0
+  LOAD_ADDR Root_Term_AppName R1
+  CALL STRING_CMP
+  BEQZ R0 Dont_GOTO_Term
+  NOP
+  GOTO GOTO_Term
+  Dont_GOTO_Term:
   ;进入ls过程判定
   STRING Root_ls_command "ls"
   LOAD_ADDR KeyBoard_Cache R0
@@ -142,6 +158,24 @@ Root_Main_KeyBoard_Enter:   ;当按下键盘回车时应当处理的逻辑
   NOP
   GOTO GOTO_LS
   Dont_GOTO_LS:
+  ;进入HELP过程判定
+  STRING Root_HELP_command "HELP"
+  LOAD_ADDR KeyBoard_Cache R0
+  LOAD_ADDR Root_HELP_command R1
+  CALL STRING_CMP
+  BEQZ R0 Dont_GOTO_HELP
+  NOP
+    ;HELP的实现
+    STRING ROOT_HELP0 "Use 'ls' to see the installed applications"
+    STRING ROOT_HELP1 "Use '<ProgramName> --help' to see the program's information"
+    LOAD_ADDR ROOT_HELP0 R0
+    CALL printf
+    CALL next_cursor_line
+    LOAD_ADDR ROOT_HELP1 R0
+    CALL printf
+    CALL next_cursor_line
+    GOTO Root_Main_KeyBoard_Enter_RET
+  Dont_GOTO_HELP:
   ;如果是空指令""，跳转至结束
   MOVE R0 R1
   ADDIU R0 0   ;R0-=0
@@ -164,7 +198,7 @@ Root_Main_KeyBoard_Enter:   ;当按下键盘回车时应当处理的逻辑
   RET
 
 GOTO_LS:
-  STRING Applications "Calculate Chat LifeGame RetroSnake"
+  STRING Applications "Calculate Chat LifeGame RetroSnake Term"
   CALL next_cursor_line
   LOAD_ADDR Applications R0
   CALL printf
