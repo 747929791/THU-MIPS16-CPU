@@ -1,3 +1,5 @@
 完整编译命令：
-python .\Assembler.py Root.s Calculate.s Chat.s LifeGame.s RetroSnake.s Term.s VGA.s COM_interface.s function.s KeyBoard.s Print_Control.s String.s Delay.s -o build\Root
-python .\Assembler.py test.s -o build\test
+python Assembler.py Root.s Calculate.s Chat.s LifeGame.s RetroSnake.s Term.s VGA.s COM_interface.s function.s KeyBoard.s Print_Control.s String.s Delay.s -o build\Root
+python Assembler.py test.s -o build\test
+综合二进制文件：
+python mergeBin.py build\Root_o.bin 0000 ..\charset\charset.bit 8000 -o build\FlashRoot.bin

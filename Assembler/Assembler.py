@@ -1,6 +1,4 @@
 #coding = utf-8
-import re
-import sys
 """
 Moon汇编器，将扩展MIPS16语言转化为基本MIPS16语言
 调用方式 "python Assembler.py input1.s input2.s -o build"，将从input1.s/input2.s中读入，联合编译输出汇编到build_o.s，输出二进制文件到build_o.bin
@@ -27,12 +25,16 @@ LOAD_REG  =>  从堆栈读取所有寄存器(务必与SAVE_REG成对使用)
 算法流程：
 1、替换DEFINE
 2、展开语句计算符号地址，并展开中间代码(位置地址占位符为"SigAddr(X)")
-3、展开语句
+3、展开语句生成汇编代码
+4、汇编二进制代码文件
 """
+import re
+import sys
+
 EnhancedMode=True  #当该开关打开时将尽力优化由于硬件和官方软件的F9/FA错误，但会降低运行代码的时间
 
-statement_addr="4000"
-bss_addr="8000" #DATA段起始地址
+statement_addr="0000"  #程序首地址
+bss_addr="C000" #DATA段起始地址
 define=dict()
 sig_addr=dict() #符号地址，0起始
 string_map=dict() #静态符号->字符串内容映射(用于支持STRING指令)
